@@ -1,5 +1,7 @@
 # Embroidery — Brother SE700
 
+[![tests](https://github.com/Jdubz/embroidery-toolkit/actions/workflows/tests.yml/badge.svg)](https://github.com/Jdubz/embroidery-toolkit/actions/workflows/tests.yml)
+
 Design generation, machine reference, and file management for a Brother SE700
 sewing/embroidery machine.
 

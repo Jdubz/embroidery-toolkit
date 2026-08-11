@@ -1,0 +1,77 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A push that lands while an earlier run is still going supersedes it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.os }} · py${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Report every cell. A failure on one Python version is exactly the thing
+      # worth seeing next to the versions that passed.
+      fail-fast: false
+      matrix:
+        include:
+          # Windows is the documented platform: PowerShell entry point, and the
+          # Inkscape/Ink/Stitch pipeline only runs here. Both ends of the
+          # supported Python range, because README claims 3.10+.
+          - os: windows-latest
+            python: '3.10'
+          - os: windows-latest
+            python: '3.13'
+          # Linux is not a target, but the Python toolkit should be portable and
+          # this is what catches a hardcoded path or an encoding assumption —
+          # the class of bug that has actually shipped here.
+          - os: ubuntu-latest
+            python: '3.13'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: tools/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r tools/requirements.txt
+        shell: bash
+
+      # Catches syntax a given Python version cannot parse, which the test suite
+      # would otherwise only reveal as an import error partway through.
+      - name: Byte-compile every module
+        run: python -m compileall -q tools
+        shell: bash
+
+      # 169 invariant checks, each mapping to a defect that shipped. No test
+      # framework and no external binaries: it runs as a plain script and
+      # generates its own fixtures.
+      - name: Invariant suite
+        run: python tools/tests/test_toolkit.py
+        shell: bash
+        env:
+          PYTHONPATH: tools
+
+      # The suite covers the library; this covers the entry point. `audit` and
+      # `build --check` must succeed on a checkout with no designs declared —
+      # designs/specs/*.json is gitignored, so that is every fresh clone.
+      - name: CLI smoke test
+        run: |
+          python -m embroidery_tools.cli machine
+          python -m embroidery_tools.cli audit
+          python -m embroidery_tools.cli build --check
+        shell: bash
+        env:
+          PYTHONPATH: tools
