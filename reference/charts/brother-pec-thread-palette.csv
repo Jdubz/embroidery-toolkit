@@ -1,0 +1,65 @@
+pec_index,brother_code,name,hex,r,g,b,brand
+1,1,Prussian Blue,#0E1F7C,14,31,124,Brother
+2,2,Blue,#0A55A3,10,85,163,Brother
+3,3,Teal Green,#008777,0,135,119,Brother
+4,4,Cornflower Blue,#4B6BAF,75,107,175,Brother
+5,5,Red,#ED171F,237,23,31,Brother
+6,6,Reddish Brown,#D15C00,209,92,0,Brother
+7,7,Magenta,#913697,145,54,151,Brother
+8,8,Light Lilac,#E49ACB,228,154,203,Brother
+9,9,Lilac,#915FAC,145,95,172,Brother
+10,10,Mint Green,#9ED67D,158,214,125,Brother
+11,11,Deep Gold,#E8A900,232,169,0,Brother
+12,12,Orange,#FEBA35,254,186,53,Brother
+13,13,Yellow,#FFFF00,255,255,0,Brother
+14,14,Lime Green,#70BC1F,112,188,31,Brother
+15,15,Brass,#BA9800,186,152,0,Brother
+16,16,Silver,#A8A8A8,168,168,168,Brother
+17,17,Russet Brown,#7D6F00,125,111,0,Brother
+18,18,Cream Brown,#FFFFB3,255,255,179,Brother
+19,19,Pewter,#4F5556,79,85,86,Brother
+20,20,Black,#000000,0,0,0,Brother
+21,21,Ultramarine,#0B3D91,11,61,145,Brother
+22,22,Royal Purple,#770176,119,1,118,Brother
+23,23,Dark Gray,#293133,41,49,51,Brother
+24,24,Dark Brown,#2A1301,42,19,1,Brother
+25,25,Deep Rose,#F64A8A,246,74,138,Brother
+26,26,Light Brown,#B27624,178,118,36,Brother
+27,27,Salmon Pink,#FCBBC5,252,187,197,Brother
+28,28,Vermilion,#FE370F,254,55,15,Brother
+29,29,White,#F0F0F0,240,240,240,Brother
+30,30,Violet,#6A1C8A,106,28,138,Brother
+31,31,Seacrest,#A8DDC4,168,221,196,Brother
+32,32,Sky Blue,#2584BB,37,132,187,Brother
+33,33,Pumpkin,#FEB343,254,179,67,Brother
+34,34,Cream Yellow,#FFF36B,255,243,107,Brother
+35,35,Khaki,#D0A660,208,166,96,Brother
+36,36,Clay Brown,#D15400,209,84,0,Brother
+37,37,Leaf Green,#66BA49,102,186,73,Brother
+38,38,Peacock Blue,#134A46,19,74,70,Brother
+39,39,Gray,#878787,135,135,135,Brother
+40,40,Warm Gray,#D8CCC6,216,204,198,Brother
+41,41,Dark Olive,#435607,67,86,7,Brother
+42,42,Flesh Pink,#FDD9DE,253,217,222,Brother
+43,43,Pink,#F993BC,249,147,188,Brother
+44,44,Deep Green,#003822,0,56,34,Brother
+45,45,Lavender,#B2AFD4,178,175,212,Brother
+46,46,Wisteria Violet,#686AB0,104,106,176,Brother
+47,47,Beige,#EFE3B9,239,227,185,Brother
+48,48,Carmine,#F73866,247,56,102,Brother
+49,49,Amber Red,#B54B64,181,75,100,Brother
+50,50,Olive Green,#132B1A,19,43,26,Brother
+51,51,Dark Fuchsia,#C70156,199,1,86,Brother
+52,52,Tangerine,#FE9E32,254,158,50,Brother
+53,53,Light Blue,#A8DEEB,168,222,235,Brother
+54,54,Emerald Green,#00673E,0,103,62,Brother
+55,55,Purple,#4E2990,78,41,144,Brother
+56,56,Moss Green,#2F7E20,47,126,32,Brother
+57,57,Flesh Pink,#FFCCCC,255,204,204,Brother
+58,58,Harvest Gold,#FFD911,255,217,17,Brother
+59,59,Electric Blue,#095BA6,9,91,166,Brother
+60,60,Lemon Yellow,#F0F970,240,249,112,Brother
+61,61,Fresh Green,#E3F35B,227,243,91,Brother
+62,62,Orange,#FF9900,255,153,0,Brother
+63,63,Cream Yellow,#FFF08D,255,240,141,Brother
+64,64,Applique,#FFC8C8,255,200,200,Brother

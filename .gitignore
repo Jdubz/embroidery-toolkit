@@ -1,0 +1,39 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Scratch. Nothing here is read by tooling; see docs/13-repository-layout.md.
+work/
+
+# ---------------------------------------------------------------------------
+# Local assets. This repository publishes the TOOLKIT and the DOCUMENTATION,
+# not a personal design library. Artwork carries its own rights, stitch files
+# are built artifacts, and photographs are personal — none of it is ours to
+# redistribute, and none of it is needed to use the tools.
+#
+# The layout in docs/13-repository-layout.md still describes these directories,
+# because the tooling expects them; they are simply yours locally rather than
+# shared here. `stitch audit` on a fresh clone reports zero designs, which is
+# correct rather than broken.
+art/
+photos/
+designs/out/
+designs/specs/*.json
+designs/library/
+build/
+
+# IEEE OUI registry (~4 MB) — `stitch discover` re-downloads it on demand
+reference/oui.csv
+
+# Brother's copyrighted manuals and thread charts (~21 MB). The repo depends on
+# them but must not redistribute them; reference/manuals/README.md says how to
+# fetch them and how to make the .txt extractions the tooling greps.
+reference/manuals/*.pdf
+reference/manuals/*.txt
+reference/charts/*.pdf
+
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini

@@ -1,0 +1,15 @@
+# Core: read/write PES, DST, EXP, JEF, VP3, PEC, PMV and ~40 other formats.
+pyembroidery>=1.4.44
+
+# Image handling and auto-digitizing (`stitch trace`).
+Pillow>=10.0          # also backs pyembroidery's PNG preview writer
+numpy>=1.26
+scipy>=1.11           # k-means colour clustering + binary morphology on masks
+
+# Reading the bundled Brother PDF manuals.
+pypdf>=5.0
+cryptography>=3.1     # some Brother PDFs use AES encryption; pypdf needs this
+
+# Optional: raster -> SVG when you want to hand-edit shapes before digitizing.
+# Not required by any `stitch` subcommand.
+vtracer>=0.6

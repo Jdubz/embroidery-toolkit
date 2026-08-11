@@ -1,0 +1,177 @@
+{
+  "$comment": "Single source of truth for machine constraints. All tooling in tools/ reads this file. If you own a different Brother model, edit this file and the tooling adapts.",
+  "schema_version": 1,
+  "machine": {
+    "brand": "Brother",
+    "model": "SE700",
+    "family": "SE-series combo sewing + embroidery",
+    "market": "US",
+    "notes": "Brother has no 'SE7000' model. The 4x4 wireless combo machine is the SE700. If your machine is actually an SE600/SE625/SE630/SE1900/SE2100i, update this file."
+  },
+  "embroidery": {
+    "max_field_mm": { "width": 100.0, "height": 100.0 },
+    "max_field_in": { "width": 3.94, "height": 3.94 },
+    "max_stitches_per_pattern": 100000,
+    "max_speed_spm": 400,
+    "speed_is_fixed": true,
+    "speed_is_fixed_note": "400 spm is a FIXED rate for embroidery, not a ceiling you can back off. The manual states the sewing speed controller 'cannot be adjusted while sewing decorative stitches or embroidering' (p.10), and the Embroidery settings screen (p.15) offers no speed option. Two consequences: runtime_minutes() is an exact rate rather than an upper bound, and 'slow the machine down' — standard advice for thread breaks on other machines — must never be offered here.",
+    "builtin_pattern_benchmark": {
+      "$comment": "Measured across all 128 built-in designs catalogued in reference/manuals/SE700-Embroidery-Design-Guide.pdf. The best evidence for what this machine is designed around, as opposed to what it will merely accept.",
+      "count": 128,
+      "longest_edge_mm": { "median": 78.7, "p90": 95.4, "max": 98.5, "share_within_96mm": 0.98 },
+      "colours": { "median": 3, "p75": 6, "max": 30, "share_within_4": 0.65 },
+      "runtime_min": { "median": 7, "p90": 23, "max": 47, "share_within_45": 0.99 }
+    },
+    "max_fabric_thickness_mm": 2.0,
+    "max_fabric_thickness_note": "Embroidery has a TIGHTER limit than sewing: 'Use fabrics with a thickness of less than 2 mm' (Operation Manual, Inserting the fabric, p.64). Sewing allows 6 mm. Thicker fabric in the hoop risks needle breakage.",
+    "density_warning": "Manual: 'the thread may break or the needle may break or bend when embroidering with a stitch density that is too fine or when embroidering three or more overlapping stitches.' Enforced by TraceSettings.max_density_per_mm2.",
+    "source": "SE700 Operation Manual, Specifications (p.96)"
+  },
+  "sewing": {
+    "speed_spm": { "min": 70, "max": 710 },
+    "max_fabric_thickness_mm": 6.0
+  },
+  "memory": {
+    "embroidery": { "max_kb": 1024, "max_patterns": 20 },
+    "stitch_patterns": { "max_kb": 128, "max_patterns": 15 }
+  },
+  "file_formats": {
+    "embroidery_read": [".pes", ".phc", ".dst", ".pen"],
+    "embroidery_write_by_machine": [".phc"],
+    "stitch_pattern_read": [".pmv", ".pmx", ".pmu"],
+    "stitch_pattern_write_by_machine": [".pmv"],
+    "recommended_authoring_format": ".pes",
+    "notes": [
+      ".dst carries no thread colour information; the machine substitutes its default colour sequence and shows the design by filename only (no thumbnail).",
+      ".pen is the Artspira line-art format.",
+      "When the machine saves a design of any extension to USB it writes .phc."
+    ]
+  },
+  "pes": {
+    "recommended_version": 1,
+    "supported_versions_by_writer": [1, 6],
+    "rationale": "PES v1 embeds the PEC block that every Brother machine reads and is the most conservative choice. Escalate to v6 only if you need features v1 cannot carry and you have verified the machine reads it.",
+    "colour_model": "PEC 64-colour Brother palette; see reference/charts/brother-pec-thread-palette.csv"
+  },
+  "usb": {
+    "connector": "USB-A (Type A) host port on the machine",
+    "filesystem": "FAT32",
+    "design_location": "Root of the drive works. Many guides recommend a top-level BROTHER folder; both are read.",
+    "filename_charset": "A-Z a-z 0-9 - _",
+    "filename_charset_source": "SE700 Operation Manual, Specifications note (p.96)",
+    "firmware_update_rule": "Place ONLY the update file on the drive when updating machine software.",
+    "compatibility_list": "https://s.brother/cpjap/"
+  },
+  "wireless": {
+    "standards": "IEEE 802.11b/g/n",
+    "band_ghz": 2.4,
+    "band_5ghz_supported": false,
+    "unsupported_security": ["WPA-Enterprise", "WPA2-Enterprise"],
+    "pc_transfer_apps": ["Design Database Transfer", "PE-DESIGN 11 or later"],
+    "design_database_transfer": {
+      "installed_version": "1.2.0",
+      "installed_path": "C:\\Program Files (x86)\\Brother\\Design Database Transfer\\EmbDBT.exe",
+      "installer_sha256": "19596129983DDC7A17F7A5A3B18A05EA93EF18FE3DF691639D06C51FADD1A965",
+      "transferable_formats": [".pes", ".phc", ".phx", ".dst", ".pen"],
+      "visible_but_not_transferable": [".exp", ".pcs", ".hus", ".vip", ".shv", ".jef", ".sew", ".csd", ".xxx"],
+      "max_files_per_transfer": 50,
+      "reads_zip": false,
+      "pairing": "Option -> Network Machine Settings -> Add -> select machine -> Add -> OK. Discovery-based; there is no IP entry field. Use Refresh if the machine is absent.",
+      "validates_hoop_fit": false
+    },
+    "mobile_app": "Artspira",
+    "artspira_limits": {
+      "max_design_mm": { "width": 100, "height": 100 },
+      "my_creations_slots": 20,
+      "import_external_files": true,
+      "import_formats": [".pes", ".phc", ".phx", ".dst"],
+      "import_requires_paid_plan": false,
+      "import_path": "My Creations -> + -> Import External Files -> select machine -> Transfer",
+      "api": "none - mobile only (Android 8+, iOS/iPadOS 15+), no PC or web client, no public API"
+    },
+    "protocol_is_closed": true,
+    "protocol_note": "Brother's wireless design-transfer protocol is undocumented. No public API, SDK, or reverse-engineering exists for the SE-series. The machine is NOT a network printer: it does not speak LPD/IPP/JetDirect and exposes no web admin UI. Design Database Transfer and Artspira are the only network clients. USB is the automatable path."
+  },
+  "network_fingerprint": {
+    "$comment": "Observed on this machine 2026-08-07. Used by `stitch discover` to identify the machine regardless of MAC vendor.",
+    "open_ports": [443],
+    "http_server_header": "debut/1.20",
+    "http_server_note": "'Debut embedded httpd' is Brother's embedded web server. nmap fingerprints it as 'Brother/HP printer http admin'; Tenable plugin 104901 is 'Brother Printer Debut Embedded HTTP Server Detection'. All paths return 404 — there is no web UI, the endpoint exists for the transfer protocol.",
+    "tls_cert_cn_pattern": "<n>;<n>;<n>;<software-version>.local",
+    "tls_cert_cn_observed": "60;3;1;1.72.local",
+    "software_version_from_cert": "1.72",
+    "mac_oui_caveat": "The radio module is OEM. This unit's MAC (44:F7:9F) is registered to Cloud Network Technology Singapore (Foxconn), NOT to Brother. Matching on Brother OUI prefixes alone will fail to find the machine.",
+    "observed_mac": "44:F7:9F:58:04:37",
+    "known_cve": "Debut httpd <= 1.20 is affected by CVE-2017-16249, a remote denial of service. Brother has not shipped a fix for this server generation. Mitigation is network placement, not patching: keep the machine off untrusted networks and do not port-forward it.",
+    "scanning_caution": "Do NOT port-scan this machine aggressively. Debut httpd is single-threaded; a 1039-port sweep at 250 concurrent connections observed on 2026-08-07 made it refuse all TCP for several minutes while still answering ICMP. It self-recovered. `stitch discover`/`probe` are deliberately gentle (13 ports, bounded concurrency).",
+    "listener_note": "Port 443 is not always open. Confirm with a retry before concluding the machine is offline or unpaired."
+  },
+  "trimming": {
+    "$comment": "Verified against the SE700 Operation Manual, Embroidering procedure (p.71) and a full-text search of the manual.",
+    "auto_cut_at_color_change": true,
+    "auto_cut_at_color_change_is_toggleable": true,
+    "auto_cut_at_color_change_note": "On by default and can be switched off from the embroidering screen (p.70): 'The automatic thread cutting function will cut the thread at the end of embroidering each color. This function is initially turned on.' Leave it on — turning it off adds a manual cut at every colour change and gains nothing.",
+    "auto_trims_jumps_within_color": false,
+    "has_jump_stitch_trim_setting": false,
+    "manual_step": "Step (i) of the embroidering procedure reads 'Cut the excess thread jumps within the color.' The machine leaves every within-colour jump as a float for you to snip by hand.",
+    "implication": "Jump count is a HAND-LABOUR cost, not a machine-time cost. Minimising jumps matters more than minimising stitches: extra stitches are unattended machine time, extra jumps are floats you cut one by one and thread lying across the artwork until you do.",
+    "seconds_per_manual_snip_estimate": 4
+  },
+  "design_limits": {
+    "$comment": "Limits on the stitches themselves rather than on the design envelope. Read by raster.TraceSettings, analyze.validate, and the Ink/Stitch generators in tools/ so there is one place to change them.",
+    "min_stitch_mm": 0.5,
+    "min_stitch_mm_note": "Two penetrations closer than this sit in almost the same hole. The upper thread gets no length over which to take up tension, so bobbin thread is drawn to the surface and shows as flecks of bobbin colour, and the needle saws the upper thread against its own eye until it breaks. Enforced by raster._filter_short at generation time, by inkstitch:min_stitch_len_mm for Ink/Stitch output, and checked on any finished file by the 'short-stitches' validate finding.",
+    "satin_spacing_reference": "fill_density_mm",
+    "satin_spacing_note": "Satin spacing is judged against fill_density_mm, not against a separate figure. A fill lays rows that far apart and covers; a satin is the same geometry rotated, so the same spacing covers. An earlier version of this profile carried thread_width_mm=0.4 and satin_spacing_mm=0.25 and the validate check compared against them - which flagged 0.4 mm as a gap while this same file calls 0.4 mm the validated fill density, and flagged Ink/Stitch's own default satin as defective. Both entries were wrong and were removed. Only spacing well beyond the validated density (see satin_sparse_factor) indicates real sparseness.",
+    "satin_sparse_factor": 1.5,
+    "max_density_per_mm2": 16,
+    "density_danger_per_mm2": 30,
+    "density_note": "Needle penetrations per 1 mm cell. ~3 is a normal fill; 8-12 is underlay + fill + outline overlapping and is fine; 16 is where the tracer caps travel routing (TraceSettings.max_density_per_mm2); 30+ is the manual's own failure mode - 'stitch density that is too fine, or three or more overlapping stitches' - and reliably breaks thread and needles. Measured with a 1 mm-cell histogram, never by eye: the median stays at 3.0 even when the peaks are lethal, so only p99 and max reveal it. Checked by the 'density-peak' validate finding.",
+    "min_satin_width_mm": 1.0,
+    "safe_satin_width_mm": 1.2,
+    "min_filled_shape_mm": 2.0,
+    "safe_filled_shape_mm": 3.0,
+    "min_text_cap_height_mm": 5.0,
+    "safe_text_cap_height_mm": 6.0,
+    "safe_colour_count": 4,
+    "fill_density_mm": 0.4,
+    "fill_density_mm_knits": 0.45,
+    "source": "docs/10-designing-for-the-se700.md - derived for a 100 x 100 mm field at 400 spm, not generic commercial digitizing figures."
+  },
+  "consumables": {
+    "embroidery_needle": "75/11 home sewing machine needle",
+    "needle_threader_range": "75/11 through 100/16",
+    "needle_threader_twin_needle_supported": false,
+    "bobbin": {
+      "part": "SA156",
+      "class": "Class 15",
+      "height_mm": 11.5,
+      "embroidery_bobbin_thread_weight": 60
+    },
+    "embroidery_thread_weight": 40,
+    "oiling": "Do NOT oil this machine. The manual explicitly prohibits user lubrication."
+  },
+  "hoops": {
+    "included": [{ "part": "SA432", "name": "Medium", "area_mm": [100, 100], "area_in": [4, 4] }],
+    "compatible_optional": [
+      { "part": "SA431", "name": "Small", "area_mm": [20, 60], "area_in": [1, 2.5] },
+      { "part": "SA434", "name": "Large / border", "area_mm": [100, 170], "area_in": [4, 6.75],
+        "caveat": "The frame attaches, but the machine still only stitches a 100 x 100 mm field. Useful for repositioning fabric, not for larger single designs." }
+    ],
+    "note": "Hoop mount is the common Brother 4x4 SE/PE bracket shared with SE400/SE425/SE600/SE625/SE630/PE535/PE550D/LB5000 and Baby Lock Sofia 2 / Verve."
+  },
+  "software_versions": {
+    "wireless_update_requires_min_version": "1.60",
+    "latest_known_version": "1.72",
+    "latest_known_version_checked": "2026-08-07",
+    "version_check_path": "Settings key -> page through screens -> software version",
+    "usb_update_entry": "Power on while holding the Needle Position button"
+  },
+  "official_links": {
+    "product": "https://www.brother-usa.com/p/sewing-embroidery/SE700",
+    "support": "https://support.brother.com/g/b/producttop.aspx?c=us&lang=en&prod=hf_se700eus",
+    "downloads": "https://support.brother.com/g/b/downloadtop.aspx?c=us&lang=en&prod=hf_se700eus",
+    "manuals": "https://support.brother.com/g/b/manualtop.aspx?c=us&lang=en&prod=hf_se700eus",
+    "design_database_transfer": "https://support.brother.com/g/s/hf/pcapp_info/ddt/en/index.html?prod=WLAN&media=i_txt"
+  }
+}

@@ -1,0 +1,27 @@
+# Normalise text in the repo, check out native. Without this a Windows clone
+# rewrites every file's line endings and the next `git status` is a wall of
+# noise.
+* text=auto
+
+*.ps1   text eol=crlf
+*.py    text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.csv   text eol=lf
+*.svg   text eol=lf
+
+# Stitch files and imagery are binary. PES in particular is a container with
+# byte offsets that this repo patches directly; any line-ending translation
+# would corrupt it.
+*.pes   binary
+*.phc   binary
+*.dst   binary
+*.pen   binary
+*.exp   binary
+*.jef   binary
+*.vp3   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+*.pdf   binary
