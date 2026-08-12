@@ -7,14 +7,14 @@ sits in declares which:
 |---|---|---|
 | **Inbound** | `art/originals/` | Artwork exactly as received. Never edited, never generated. |
 | **Declared** | `designs/specs/` | One JSON per design: its source and settings. The source of truth. |
-| **Generated** | `art/prepared/`, `designs/out/`, `build/` | Produced by tooling from the two above. Reproducible. |
+| **Generated** | `art/prepared/`, `designs/out/`, `designs/previews/`, `build/` | Produced by tooling from the two above. Reproducible. |
 | **Disposable** | `work/` | Scratch. Nothing here is ever read by tooling. Gitignored. |
 
 Plus `photos/` for stitch-out photographs — evidence of what happened on the
 machine, not artwork and not generated.
 
 > **In the public repository, the asset directories are gitignored** — `art/`,
-> `photos/`, `designs/out/`, `designs/library/`, `designs/specs/*.json` and
+> `photos/`, `designs/out/`, `designs/previews/`, `designs/library/`, `designs/specs/*.json` and
 > `build/`. This repo publishes the toolkit, not a personal design library:
 > artwork carries its own rights and stitch files are build artifacts. The
 > scheme below still describes them because the tooling expects them; they are
@@ -70,6 +70,8 @@ One `<Name>.json` per design; the filename must match the `name` field.
 ```json
 {
   "name": "IHeartScreaming_on_white",
+  "cloth": "F2F0EB",
+  "cloth_note": "off-white cotton",
   "description": "what this design is, and anything a future reader needs",
   "prepare": {
     "tool": "svg_subpath_filter",
@@ -91,6 +93,15 @@ One `<Name>.json` per design; the filename must match the `name` field.
 
 `prepare` is optional — a design whose artwork already clears the machine
 minimums builds straight from its original.
+
+**`cloth` is required**, and it is a design input rather than a note. Every
+design here uses bare fabric as a colour, so the same stitch file on different
+cloth is a different picture. Two things read it: the preview is rendered
+against it, and the fill density is derived from its luminance — dark cloth
+takes `design_limits.fill_density_mm_dark`, because the gap between rows is
+invisible on cream and a dark dot at every needle penetration on black. Stating
+the density separately in `options.Cloth` is only for what a colour cannot imply,
+such as `knits`.
 
 `build.tool` is one of two:
 
@@ -114,7 +125,40 @@ look choice (the forehead star measured 3.40 mm and would have stitched fine).
 
 `.pes` only, one per spec, flat. **This is the Design Database Transfer staging
 folder** — DDT reads a PC folder directly, which is why nothing else may live
-here. Proofs, renders and previews go to `build/`.
+here. Proofs and ad-hoc renders go to `build/`; the per-design preview goes to
+`designs/previews/`, below.
+
+## `designs/previews/` — what each design will look like, on its own cloth
+
+One PNG per spec, named to parallel `designs/out/` exactly:
+
+```
+designs/out/MuffyHat_on_black.pes
+designs/previews/MuffyHat_on_black.png
+```
+
+**Written by `stitch build`, on every build.** Not a gate you have to remember
+to run — human review is the only check that has ever caught the defects that
+matter here, and every one of them was clean in `validate` and obvious the
+moment it was drawn on the right fabric:
+
+- `LemonCat_solid_on_white`'s eyes stitched yellow, because a lighter colour was
+  ordered under a darker one that then covered it. `coverage` reported 100%.
+- `PissMuffy_on_white` stitched as a solid block, because an undeclared
+  background colour fell to its nearest declared neighbour.
+- Both Muffy faces came off the machine with **white keyline haloes** around the
+  eyes and mouth, where the artwork's hairline paper gaps were recovered as
+  thread. Nothing measured it; it is unmissable in a preview.
+
+`stitch audit` treats a missing or stale preview the same way it treats a proof
+— a preview older than its `.pes` is a picture of the previous build, which is
+worse than no picture. A preview with no spec is flagged too, since a leftover
+from a renamed design gets reviewed as if it were current.
+
+The fabric colour comes from the spec's **`cloth`** field, which is also what
+selects the fill density — see `12-design-generation-playbook.md`. Before that
+field existed the fabric was recorded nowhere but the design's *name*, so
+nothing could render a design as it would actually look.
 
 ## `build/` — everything else generated
 

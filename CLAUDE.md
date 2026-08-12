@@ -501,6 +501,32 @@ subtract --colour FFD400 --by FFFFFF    knock the eyes out of the body
 drop     --colour 000000                let the cloth supply the linework
 ```
 
+**Not every gap in the artwork is a white AREA — some are keylines, and emitting
+them as thread haloes the design.** Illustration for light paper routinely sets
+ink into a hairline gap in the colour beneath it so the paper reads as an
+outline. `pockets` recovered those as **white thread**, putting a halo around
+both Muffy faces' eyes and mouths that ran straight into the yellow. Observed on
+fabric, after everything else here was already right. `pockets --min-width`
+(default `min_satin_width_mm`) drops a pocket that cannot hold a disc that wide;
+erosion is exact, so there is no threshold to tune, and the two populations are
+not close — real pockets measured 1.25–5.42 mm across, keylines 0.08 mm.
+
+**The cloth is DECLARED, in `spec.cloth`, and two things derive from it.** The
+preview is rendered against it, and the fill density comes from its luminance.
+Before that field existed the fabric lived only in the design's *name*, so
+nothing could render a design as it would actually look, and `_on_black` plus a
+forgotten density is exactly the file that stitched out speckled.
+`options.Cloth` still overrides, for what a colour cannot imply (`knits`).
+
+**`stitch build` writes `designs/previews/<Name>.png` on every build**, named to
+parallel `designs/out/<Name>.pes`, rendered on that design's own cloth. It is
+not a gate anyone has to remember. **Human review is the only check that has
+caught the defects that matter here** — the yellow LemonCat eyes, the
+solid-block PissMuffy, the white keyline haloes — and every one was clean in
+`validate` and unmissable on the right fabric. `audit` flags a missing or stale
+preview, and a preview no spec declares. Previews stay out of `designs/out/`
+because that is the DDT staging folder and holds `.pes` only.
+
 **Three defects are visible only ON DARK CLOTH, and no check in this repo could
 see any of them.** From the `MuffyHat_on_black` stitch-out
 (`photos/PXL_20260812_064352867.jpg`): `validate` clean, `coverage` fine, render

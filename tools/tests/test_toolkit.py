@@ -558,6 +558,39 @@ _spec3 = {"name": "T", "build": {"tool": "svg_to_pes", "input": "a.svg", "artwor
 _a = BLD.ps_args(_spec3, Path("a.svg"), Path("b.pes"))
 check("a true option becomes a bare switch", "-NoFillUnderlay" in _a)
 check("a valued option becomes a pair", "-Spacing" in _a and _a[_a.index("-Spacing") + 1] == "0.45")
+
+# Fill density follows from the declared cloth. Stating it a second time in
+# options is a second place to get it wrong, and a spec that says `_on_black`
+# while forgetting the density is exactly the file that stitched out speckled.
+def _cloth_args(hexc, **opts):
+    s = {"name": "T", "cloth": hexc,
+         "build": {"tool": "svg_to_pes", "input": "a.svg", "artwork_mm": 90,
+                   "options": opts}}
+    return BLD.ps_args(s, Path("a.svg"), Path("b.pes"))
+
+check("dark cloth selects the dark row spacing without being told",
+      "-Cloth" in _cloth_args("141414")
+      and _cloth_args("141414")[_cloth_args("141414").index("-Cloth") + 1] == "dark")
+# Yellow is light despite being a strong colour — luminance, not saturation.
+check("light cloth passes nothing, so the command line is unchanged",
+      "-Cloth" not in _cloth_args("F2F0EB") and "-Cloth" not in _cloth_args("F2C94C"))
+# 'knits' is a property of the fabric that no colour can imply, so an explicit
+# option has to win over the derivation.
+_ck = _cloth_args("141414", Cloth="knits")
+check("an explicit Cloth option overrides the derivation",
+      _ck.count("-Cloth") == 1 and _ck[_ck.index("-Cloth") + 1] == "knits")
+# ps_args is documented as pure and testable; a hand-built spec with no cloth
+# must not crash it. validate_spec is where the field is required.
+check("a spec without cloth still produces a command line",
+      "-Cloth" not in BLD.ps_args(_spec2, Path("a.svg"), Path("b.pes")))
+
+try:
+    BLD.validate_spec({"name": "T", "build": {"tool": "svg_to_pes", "input": "a.svg",
+                                              "artwork_mm": 90}}, "T.json")
+    check("validate_spec requires the cloth colour", False)
+except ValueError as e:
+    check("validate_spec requires the cloth colour",
+          "cloth" in str(e) and "not a substitute" in str(e), str(e)[:120])
 check("false and null options are omitted entirely",
       "-ContourUnderlay" not in _a and "-LockStyle" not in _a, " ".join(_a))
 check("no skip argument when the spec skips nothing",
@@ -1650,6 +1683,41 @@ check("svgops: a refused widen costs no material",
       f"{before:.2f} -> {doc.mm2(doc.geom_of('FFFFFF')):.2f} mm2")
 
 from shapely.ops import unary_union  # noqa: E402
+
+# --- pockets: a keyline gap is not a white area ----------------------------- #
+# Illustration drawn for light paper sets ink into a HAIRLINE gap in the colour
+# beneath it, so the paper reads as an outline around it. Recovering that gap as
+# thread put a white halo around both Muffy faces' eyes and mouths, running
+# straight into the yellow. Observed on fabric, invisible to every check.
+#
+# A 30x20 gold plate with two holes: one a 6x6 mm window (a real white area),
+# one a 0.3 mm-wide slot (a keyline). Black ink sits inside each so both qualify
+# as pockets adjacent to ink.
+HALO = OPS / "halo.svg"
+HALO.write_text(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="30" '
+    'viewBox="0 0 40 30">'
+    f'<path fill="#F6BE00" fill-rule="evenodd" d="{sq(0, 0, 30, 20)} '
+    f'{sq(3, 3, 9, 9)} {sq(14, 3, 14.3, 17)}"/>'
+    f'<path fill="#000000" d="{sq(5, 5, 7, 7)} {sq(14.1, 5, 14.2, 15)}"/>'
+    "</svg>", encoding="utf-8")
+doc = Doc.load(HALO, 30.0)
+msg = svgops.OPS["pockets"]["fn"](doc, adjacent="000000", emit="FFFFFF")
+white = doc.geom_of("FFFFFF")
+areas = sorted(doc.mm2(p) for p in svgops.G.polys(white))
+check("svgops: pockets keeps a real white area and drops the keyline gap",
+      len(areas) == 1 and 25 < areas[0] < 36, f"{[round(a, 1) for a in areas]}, {msg}")
+check("svgops: and says what it dropped and why",
+      "keyline pocket" in msg and "bare cloth" in msg, msg)
+
+# The filter must not be able to silently empty the layer.
+doc = Doc.load(HALO, 30.0)
+try:
+    svgops.OPS["pockets"]["fn"](doc, adjacent="000000", emit="FFFFFF", min_width=20.0)
+    check("svgops: pockets fails loudly if the filter leaves nothing", False)
+except SystemExit as e:
+    check("svgops: pockets fails loudly if the filter leaves nothing",
+          "keyline rather than an area" in str(e), str(e)[:120])
 
 # --- scale / space-out / move: redrawing detail that is too small ---------- #
 # Four 4x6 mm bars 0.5 mm apart on one row, and a second row 0.4 mm below it —

@@ -40,6 +40,11 @@ OPS: dict[str, dict] = {}
 #: from opposite sides — see the note there.
 SAFE_W = prof.design_limit("safe_satin_width_mm", 1.2)
 
+#: Narrowest thread this machine will hold at all. `pockets` uses it to tell a
+#: white AREA from a hairline keyline gap that only ever meant "paper shows
+#: here" — see the note there.
+MIN_W = prof.design_limit("min_satin_width_mm", 1.0)
+
 PAD_PX = 2
 
 
@@ -707,8 +712,9 @@ def space_out(doc, colour: str, gap: float, band=None, line_gap: float | None = 
             + "\n".join(lines))
 
 
-@op("pockets", "pockets --adjacent X --emit C   stitch enclosed bare cloth beside X in C")
-def pockets(doc, adjacent: str, emit: str, lid_above: float | None = None, **_):
+@op("pockets", "pockets --adjacent X --emit C [--min-width N]   stitch enclosed bare cloth beside X in C")
+def pockets(doc, adjacent: str, emit: str, lid_above: float | None = None,
+            min_width: float = MIN_W, **_):
     ink_c, thread_c = G.norm(adjacent), G.norm(emit)
     ink = doc.geom_of(ink_c)
     if ink is None:
@@ -743,11 +749,38 @@ def pockets(doc, adjacent: str, emit: str, lid_above: float | None = None, **_):
             f"pockets: {len(enclosed)} enclosed pocket(s) found but none touches "
             f"#{ink_c}. If the region you want is open to the background, it holds "
             "no pocket — see --lid-above.")
-    geom = unary_union(chosen)
+
+    # Not every gap in the artwork is a white AREA. Illustration for light paper
+    # routinely sets ink into a hairline gap in the colour beneath it, so the
+    # paper shows as a keyline around it. That gap is bare cloth by intent, and
+    # emitting it as THREAD puts a white halo around every eye and mouth which
+    # then runs into the colour beside it — observed on both Muffy designs, on
+    # fabric, after everything else here was right.
+    #
+    # Discriminate by whether the pocket can hold a disc of `min_width`: an area
+    # can, a keyline cannot. Erosion is exact, so no rasterising and no
+    # threshold to tune. Measured on MuffyHat the two populations are three
+    # orders apart — real pockets 1.25-5.42 mm across, keylines 0.08 mm — so
+    # this is not a close call anywhere it has been run.
+    thin = [p for p in chosen if p.buffer(-min_width / 2 * doc.upm).is_empty]
+    keep = [p for p in chosen if not p.buffer(-min_width / 2 * doc.upm).is_empty]
+    if not keep:
+        raise SystemExit(
+            f"pockets: all {len(chosen)} pocket(s) touching #{ink_c} are narrower "
+            f"than --min-width {min_width:g} mm, so every one of them is a keyline "
+            "rather than an area. Lower it if this artwork really is that fine.")
+    dropped = ""
+    if thin:
+        w = ", ".join(f"{doc.mm2(p):.1f} mm2 at {doc.at(p)}" for p in thin[:4])
+        dropped = (f"; dropped {len(thin)} keyline pocket(s) under {min_width:g} mm "
+                   f"wide, left as bare cloth ({w}"
+                   + (", ..." if len(thin) > 4 else "") + ")")
+
+    geom = unary_union(keep)
     doc.add_fill(geom, thread_c, ident="pockets")
     doc.rescan()
-    return (f"{len(chosen)} of {len(enclosed)} enclosed pocket(s) emitted as "
-            f"#{thread_c}: {doc.mm2(geom):,.0f} mm2{note}")
+    return (f"{len(keep)} of {len(enclosed)} enclosed pocket(s) emitted as "
+            f"#{thread_c}: {doc.mm2(geom):,.0f} mm2{note}{dropped}")
 
 
 @op("set-stroke", "set-stroke --colour X --mm N   set X's stroke width (and --to colour)")

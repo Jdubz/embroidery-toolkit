@@ -46,8 +46,15 @@ from functools import lru_cache
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+_HEX = re.compile(r"[0-9A-Fa-f]{6}")
+
 SPECS = REPO / "designs" / "specs"
 OUT = REPO / "designs" / "out"
+#: Renders of the finished piece on its own cloth, one per design, named to
+#: parallel designs/out/<Name>.pes exactly. Kept out of designs/out/ because
+#: that directory is the Design Database Transfer staging folder and holds .pes
+#: and nothing else.
+PREVIEWS = REPO / "designs" / "previews"
 PREPARED = REPO / "art" / "prepared"
 ORIGINALS = REPO / "art" / "originals"
 BUILD = REPO / "build"
@@ -171,6 +178,19 @@ def validate_spec(spec: dict, where: str) -> None:
         if not (REPO / "tools" / f"{p['tool']}.py").exists():
             raise ValueError(f"{where}: no such prepare tool: tools/{p['tool']}.py")
 
+    # Last, so a structurally broken spec reports the structural fault first.
+    #
+    # The cloth is a DESIGN INPUT, not a note. Every design here uses bare fabric
+    # as a colour, so the same stitch file on different cloth is a different
+    # picture — and until this field existed the fabric was recorded nowhere but
+    # the filename, which meant nothing could render a design as it will actually
+    # look. It also decides fill density; see `_cloth_kind`.
+    if not isinstance(spec.get("cloth"), str) or not _HEX.fullmatch(spec["cloth"]):
+        raise ValueError(
+            f"{where}: missing 'cloth' — the fabric colour this design is stitched "
+            "on, as RRGGBB. It is what the preview is rendered against and what "
+            "selects the fill density, and the design name is not a substitute.")
+
 
 def _in_dependency_order(specs: list[dict]) -> list[dict]:
     """Order specs so one reading another's prepare output builds after it.
@@ -272,6 +292,32 @@ def _prepare(spec: dict, quiet: bool) -> Path | None:
     return dst
 
 
+def _luminance(hexc: str) -> float:
+    r, g, b = (int(hexc[i:i + 2], 16) for i in (0, 2, 4))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def _cloth_kind(spec: dict) -> str:
+    """'dark' or 'light', derived from the declared cloth colour.
+
+    Derived rather than declared twice. The validated 0.4 mm fill density covers
+    on white and speckles on black — the cloth between rows is invisible on
+    cream and a dark dot at every penetration on black — so a light thread on
+    dark cloth needs `fill_density_mm_dark`. That decision follows entirely from
+    the fabric, and stating it separately is a second place to get it wrong: a
+    spec that says `_on_black` and forgets the density is exactly the file that
+    came off the machine speckled.
+
+    `build.options.Cloth` still wins, because 'knits' is a property of the
+    fabric that no colour can imply.
+
+    Absent `cloth` reads as light rather than raising: `validate_spec` already
+    rejects a spec without it, and this stays callable on a hand-built dict so
+    `ps_args` remains the pure, testable function it is documented to be.
+    """
+    return "dark" if _luminance(spec.get("cloth") or "FFFFFF") < 128 else "light"
+
+
 def _options(b: dict) -> list[str]:
     """Free-form `options` mapped onto PowerShell parameters.
 
@@ -317,7 +363,13 @@ def ps_args(spec: dict, src: Path, dst: Path) -> list[str]:
             "-Svg", str(src), "-Out", str(dst), "-ArtworkMm", str(b["artwork_mm"])]
     if b.get("skip"):
         args += ["-Skip", ",".join(b["skip"])]
-    return args + _options(b)
+    opts = _options(b)
+    # Derived from the declared cloth unless the spec overrides it. Only passed
+    # when it differs from svg_prep's default, so a light-cloth command line is
+    # unchanged from before this existed.
+    if "-Cloth" not in opts and _cloth_kind(spec) != "light":
+        args += ["-Cloth", _cloth_kind(spec)]
+    return args + opts
 
 
 def _stitch_out(spec: dict, quiet: bool) -> Path:
@@ -354,11 +406,42 @@ def measure(pes: Path) -> dict:
     }
 
 
+def preview_path(name: str) -> Path:
+    return PREVIEWS / f"{name}.png"
+
+
+def _preview(spec: dict, pes: Path, quiet: bool) -> Path | None:
+    """Render the finished piece on its own cloth, beside every build.
+
+    Human review is the only check that has ever caught the defects this repo
+    keeps hitting — the yellow LemonCat eyes, the solid-block PissMuffy, the
+    white keyline haloes around both Muffy faces. All were clean in `validate`,
+    and all were obvious the moment they were drawn on the right fabric. So this
+    is not optional output: it is generated on every build, at the same name as
+    the .pes, so a design and its picture cannot drift apart.
+
+    A render failure must not fail the build — the .pes is the deliverable and it
+    is already written and measured by this point.
+    """
+    from . import preview as pv
+    dst = preview_path(spec["name"])
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        pv.render_realistic(pes, dst, fabric="#" + spec["cloth"], px_per_mm=12.0)
+    except Exception as exc:                       # noqa: BLE001 - see docstring
+        print(f"  preview  FAILED ({exc.__class__.__name__}: {exc})")
+        return None
+    if not quiet:
+        print(f"  preview  on #{spec['cloth']}  -> {rel(dst)}")
+    return dst
+
+
 def build_one(spec: dict, quiet: bool = False) -> dict:
     if not quiet:
         print(f"{spec['name']}")
     prepared = _prepare(spec, quiet)
     pes = _stitch_out(spec, quiet)
+    _preview(spec, pes, quiet)
     inputs = [REPO / spec["build"]["input"]]
     if spec.get("prepare"):
         inputs.insert(0, REPO / spec["prepare"]["input"])
@@ -484,6 +567,23 @@ def audit() -> list[tuple[str, str]]:
                                    f"run: stitch proof designs/out/{name}.pes"))
         elif proof.stat().st_mtime < pes.stat().st_mtime:
             issues.append(("warn", f"{name}: proof is older than the design it shows"))
+
+        # Same rule for the preview, and it matters more: the proof shows thread
+        # at scale on nothing, the preview shows the piece on the cloth it is
+        # actually for. A stale one is a picture of the previous build.
+        prev = preview_path(name)
+        if not prev.exists():
+            issues.append(("warn", f"{name}: no preview in designs/previews — "
+                                   f"run: stitch build {name}"))
+        elif prev.stat().st_mtime < pes.stat().st_mtime:
+            issues.append(("warn", f"{name}: preview is older than the design it shows"))
+
+    # designs/previews parallels designs/out one-for-one. Anything else there is
+    # a leftover from a renamed or deleted design and will be reviewed as if it
+    # were current.
+    for f in sorted(PREVIEWS.glob("*")) if PREVIEWS.exists() else []:
+        if f.is_file() and f.stem not in by_name:
+            issues.append(("warn", f"{rel(f)}: preview for a design no spec declares"))
 
     # Legacy locations that the layout retired.
     for legacy in ("images", "designs/source"):

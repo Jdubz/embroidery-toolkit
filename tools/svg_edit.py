@@ -97,7 +97,7 @@ def parse_op(text: str) -> tuple[str, dict]:
     # Types are declared here rather than guessed: a silently mistyped argument
     # is how a 0.3 mm offset becomes the string "0.3" and does nothing useful.
     for k in ("mm", "lid_above", "to_min", "tolerate", "ppm",
-              "factor", "gap", "line_gap", "dx", "dy"):
+              "factor", "gap", "line_gap", "dx", "dy", "min_width"):
         if k in kw:
             kw[k] = float(kw[k])
     if "band" in kw and isinstance(kw["band"], str):
