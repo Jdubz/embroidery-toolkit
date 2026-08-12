@@ -386,10 +386,10 @@ def _stitch_out(spec: dict, quiet: bool) -> Path:
     return dst
 
 
-def measure(pes: Path) -> dict:
+def measure(pes: Path, cloth: str | None = None) -> dict:
     from . import analyze
     info = analyze.describe(pes)
-    findings = analyze.validate(info)
+    findings = analyze.validate(info, cloth=cloth)
     return {
         "width_mm": round(info.width_mm, 1), "height_mm": round(info.height_mm, 1),
         "stitches": info.real_stitches, "colours": info.thread_count,
@@ -454,7 +454,7 @@ def build_one(spec: dict, quiet: bool = False) -> dict:
         "inputs": [{"path": rel(p), "sha256": sha256(p)} for p in inputs if p.exists()],
         "output": {"path": rel(pes), "sha256": sha256(pes), "bytes": pes.stat().st_size},
         "toolchain": toolchain(),
-        "measured": measure(pes),
+        "measured": measure(pes, spec.get("cloth")),
     }
 
 

@@ -501,6 +501,37 @@ subtract --colour FFD400 --by FFFFFF    knock the eyes out of the body
 drop     --colour 000000                let the cloth supply the linework
 ```
 
+**NEVER stitch thread the colour of the cloth.** It costs stitches, machine time
+and a rethread and shows nothing. The risk is specific to inverted dark-cloth
+work: the whole technique is to **drop** the ink layer and let the fabric supply
+it, so a layer that failed to drop looks correct in every render and is
+invisible only on fabric. `validate` gained a `thread-matches-cloth` **error**,
+judged by CIELAB distance against `design_limits.min_thread_cloth_delta_e` (25)
+— perceptually, not by equality, because PES quantises every thread to the
+64-entry Brother palette on the way out, so a layer authored `#000000` is not
+the byte the file carries. It needs the spec's `cloth`; `stitch validate` looks
+the spec up by filename so `designs/out/*.pes` is checked with no extra typing.
+**This is a guard, not a calibrated limit** — there is no fabric evidence for a
+specific figure. The evidence that 25 is safe: the closest legitimate pair in
+this library is **70.2** and every other is 78+, so it can only fire on a layer
+that genuinely should have been dropped.
+
+**A `gap` channel takes its width off EVERY side, so it deletes narrow
+features.** MuffyHat's hat bracket is a 1.25 mm-wide gold shell; a 0.9 mm
+channel removes 1.8 mm and erased it, and on fabric the hole it left read as an
+**"L" printed on the hat**. `gap` now spares any shell the channel would take
+below `min_satin_width_mm`, leaving it whole and touching its neighbour, and
+says which ones. Backing the channel off to the widest that shell can afford was
+tried and is worse — at 0.42 mm the bracket kept 3.35 mm² of 13.27, a mutilated
+shape rather than a deleted one. **A feature too narrow to afford separation
+should simply not be separated.**
+
+*And the guard that missed it was counting.* `gap` compared shell counts before
+and after; the bracket vanished while another shell split in the same pass, so
+the count went 9 → 9 and nothing was reported. **Ask each shell whether IT
+survived** — a net count is not a survival check. Same error as guarding
+`widen-negative` on shells when the failure was holes merging.
+
 **Not every gap in the artwork is a white AREA — some are keylines, and emitting
 them as thread haloes the design.** Illustration for light paper routinely sets
 ink into a hairline gap in the colour beneath it so the paper reads as an

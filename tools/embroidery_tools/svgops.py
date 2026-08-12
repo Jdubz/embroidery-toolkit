@@ -207,8 +207,8 @@ def offset(doc, colour: str, mm: float, join: str = "round", **_):
     return f"offset #{a} by {mm:+.2f} mm, {before:,.0f} -> {after:,.0f} mm2{warn}"
 
 
-@op("gap", "gap --colour X --by Y --mm N   cut an N mm cloth channel out of X along Y")
-def gap(doc, colour: str, by: str, mm: float, **_):
+@op("gap", "gap --colour X --by Y --mm N [--min-keep N]   cut an N mm cloth channel out of X along Y")
+def gap(doc, colour: str, by: str, mm: float, min_keep: float = MIN_W, **_):
     """Open a channel of bare cloth between two colours that touch.
 
     Two colours drawn edge to edge do not stitch edge to edge. `svg_prep`'s pull
@@ -252,32 +252,57 @@ def gap(doc, colour: str, by: str, mm: float, **_):
         return (f"gap: #{a} and #{b} share only {contact:.1f} mm of boundary; "
                 "nothing to separate")
 
-    cutter = other.buffer(mm * doc.upm, quad_segs=8, join_style=JOINS["round"])
-    cut, emptied = 0.0, 0
-    shells_before = sum(len(G.polys(r.geom)) for r in targets)
+    def cutter_at(d: float):
+        return other.buffer(d * doc.upm, quad_segs=8, join_style=JOINS["round"])
+
+    def holds_thread(g) -> bool:
+        """Is there anywhere in `g` at least `min_keep` wide? Exact, via erosion."""
+        return not g.is_empty and not g.buffer(-min_keep / 2 * doc.upm).is_empty
+
+    cutter = cutter_at(mm)
+    cut = 0.0
+    spared: list[str] = []
     for r in list(targets):
-        after = r.geom.difference(cutter)
-        if after.area >= r.geom.area - 1e-9:
+        # PER SHELL, not per element. A channel takes the same width off every
+        # side of every feature, so a narrow one is consumed outright — and the
+        # element it belongs to is not empty, so nothing downstream notices.
+        # MuffyHat's hat bracket is a 1.25 mm-wide gold shell: a 0.9 mm channel
+        # removes 1.8 mm and deletes it. The gold shell count went 9 -> 9,
+        # because another shell split in the same pass and the net was zero, so
+        # a count-based guard reported nothing at all. Counting is not enough;
+        # each shell has to be asked whether IT survived.
+        pieces = []
+        for shell in G.polys(r.geom):
+            after = shell.difference(cutter)
+            if after.area >= shell.area - 1e-9:
+                pieces.append(shell)            # the channel never reaches it
+                continue
+            if holds_thread(after):
+                pieces.append(after)            # survives the cut
+                continue
+            # Leave it whole. Backing the channel off to the widest this shell
+            # can afford was tried and is worse: the channel eats a narrow
+            # feature from BOTH sides, so MuffyHat's 1.25 mm hat bracket kept
+            # only 3.35 mm2 of its 13.27 even at a 0.42 mm cut — a mutilated
+            # shape instead of a deleted one. A feature this narrow simply
+            # cannot afford separation, and touching its neighbour is a far
+            # smaller defect than not being there.
+            pieces.append(shell)
+            spared.append(f"{doc.mm2(shell):.1f} mm2 at {doc.at(shell)}")
+        keep = unary_union([p for p in pieces if not p.is_empty])
+        if keep.is_empty:
             continue
-        cut += doc.mm2(r.geom) - doc.mm2(after)
-        if after.is_empty:
-            doc.clear_paint(r)
-            emptied += 1
-        else:
-            doc.set_fill_geom(r, after)
+        cut += doc.mm2(r.geom) - doc.mm2(keep)
+        if keep.area < r.geom.area - 1e-9:
+            doc.set_fill_geom(r, keep)
     doc.rescan()
-    after_rs = doc.select(colour=a, kind="fill")
-    shells_after = sum(len(G.polys(r.geom)) for r in after_rs)
-    warn = ""
-    if shells_after != shells_before:
-        # A channel can sever a narrow limb, which no render at design size and
-        # no `validate` finding can see — the stitches stay perfect stitches of
-        # the wrong shape. Same guard as `offset`, for the same reason.
-        warn = (f"  WARNING #{a} split or merged: {shells_before} -> "
-                f"{shells_after} shell(s); check the preview")
-    tail = f", {emptied} region(s) emptied entirely" if emptied else ""
+    note = ""
+    if spared:
+        note = (f"; left {len(spared)} feature(s) UNCUT that the channel would "
+                f"have erased — they now touch #{b}: " + ", ".join(spared[:4])
+                + (", ..." if len(spared) > 4 else ""))
     return (f"cut a {mm:g} mm channel out of #{a} along {contact:.0f} mm of #{b}, "
-            f"{cut:,.1f} mm2{tail}{warn}")
+            f"{cut:,.1f} mm2{note}")
 
 
 @op("widen-negative",

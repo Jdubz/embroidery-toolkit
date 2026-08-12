@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pyembroidery as pe
 
+from . import palette
 from . import profile as prof
 
 SAFE_NAME = re.compile(r"^[A-Za-z0-9_-]+$")
@@ -279,10 +280,40 @@ def describe(path: str | Path, pattern: pe.EmbPattern | None = None) -> DesignIn
     return info
 
 
-def validate(info: DesignInfo, machine: dict | None = None) -> list[Finding]:
-    """Return every reason this design might not stitch out on the machine."""
+def validate(info: DesignInfo, machine: dict | None = None,
+             cloth: str | None = None) -> list[Finding]:
+    """Return every reason this design might not stitch out on the machine.
+
+    `cloth` is the fabric colour this design is stitched on, from its spec. Pass
+    it and the thread colours are checked against it; omit it and that one check
+    is skipped, because there is nothing in a .pes that records the fabric.
+    """
     machine = machine or prof.load()
     findings: list[Finding] = []
+
+    # Thread the colour of the cloth is thread you cannot see. It costs stitches,
+    # time and a rethread and contributes nothing, and on an inverted dark-cloth
+    # design it is a real risk: the whole technique is to DROP the ink layer and
+    # let the fabric supply it, so a layer that failed to drop looks fine
+    # everywhere except on the fabric.
+    #
+    # Judged by CIELAB distance rather than by equality, because "the same
+    # colour" is a perceptual claim and PES quantises every thread to the fixed
+    # 64-entry Brother palette on the way out — a layer authored as #000000 is
+    # not the byte the file ends up carrying.
+    if cloth:
+        limit = prof.design_limit("min_thread_cloth_delta_e", 25.0)
+        for t in info.threads:
+            d = palette.delta_e(t["hex"], cloth)
+            if d < limit:
+                findings.append(Finding(
+                    ERROR, "thread-matches-cloth",
+                    f"Thread {t['index']} ({t['hex']}) is the colour of the cloth "
+                    f"(#{cloth}) — CIELAB distance {d:.1f}, under the {limit:g} "
+                    f"this machine's profile calls distinguishable. It will not "
+                    f"be visible. Drop the layer and let the fabric supply it, or "
+                    f"change the thread.",
+                ))
 
     max_w, max_h = prof.max_field_mm(machine)
     if info.width_mm > max_w or info.height_mm > max_h:

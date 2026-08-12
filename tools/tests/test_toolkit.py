@@ -591,6 +591,48 @@ try:
 except ValueError as e:
     check("validate_spec requires the cloth colour",
           "cloth" in str(e) and "not a substitute" in str(e), str(e)[:120])
+
+# Thread the colour of the cloth is thread nobody sees: it costs stitches, time
+# and a rethread and shows nothing. It matters most on an inverted dark-cloth
+# design, where the whole technique is to DROP the ink layer — a layer that
+# failed to drop looks right everywhere except on the fabric.
+check("palette.delta_e: identical colours are zero apart",
+      palette.delta_e("112233", "#112233") < 1e-9)
+check("palette.delta_e: black and white are ~100 apart",
+      99 < palette.delta_e("000000", "FFFFFF") < 101,
+      f"{palette.delta_e('000000', 'FFFFFF'):.1f}")
+
+# PES, not DST: DST carries no colour data at all, so the threads come back
+# empty and the check has nothing to look at — which is itself the reason this
+# finding needs a real thread list rather than a filename convention.
+_cp = pe.EmbPattern()
+_ct = pe.EmbThread()
+_ct.set("#000000")
+_cp.add_thread(_ct)
+for _pt in ((0, 0), (0, 200), (200, 200), (200, 0)):
+    _cp.add_stitch_absolute(pe.STITCH, *_pt)
+_cp.end()
+_bw = TMP / "cloth.pes"
+pe.write(_cp, str(_bw))
+
+
+def _cloth_findings(cloth):
+    return [f for f in analyze.validate(analyze.describe(_bw), cloth=cloth)
+            if f.code == "thread-matches-cloth"]
+
+# The synthetic pattern's thread is pyembroidery's default black.
+check("thread the colour of the cloth is an ERROR",
+      len(_cloth_findings("141414")) == 1
+      and _cloth_findings("141414")[0].severity == analyze.ERROR,
+      str(_cloth_findings("141414")))
+check("and the message names the distance and what to do",
+      "Drop the layer" in _cloth_findings("141414")[0].message)
+check("black thread on white cloth is fine", not _cloth_findings("F2F0EB"))
+# A .pes records no fabric, so with nothing to compare the check must be skipped
+# rather than guessed — every design would otherwise flag against a default.
+check("no cloth means the check is skipped, not guessed",
+      not [f for f in analyze.validate(analyze.describe(_bw))
+           if f.code == "thread-matches-cloth"])
 check("false and null options are omitted entirely",
       "-ContourUnderlay" not in _a and "-LockStyle" not in _a, " ".join(_a))
 check("no skip argument when the spec skips nothing",
@@ -1605,6 +1647,28 @@ check("svgops: gap opens the declared channel between two colours",
 check("svgops: gap takes the channel only from the named colour",
       abs(doc.mm2(doc.geom_of("FFFFFF")) - 400) < 1.0,
       f"white {doc.mm2(doc.geom_of('FFFFFF')):.0f} mm2, expected 400")
+
+# A channel takes its width off EVERY side of every feature, so a narrow one is
+# consumed outright. MuffyHat's hat bracket is a 1.25 mm-wide gold shell and a
+# 0.9 mm channel removes 1.8 mm: it vanished, and read on fabric as an "L"
+# printed on the hat. The shell COUNT went 9 -> 9, because another shell split in
+# the same pass and the net was zero — so a count-based guard reported nothing.
+# Each shell has to be asked whether IT survived.
+NARROW = OPS / "narrow.svg"
+NARROW.write_text(
+    SVG_HDR + f'<path id="w" fill="#FFFFFF" d="{sq(0, 0, 20, 20)}"/>'
+            # a 1 mm-wide bar sharing an edge with the white, so a channel cut
+            # between them has to come out of the bar
+            + f'<path id="g" fill="#F6BE00" d="{sq(20, 5, 21, 15)}"/>'
+    + "</svg>", encoding="utf-8")
+doc = Doc.load(NARROW, 21.0)
+before = doc.mm2(doc.geom_of("F6BE00"))
+msg = svgops.OPS["gap"]["fn"](doc, colour="F6BE00", by="FFFFFF", mm=2.0)
+after = doc.mm2(doc.geom_of("F6BE00"))
+check("svgops: gap never erases a feature too narrow to afford the channel",
+      abs(after - before) < 1e-6, f"{before:.2f} -> {after:.2f} mm2; {msg}")
+check("svgops: and says which features it left uncut",
+      "UNCUT" in msg and "touch" in msg, msg)
 
 doc = Doc.load(TOUCHING, 40.0)
 msg = svgops.OPS["gap"]["fn"](doc, colour="F6BE00", by="FFFFFF", mm=0.0)

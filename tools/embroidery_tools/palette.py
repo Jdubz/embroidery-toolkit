@@ -60,6 +60,20 @@ def _to_lab(rgb: tuple[int, int, int]) -> tuple[float, float, float]:
     return (116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz))
 
 
+def delta_e(a: str | tuple[int, int, int], b: str | tuple[int, int, int]) -> float:
+    """CIE76 distance between two colours.
+
+    Used two ways here, and only one of them is a defect signal. Against the
+    Brother palette it is **preview fidelity only** — the machine cannot detect
+    what is on the spool, so a substitution is a label, never a stitching fault.
+    Against the CLOTH it is functional: thread that close to the fabric is
+    thread nobody will see.
+    """
+    la = _to_lab(parse_hex(a) if isinstance(a, str) else a)
+    lb = _to_lab(parse_hex(b) if isinstance(b, str) else b)
+    return sum((x - y) ** 2 for x, y in zip(la, lb)) ** 0.5
+
+
 def nearest(colour: str | tuple[int, int, int], count: int = 1) -> list[dict]:
     """Return the `count` closest Brother threads to a colour, nearest first."""
     rgb = parse_hex(colour) if isinstance(colour, str) else colour

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import glob
+import json
 import sys
 from pathlib import Path
 
@@ -116,6 +117,28 @@ def cmd_info(args) -> int:
     return 0
 
 
+def _cloth_for(path, args) -> str | None:
+    """The fabric colour to judge this file's threads against.
+
+    Explicit `--cloth` wins; otherwise look the design up by name in
+    `designs/specs/`. A .pes records no fabric, so without one of those the
+    thread-vs-cloth check has nothing to compare and is skipped rather than
+    guessed. Looking it up means `stitch validate designs/out/*.pes` checks
+    every design against its own cloth with no extra typing — a check nobody has
+    to remember is the only kind that runs.
+    """
+    if getattr(args, "cloth", None):
+        return args.cloth.lstrip("#")
+    try:
+        from . import build as B
+        spec_path = B.SPECS / f"{Path(path).stem}.json"
+        if spec_path.exists():
+            return json.loads(spec_path.read_text(encoding="utf-8")).get("cloth")
+    except Exception:                       # noqa: BLE001 - never block validate
+        pass
+    return None
+
+
 def cmd_validate(args) -> int:
     machine = prof.load()
     print(f"Validating against {prof.model_name(machine)} "
@@ -133,7 +156,7 @@ def cmd_validate(args) -> int:
             worst = analyze.ERROR
             continue
 
-        findings = analyze.validate(info, machine)
+        findings = analyze.validate(info, machine, cloth=_cloth_for(path, args))
         checked += 1
         level = analyze.worst_severity(findings)
         status = "OK" if level is None else level.upper()
@@ -749,6 +772,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("validate", help="check designs against the machine profile")
     s.add_argument("files", nargs="+")
+    s.add_argument("--cloth", metavar="RRGGBB",
+                   help="fabric colour to judge the thread colours against. "
+                        "Defaults to the design's spec if one exists; without "
+                        "either, that check is skipped rather than guessed.")
     s.set_defaults(func=cmd_validate)
 
     s = sub.add_parser("convert", help="convert a design to another format")
