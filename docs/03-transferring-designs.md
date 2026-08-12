@@ -22,7 +22,7 @@ the old one". It has bitten this project already.
 
 A wireless transfer lands in the **wireless function pocket**, which is a
 separate, temporary area. It does **not** overwrite anything in the machine's
-memory. So if you once saved `LemonY` to machine memory, that copy is still
+memory. So if you once saved `LemonCat_outline_on_yellow` to machine memory, that copy is still
 there, still selectable, and still the old geometry — a fresh transfer changes
 nothing about it.
 

@@ -69,18 +69,18 @@ One `<Name>.json` per design; the filename must match the `name` field.
 
 ```json
 {
-  "name": "Scream",
+  "name": "IHeartScreaming_on_white",
   "description": "what this design is, and anything a future reader needs",
   "prepare": {
     "tool": "svg_subpath_filter",
     "input": "art/originals/....svg",
-    "output": "art/prepared/Scream.svg",
+    "output": "art/prepared/IHeartScreaming_on_white.svg",
     "args": ["--artwork-mm", "87", "--drop-thin", "EE2028=1.0"],
     "why": "why these arguments, and which are constraints vs choices"
   },
   "build": {
     "tool": "svg_to_pes",
-    "input": "art/prepared/Scream.svg",
+    "input": "art/prepared/IHeartScreaming_on_white.svg",
     "artwork_mm": 87,
     "skip": [],
     "options": {},
@@ -92,9 +92,21 @@ One `<Name>.json` per design; the filename must match the `name` field.
 `prepare` is optional — a design whose artwork already clears the machine
 minimums builds straight from its original.
 
+`build.tool` is one of two:
+
+| | |
+|---|---|
+| `svg_to_pes` | vector source. Always better when you have one. `artwork_mm` is the width of the **drawing**. |
+| `inkstitch_pipeline` | raster source. Needs `options.Layer`, bottom layer first. `artwork_mm` is the width of the **canvas**, not the drawing — the ink has margin around it, so read the stitched size from the manifest. |
+
+A raster spec must also list the background colour in `skip`. `color_separate`
+assigns every pixel to the nearest declared colour, and treats whatever is in
+neither `layer` nor `skip` as background — so an undeclared cream background is
+simply assigned to the nearest thread and the whole canvas stitches solid.
+
 **Write the `why` fields.** They are the difference between a spec you can
 change safely and a spec nobody dares touch. Record which numbers are machine
-constraints and which are taste: on `Scream`, `--drop-thin` is a constraint
+constraints and which are taste: on `IHeartScreaming_on_white`, `--drop-thin` is a constraint
 (veins measured 0.40–0.80 mm against a 1.0 mm minimum) while `--drop-at` is a
 look choice (the forehead star measured 3.40 mm and would have stitched fine).
 
@@ -107,8 +119,16 @@ here. Proofs, renders and previews go to `build/`.
 ## `build/` — everything else generated
 
 `build/manifest.json` is the provenance record. `build/proofs/`,
-`build/reviews/` hold generated imagery. Deleting `build/` entirely is safe;
-`stitch build` recreates the manifest and the gates recreate the rest.
+`build/reviews/` hold generated imagery. `build/ops/` holds the operation logs
+`svg_edit` writes — one `<design>.ops.jsonl` per prepare step, replayable with
+`svg_edit --replay`. Deleting `build/` entirely is safe; `stitch build` recreates
+the manifest and the gates recreate the rest.
+
+The op logs are **records, not sources**. The spec's `prepare.args` is the
+declaration and the log is what actually ran; they agree because the log is
+written from the run. Keeping the log out of `art/prepared/` is deliberate —
+that directory holds exactly one generated derivative per spec, and `stitch
+audit` calls anything else there sprawl.
 
 ## `work/` — scratch
 
@@ -122,7 +142,7 @@ depends on it, and it can be emptied at any time.
 ```powershell
 .\stitch.ps1 build --check      # what would rebuild, and why
 .\stitch.ps1 build              # build everything stale
-.\stitch.ps1 build Scream       # build one
+.\stitch.ps1 build IHeartScreaming_on_white       # build one
 .\stitch.ps1 build --all        # rebuild regardless
 .\stitch.ps1 audit              # layout + provenance check
 ```

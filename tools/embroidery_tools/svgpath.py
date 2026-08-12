@@ -199,6 +199,53 @@ def parse_path(d: str, samples: int = 12) -> list[dict]:
 _NUM = r"-?\d*\.?\d+(?:[eE][-+]?\d+)?"
 
 
+def _ellipse(cx: float, cy: float, rx: float, ry: float, n: int) -> list[tuple[float, float]]:
+    return [(cx + rx * math.cos(2 * math.pi * i / n),
+             cy + ry * math.sin(2 * math.pi * i / n)) for i in range(n)]
+
+
+def parse_shape(tag: str, attrib: dict, samples: int = 12) -> list[dict] | None:
+    """Flatten ANY filled SVG shape into the subpath list `parse_path` returns.
+
+    Added because reading only `<path>` is a silent-partial-application bug
+    waiting to happen: LemonCat's prepared SVG draws its ear tufts as `<polygon>`
+    and its pupils as `<ellipse>`, both filled #000000, so a tool that walked
+    paths alone would report a black layer smaller than it is and would offset
+    part of it. `svg_prep` already stitches all of these, so anything measuring
+    or rewriting the same document has to see all of them too.
+
+    Returns None for a tag with no fillable interior, so a caller can tell
+    "not a shape" from "a shape enclosing no area" (which is `[]`).
+    """
+    def num(name: str, default: float = 0.0) -> float:
+        v = attrib.get(name)
+        try:
+            return float(v) if v not in (None, "") else default
+        except ValueError:                      # "12px", "50%" — units this
+            return default                      # module has no viewport for
+
+    if tag == "path":
+        return parse_path(attrib.get("d") or "", samples)
+    if tag in ("polygon", "polyline"):
+        vals = [float(t) for t in re.findall(_NUM, attrib.get("points") or "")]
+        pts = list(zip(vals[0::2], vals[1::2]))
+        return [{"points": pts, "curved": False, "closed": tag == "polygon"}] \
+            if len(pts) >= 3 else []
+    if tag == "rect":
+        if num("rx") or num("ry"):
+            raise ValueError("rounded <rect> is not supported; convert it to a path "
+                             "first (Inkscape: --actions=select-all;object-to-path)")
+        x, y, w, h = num("x"), num("y"), num("width"), num("height")
+        return [{"points": [(x, y), (x + w, y), (x + w, y + h), (x, y + h)],
+                 "curved": False, "closed": True}] if w > 0 and h > 0 else []
+    if tag in ("circle", "ellipse"):
+        rx = num("r") or num("rx")
+        ry = num("r") or num("ry")
+        return [{"points": _ellipse(num("cx"), num("cy"), rx, ry, max(16, samples * 4)),
+                 "curved": True, "closed": True}] if rx > 0 and ry > 0 else []
+    return None
+
+
 def parse_transform(s: str | None) -> tuple[float, float, float, float, float, float]:
     """Compose an SVG transform list into (a, b, c, d, e, f)."""
     m = (1.0, 0.0, 0.0, 1.0, 0.0, 0.0)

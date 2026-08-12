@@ -111,3 +111,34 @@ def width_mm(mask: np.ndarray, ppm: float, max_mm: float = SATURATE_MM) -> float
     """One representative width for a single shape: the median over its area."""
     w = widths_mm(mask, ppm, max_mm)
     return float(np.median(w)) if w.size else 0.0
+
+
+def frac_below_mm(mask: np.ndarray, ppm: float, width_mm_: float) -> float:
+    """Fraction of ink area whose local thickness is under `width_mm_`.
+
+    The same question `widths_mm(...) < w` answers, but at **one** radius
+    instead of sweeping every radius up to the saturation cap. `thickness_map`
+    exists to give a whole distribution; when the only question is "how much of
+    this is too thin", the sweep is thrown away — it is two distance transforms
+    of work, not fifty.
+
+    It is also the more accurate answer. The sweep steps radii by a whole pixel,
+    so it can only place a threshold on an even pixel count and quantises width
+    to 2 px; here the radius is `width/2` exactly, whatever that is in pixels.
+    So do NOT reimplement this as a percentile of `widths_mm` — the two disagree
+    by up to one quantum, and this one is right.
+
+    Returns 0.0 for an empty mask: nothing is too thin when there is nothing.
+    """
+    mask = mask.astype(bool)
+    n = int(mask.sum())
+    if not n:
+        return 0.0
+    r = width_mm_ / 2.0 * ppm
+    if r <= 0:
+        return 0.0
+    core = ndimage.distance_transform_edt(mask) >= r      # erosion by a disc
+    if not core.any():
+        return 1.0
+    reach = ndimage.distance_transform_edt(~core)         # dilation back out
+    return 1.0 - float((mask & (reach <= r)).sum()) / n

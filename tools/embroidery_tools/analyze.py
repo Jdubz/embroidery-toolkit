@@ -417,13 +417,24 @@ def validate(info: DesignInfo, machine: dict | None = None) -> list[Finding]:
                 f"wrongly or hide the file.",
             )
         )
-    if len(stem) > 8:
+    # This used to be a hard-coded 8 justified as "the design list truncates".
+    # No manual says so: a full-text search of all four finds no filename length
+    # rule, and the embroidery retrieve screen picks patterns from a thumbnail
+    # grid, not a name list — the settings screen has thumbnail size and
+    # thumbnail background options. Filenames only drive selection for .dst,
+    # which has no thumbnail. So the limit is a legibility guideline for the DDT
+    # list, it lives in the profile, and it is set where a descriptive name like
+    # LemonCat_outline_on_yellow does not trip it.
+    long_name = int((prof.load().get("usb") or {}).get("filename_long_chars", 32))
+    if len(stem) > long_name:
         findings.append(
             Finding(
                 INFO,
                 "filename-length",
-                f"'{stem}' is {len(stem)} characters. The design list truncates long "
-                f"names — a short name is easier to pick at the machine.",
+                f"'{stem}' is {len(stem)} characters, past the {long_name} this "
+                f"profile calls comfortable. Not a machine limit — patterns are "
+                f"chosen by thumbnail — but long names are awkward to scan in the "
+                f"Design Database Transfer list.",
             )
         )
 

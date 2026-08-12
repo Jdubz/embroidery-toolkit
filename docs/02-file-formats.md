@@ -199,11 +199,21 @@ A-Z  a-z  0-9  -  _
 ```
 
 Spaces, accents, emoji, and `#` will variously fail to display, display wrong, or
-hide the file. Long names get truncated in the on-screen list, so short and
-distinctive beats descriptive: `rose4x4.pes` scans better than
-`rose_design_final_v3_FIXED.pes`.
+hide the file.
 
-`stitch validate` flags both problems.
+**Length is not a machine constraint.** No manual states a filename limit, and
+the embroidery retrieve screen picks patterns from a thumbnail grid rather than a
+name list — the settings screen has entries for thumbnail size and thumbnail
+background colour (p.15). Filenames only drive selection for `.dst`, which
+carries no thumbnail and is shown by name alone. So descriptive beats terse:
+`LemonCat_solid_on_black.pes` tells you what to load; `rose4x4.pes` does not.
+
+> This page previously recommended the reverse and `stitch validate` enforced it
+> at 8 characters, which fired on every meaningful name. The threshold is now a
+> legibility guideline in `machine-profile.json` (`usb.filename_long_chars`).
+
+`stitch validate` flags the charset problem, and long names only past that
+guideline.
 
 ## Round-tripping
 

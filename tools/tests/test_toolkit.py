@@ -565,6 +565,72 @@ check("no skip argument when the spec skips nothing",
                                  "input": "a.svg", "artwork_mm": 91}},
                                  Path("a.svg"), Path("b.pes")))
 
+# The raster path. Same comma-joining rule, and here it is not merely silent:
+# PowerShell REFUSES a parameter given twice ("specified more than once"), so a
+# list option sent as repeated flags fails the build outright.
+_spec4 = {"name": "T", "build": {"tool": "inkstitch_pipeline",
+                                 "input": "a.webp", "artwork_mm": 75.8,
+                                 "skip": ["FAECCE"],
+                                 "options": {"Mode": "layered",
+                                             "Layer": ["E6B10C:fill", "25270A:auto"]}}}
+_a = BLD.ps_args(_spec4, Path("a.webp"), Path("b.pes"))
+check("raster builds call inkstitch_pipeline.ps1",
+      any(x.endswith("inkstitch_pipeline.ps1") for x in _a), " ".join(_a[:6]))
+check("raster builds pass the image as -Image, not -Svg",
+      "-Image" in _a and "-Svg" not in _a)
+check("artwork_mm becomes -WidthMm for a raster build",
+      _a[_a.index("-WidthMm") + 1] == "75.8")
+check("a list option travels as ONE comma-joined argument",
+      _a.count("-Layer") == 1 and _a[_a.index("-Layer") + 1] == "E6B10C:fill,25270A:auto",
+      " ".join(_a))
+check("an empty list option is omitted rather than sent blank",
+      "-Layer" not in BLD.ps_args(
+          {"name": "T", "build": {"tool": "inkstitch_pipeline", "input": "a.webp",
+                                  "artwork_mm": 80, "options": {"Layer": []}}},
+          Path("a.webp"), Path("b.pes")))
+
+# color_separate treats any colour in neither --layer nor --skip as background,
+# so a raster spec with no layers stitches nothing at all and says so nowhere.
+try:
+    BLD.validate_spec({"name": "T", "build": {"tool": "inkstitch_pipeline",
+                                              "input": "a.webp", "artwork_mm": 80}}, "T.json")
+    check("a raster spec with no Layer is rejected", False, "no error raised")
+except ValueError as exc:
+    check("a raster spec with no Layer is rejected", "options.Layer" in str(exc), str(exc))
+
+# One design may take a sibling's prepared derivative as its input. Filename
+# order satisfied that by accident until the designs were renamed —
+# IHeartScreaming_on_black sorts BEFORE _on_white, so alphabetical order would
+# have digitized the previous run's intermediate instead of failing.
+_producer = {"name": "Zebra", "prepare": {"tool": "t", "input": "art/originals/z.svg",
+                                          "output": "art/prepared/shared.svg"},
+             "build": {"tool": "svg_to_pes", "input": "art/prepared/shared.svg",
+                       "artwork_mm": 90}}
+_consumer = {"name": "Alpha", "prepare": {"tool": "t", "input": "art/prepared/shared.svg",
+                                          "output": "art/prepared/alpha.svg"},
+             "build": {"tool": "svg_to_pes", "input": "art/prepared/alpha.svg",
+                       "artwork_mm": 90}}
+_order = [s["name"] for s in BLD._in_dependency_order([_consumer, _producer])]
+check("a spec reading another's prepare output builds after it, whatever it is called",
+      _order == ["Zebra", "Alpha"], " -> ".join(_order))
+
+_indep = [{"name": n, "build": {"tool": "svg_to_pes", "input": f"{n}.svg", "artwork_mm": 90}}
+          for n in ("Cherry", "Apple", "Banana")]
+check("independent specs stay in filename order",
+      [s["name"] for s in BLD._in_dependency_order(_indep)] == ["Apple", "Banana", "Cherry"])
+
+_a = {"name": "A", "prepare": {"tool": "t", "input": "art/prepared/b.svg",
+                               "output": "art/prepared/a.svg"},
+      "build": {"tool": "svg_to_pes", "input": "art/prepared/a.svg", "artwork_mm": 90}}
+_b = {"name": "B", "prepare": {"tool": "t", "input": "art/prepared/a.svg",
+                               "output": "art/prepared/b.svg"},
+      "build": {"tool": "svg_to_pes", "input": "art/prepared/b.svg", "artwork_mm": 90}}
+try:
+    BLD._in_dependency_order([_a, _b])
+    check("a dependency cycle is reported, not silently ordered", False, "no error")
+except ValueError as exc:
+    check("a dependency cycle is reported, not silently ordered", "cycle" in str(exc))
+
 # A malformed spec must fail with the field named, before the prepare step has
 # written anything.
 for bad, want in [
@@ -978,6 +1044,712 @@ if out_svg.exists():
         f"{{{SVG_NS}}}metadata/{{{INK_NS}}}min_stitch_len_mm")
     check("merged document declares min_stitch_len_mm (it is what gets exported)",
           el is not None and float(el.text) == prof.min_stitch_mm())
+
+# --------------------------------------------------------------------------- #
+section("dark-cloth variants: recolor, knockout, invert")
+
+import subprocess  # noqa: E402
+
+from embroidery_tools import svgpath  # noqa: E402
+
+DARK = TMP / "dark"
+DARK.mkdir(exist_ok=True)
+
+
+def run_tool(name: str, *args) -> subprocess.CompletedProcess:
+    return subprocess.run([sys.executable, str(ROOT / f"{name}.py"), *[str(a) for a in args]],
+                          capture_output=True, text=True)
+
+
+# px per mm. PIL fills a polygon inclusively, so the residual error is one pixel
+# of perimeter — and the tolerances below have to stay well inside the smallest
+# defect being tested. At 8 px/mm the XOR-cancellation bug lands 27 mm2 from the
+# right answer, which is close enough to the discretisation error to slip past.
+EO_SCALE = 16.0
+
+
+def eo_area(d: str):
+    """Even-odd area of a polyline path, by XOR raster — the same test the
+    tools use, so a sign or nesting error shows up as area, not as a crash."""
+    subs = [s["points"] for s in svgpath.parse_path(d) if len(s["points"]) >= 3]
+    pts = [p for s in subs for p in s]
+    w = int(max(p[0] for p in pts) * EO_SCALE) + 4
+    h = int(max(p[1] for p in pts) * EO_SCALE) + 4
+    acc = np.zeros((h, w), bool)
+    for s in subs:
+        img = Image.new("1", (w, h), 0)
+        ImageDraw.Draw(img).polygon(
+            [(x * EO_SCALE + 2, y * EO_SCALE + 2) for x, y in s], fill=1)
+        acc ^= np.asarray(img, bool)
+    return float(acc.sum()) / EO_SCALE**2, acc
+
+
+def box(mask, x0, y0, x1, y1):
+    """The mm rectangle (x0,y0)-(x1,y1) of an eo_area mask."""
+    return mask[int(y0 * EO_SCALE) + 2:int(y1 * EO_SCALE) + 2,
+                int(x0 * EO_SCALE) + 2:int(x1 * EO_SCALE) + 2]
+
+
+def sq(x0, y0, x1, y1) -> str:
+    return f"M {x0} {y0} L {x1} {y0} L {x1} {y1} L {x0} {y1} Z"
+
+
+SVG_HDR = ('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+           'viewBox="0 0 100 100">')
+
+# --- svg_recolor ----------------------------------------------------------- #
+src = DARK / "recolor_in.svg"
+src.write_text(f'{SVG_HDR}<g stroke="#000000"><path id="a" d="{sq(10, 10, 40, 40)}" '
+               f'fill="#000000"/><path id="b" d="{sq(50, 50, 90, 90)}" fill="#FF0000" '
+               'style="stroke:#000000"/></g></svg>', encoding="utf-8")
+
+dst = DARK / "recolor_out.svg"
+r = run_tool("svg_recolor", src, dst, "--map", "000000=FFFFFF")
+check("svg_recolor: succeeds", r.returncode == 0, r.stderr[-200:])
+if dst.exists():
+    txt = dst.read_text(encoding="utf-8")
+    check("svg_recolor: remaps fill", 'fill="#FFFFFF"' in txt)
+    check("svg_recolor: remaps a stroke inherited from a <g>",
+          'stroke="#FFFFFF"' in txt)
+    check("svg_recolor: remaps paint inside style=", "stroke:#FFFFFF" in txt)
+    check("svg_recolor: leaves unmapped colours alone", 'fill="#FF0000"' in txt)
+
+# A remap matching nothing means the design keeps the colour you meant to change.
+r = run_tool("svg_recolor", src, DARK / "x.svg", "--map", "123456=FFFFFF")
+check("svg_recolor: refuses a map that matches nothing", r.returncode != 0)
+r = run_tool("svg_recolor", src, DARK / "x.svg", "--map", "notahex=FFFFFF")
+check("svg_recolor: refuses malformed hex rather than guessing", r.returncode != 0)
+
+# PES merges adjacent blocks sharing a colour: two layers onto one hex is one
+# stop and one pass, not two. It may be intended, but it must never be silent.
+r = run_tool("svg_recolor", src, DARK / "merge.svg", "--map", "FF0000=000000")
+check("svg_recolor: warns when a remap collapses two colours into one",
+      "WARNING" in r.stdout and "merges" in r.stdout, r.stdout[-200:])
+
+# --- svg_knockout ---------------------------------------------------------- #
+# The LemonB bug: a light shape drawn OVER a darker fill is stitched UNDER it,
+# because svg_prep orders by luminance and not by document order.
+src = DARK / "knock_in.svg"
+src.write_text(f'{SVG_HDR}<path id="body" d="{sq(0, 0, 100, 100)}" fill="#FFD400"/>'
+               f'<path id="eye" d="{sq(20, 20, 40, 40)}" fill="#FFFFFF"/></svg>',
+               encoding="utf-8")
+dst = DARK / "knock_out.svg"
+r = run_tool("svg_knockout", src, dst, "--knock", "FFFFFF=FFD400")
+check("svg_knockout: succeeds", r.returncode == 0, r.stderr[-200:])
+if dst.exists():
+    root = ET.parse(dst).getroot()
+    body = next(p for p in root.iter(f"{{{SVG_NS}}}path") if p.get("id") == "body")
+    check("svg_knockout: host becomes even-odd", body.get("fill-rule") == "evenodd")
+    area, _ = eo_area(body.get("d"))
+    # 100x100 minus the 20x20 eye. If the hole were merely appended without
+    # even-odd, or appended with the same winding, this stays 10,000.
+    check("svg_knockout: the punched area is really gone from the host",
+          abs(area - (10000 - 400)) < 25, f"{area:.0f} mm2, expected ~9600")
+    eye = next(p for p in root.iter(f"{{{SVG_NS}}}path") if p.get("id") == "eye")
+    check("svg_knockout: the punch itself stays stitchable", eye.get("d") is not None)
+
+# Registration, not validity: a punch outside its host parses and renders fine.
+src2 = DARK / "knock_bad.svg"
+src2.write_text(f'{SVG_HDR}<path d="{sq(0, 0, 30, 30)}" fill="#FFD400"/>'
+                f'<path d="{sq(60, 60, 80, 80)}" fill="#FFFFFF"/></svg>', encoding="utf-8")
+r = run_tool("svg_knockout", src2, DARK / "x.svg", "--knock", "FFFFFF=FFD400")
+check("svg_knockout: refuses a punch that is not inside its host", r.returncode != 0)
+r = run_tool("svg_knockout", src, DARK / "x.svg", "--knock", "00FF00=FFD400")
+check("svg_knockout: refuses a punch colour that is absent", r.returncode != 0)
+
+# --- svg_dark_invert ------------------------------------------------------- #
+# One hole over bare cloth, one over green, and a hole->island->hole nest.
+ink = " ".join([
+    sq(0, 0, 100, 100),        # depth 0, the ink mass
+    sq(10, 10, 30, 30),        # depth 1, over nothing      -> recovered
+    sq(60, 10, 80, 30),        # depth 1, over green        -> left alone
+    sq(10, 60, 40, 90),        # depth 1, over nothing      -> recovered
+    sq(18, 68, 32, 82),        # depth 2, island inside it  -> hole in the white
+    sq(22, 72, 28, 78),        # depth 3, inside the island -> white again
+])
+src = DARK / "invert_in.svg"
+src.write_text(f'{SVG_HDR}<path d="{sq(55, 5, 85, 35)}" fill="#73B236"/>'
+               f'<path d="{ink}" fill="#000000" fill-rule="evenodd"/></svg>',
+               encoding="utf-8")
+dst = DARK / "invert_out.svg"
+r = run_tool("svg_dark_invert", src, dst, "--artwork-mm", "100",
+             "--ink", "000000", "--thread", "FFFFFF")
+check("svg_dark_invert: succeeds", r.returncode == 0, r.stderr[-300:])
+if dst.exists():
+    root = ET.parse(dst).getroot()
+    fills = {p.get("fill"): p for p in root.iter(f"{{{SVG_NS}}}path")}
+    check("svg_dark_invert: drops the ink layer by default", "#000000" not in fills)
+    check("svg_dark_invert: keeps the other colours", "#73B236" in fills)
+    check("svg_dark_invert: adds the recovered layer", "#FFFFFF" in fills)
+    if "#FFFFFF" in fills:
+        area, mask = eo_area(fills["#FFFFFF"].get("d"))
+        # 400 (plain hole) + 900 - 196 + 36 (the nest). A hole over green would
+        # add 400 more; re-emitting the depth-3 subpath top-level would XOR its
+        # 36 back out. Both failure modes are visible here and nowhere else.
+        check("svg_dark_invert: recovers exactly the bare-cloth area",
+              abs(area - 1140) < 15, f"{area:.0f} mm2, expected 1140 "
+              "(1108 means the depth-3 subpath was emitted twice and XORed out)")
+        check("svg_dark_invert: leaves the hole that sits over another colour",
+              not box(mask, 62, 12, 78, 28).any(), "white was stitched under the green")
+        check("svg_dark_invert: the island inside a recovered hole stays bare",
+              not box(mask, 19, 69, 21, 71).any())
+        check("svg_dark_invert: a hole inside that island is recovered again",
+              box(mask, 24, 74, 26, 76).all())
+
+r = run_tool("svg_dark_invert", src, DARK / "x.svg", "--artwork-mm", "100",
+             "--ink", "000000", "--thread", "73B236")
+check("svg_dark_invert: refuses a thread colour already in the document",
+      r.returncode != 0)
+
+r = run_tool("svg_dark_invert", src, DARK / "keep.svg", "--artwork-mm", "100",
+             "--ink", "000000", "--keep-ink")
+if r.returncode == 0:
+    kept = {p.get("fill") for p in ET.parse(DARK / "keep.svg").getroot().iter(f"{{{SVG_NS}}}path")}
+    check("svg_dark_invert: --keep-ink keeps the ink layer", "#000000" in kept)
+
+# Re-emitting curves as polylines would silently flatten them, and nothing
+# downstream can tell a deliberately faceted curve from a damaged one.
+curved = DARK / "invert_curved.svg"
+curved.write_text(f'{SVG_HDR}<path d="M 10 10 C 20 0 40 0 50 10 L 50 50 L 10 50 Z" '
+                  'fill="#000000"/></svg>', encoding="utf-8")
+r = run_tool("svg_dark_invert", curved, DARK / "x.svg", "--artwork-mm", "100",
+             "--ink", "000000")
+check("svg_dark_invert: refuses curved artwork rather than flattening it",
+      r.returncode != 0 and "curved" in (r.stdout + r.stderr))
+
+# --------------------------------------------------------------------------- #
+section("shape parsing beyond <path>")
+
+# Reading only <path> is a silent-partial-application bug: LemonCat's prepared
+# SVG draws ear tufts as <polygon> and pupils as <ellipse>, both filled #000000.
+# A tool that walked paths alone would report that layer smaller than it is and
+# would offset only part of it, which validate and coverage cannot see.
+subs = svgpath.parse_shape("polygon", {"points": "0,0 10,0 10,10 0,10"})
+check("parse_shape: polygon becomes one closed subpath",
+      subs is not None and len(subs) == 1 and subs[0]["closed"]
+      and len(subs[0]["points"]) == 4)
+
+subs = svgpath.parse_shape("circle", {"cx": "5", "cy": "5", "r": "3"})
+xs = [p[0] for p in subs[0]["points"]]
+check("parse_shape: circle spans 2r", abs((max(xs) - min(xs)) - 6.0) < 0.1,
+      f"{max(xs) - min(xs)}")
+
+subs = svgpath.parse_shape("ellipse", {"cx": "0", "cy": "0", "rx": "4", "ry": "2"})
+ys = [p[1] for p in subs[0]["points"]]
+check("parse_shape: ellipse honours rx and ry separately",
+      abs((max(ys) - min(ys)) - 4.0) < 0.1)
+
+subs = svgpath.parse_shape("rect", {"x": "1", "y": "2", "width": "10", "height": "4"})
+check("parse_shape: rect becomes its four corners",
+      len(subs[0]["points"]) == 4 and subs[0]["points"][2] == (11.0, 6.0))
+
+try:
+    svgpath.parse_shape("rect", {"width": "10", "height": "4", "rx": "2"})
+    check("parse_shape: rounded rect raises rather than squaring the corners", False)
+except ValueError:
+    check("parse_shape: rounded rect raises rather than squaring the corners", True)
+
+# None and [] must stay distinguishable: "not a fillable shape" is not the same
+# answer as "a shape enclosing no area", and a caller decides differently.
+check("parse_shape: returns None for a tag with no fillable interior",
+      svgpath.parse_shape("line", {"x1": "0", "y1": "0", "x2": "5", "y2": "5"}) is None)
+check("parse_shape: returns [] for a degenerate shape",
+      svgpath.parse_shape("rect", {"width": "0", "height": "4"}) == [])
+
+# --------------------------------------------------------------------------- #
+section("thin-area fraction")
+
+from embroidery_tools import measure  # noqa: E402
+
+# A 16 px bar at 10 px/mm is 1.6 mm wide under the width = 2*edt convention.
+bar = np.zeros((60, 200), bool)
+bar[20:36, 10:190] = True
+check("frac_below_mm: nothing is thin below the bar's own width",
+      measure.frac_below_mm(bar, 10.0, 1.45) < 0.05,
+      f"{measure.frac_below_mm(bar, 10.0, 1.45):.3f}")
+check("frac_below_mm: everything is thin above it",
+      measure.frac_below_mm(bar, 10.0, 1.75) > 0.95,
+      f"{measure.frac_below_mm(bar, 10.0, 1.75):.3f}")
+
+# The reason this exists rather than thresholding widths_mm: thickness_map steps
+# radii by one pixel, so every width it can report is a multiple of 2 px —
+# 0.2 mm here. 1.45 and 1.75 fall strictly between two of those steps, so no
+# percentile of the swept distribution can separate them, while an erosion at
+# exactly target/2 px can.
+w = measure.widths_mm(bar, 10.0, max_mm=4.0)
+steps = sorted(set(np.round(w, 6)))
+check("frac_below_mm: the swept distribution only lands on 2 px multiples",
+      all(abs(v / 0.2 - round(v / 0.2)) < 1e-6 for v in steps),
+      f"{steps[:5]}")
+check("frac_below_mm: the bar's own width is the 1.6 mm the convention implies",
+      abs(float(np.median(w)) - 1.6) < 1e-6, f"{float(np.median(w))}")
+
+check("frac_below_mm: an empty mask has no thin area",
+      measure.frac_below_mm(np.zeros((10, 10), bool), 10.0, 1.0) == 0.0)
+
+# --------------------------------------------------------------------------- #
+section("svg_offset / svg_stroke")
+
+OFF = TMP / "offset"
+OFF.mkdir(exist_ok=True)
+
+# Ink spans x 10..90, so --artwork-mm 80 makes one user unit exactly one mm and
+# every number below can be checked by hand.
+OFF_SRC = OFF / "in.svg"
+OFF_SRC.write_text(
+    SVG_HDR
+    + '<path id="thin" d="M 10 10 L 90 10 L 90 10.6 L 10 10.6 Z" fill="#111111"/>'
+    + '<path id="pair" d="M 10 20 L 90 20 L 90 21 L 10 21 Z '
+      'M 10 21.8 L 90 21.8 L 90 22.8 L 10 22.8 Z" fill="#222222"/>'
+    + '<path id="holed" fill-rule="evenodd" d="M 10 30 L 30 30 L 30 50 L 10 50 Z '
+      'M 19 39 L 21 39 L 21 41 L 19 41 Z" fill="#333333"/>'
+    + '<polygon id="tuft" points="40,60 50,60 45,70" fill="#555555"/>'
+    + "</svg>", encoding="utf-8")
+MM = ("--artwork-mm", "80")
+
+
+def off_paths(p: Path) -> dict:
+    """Every path in an output file, by fill colour."""
+    return {el.get("fill"): el for el in ET.parse(p).getroot().iter(f"{{{SVG_NS}}}path")}
+
+
+def off_bbox(d: str) -> tuple[float, float, float, float]:
+    """Exact bounds of an offset result — the crispest check there is.
+
+    Area has to be measured through `eo_area`'s raster, which over-reports by
+    about one pixel along the perimeter (~4 mm2 on a 164 mm outline at 16 px/mm)
+    and so can only carry a loose tolerance. The bounding box of a Minkowski sum
+    is exact arithmetic: growing by r moves every extreme out by exactly r.
+    """
+    pts = [pt for s in svgpath.parse_path(d) for pt in s["points"]]
+    return (min(p[0] for p in pts), min(p[1] for p in pts),
+            max(p[0] for p in pts), max(p[1] for p in pts))
+
+
+r = run_tool("svg_offset", OFF_SRC, OFF / "rep.svg", *MM, "--report")
+check("svg_offset: --report succeeds and sees every colour",
+      r.returncode == 0 and all(c in r.stdout for c in ("#111111", "#555555")),
+      r.stderr[-200:])
+
+# A 0.6 x 80 mm bar grown 0.3 mm all round: 48 -> 80.6*1.2 + pi*0.09 = 96.7 mm2.
+dst = OFF / "grow.svg"
+r = run_tool("svg_offset", OFF_SRC, dst, *MM, "--grow", "111111=0.3")
+check("svg_offset: grows a thin bar", r.returncode == 0, r.stderr[-300:])
+if dst.exists():
+    d = off_paths(dst)["#111111"].get("d")
+    bb = off_bbox(d)
+    check("svg_offset: every extreme moves out by exactly the offset",
+          max(abs(a - b) for a, b in zip(bb, (9.7, 9.7, 90.3, 10.9))) < 0.005,
+          f"{tuple(round(v, 3) for v in bb)}")
+    # Minkowski sum of an 80 x 0.6 rectangle with a 0.3 disc:
+    # 80*0.6 + 2*0.3*80.6 + pi*0.3^2 = 96.64. eo_area reads ~4 mm2 high, being
+    # one pixel of a 164 mm perimeter at 16 px/mm.
+    area, _ = eo_area(d)
+    check("svg_offset: grown area matches the Minkowski sum",
+          abs(area - 96.64) < 6.0, f"{area:.1f} mm2, expected 96.6 +/- raster bias")
+
+# Two 1 mm bars 0.8 mm apart merge into one when each grows 0.5 mm. Invisible in
+# a render at design size, invisible to validate — so it must be an error.
+dst = OFF / "merged.svg"
+r = run_tool("svg_offset", OFF_SRC, dst, *MM, "--grow", "222222=0.5")
+check("svg_offset: refuses a grow that merges two shapes",
+      r.returncode != 0 and "topology" in (r.stdout + r.stderr))
+check("svg_offset: writes nothing when it refuses", not dst.exists())
+
+r = run_tool("svg_offset", OFF_SRC, dst, *MM, "--grow", "222222=0.5",
+             "--allow-topology-change")
+check("svg_offset: --allow-topology-change lets the merge through",
+      r.returncode == 0 and dst.exists(), r.stderr[-300:])
+
+# A 2 mm hole closes when the shape around it grows 1.1 mm.
+r = run_tool("svg_offset", OFF_SRC, OFF / "closed.svg", *MM, "--grow", "333333=1.1")
+check("svg_offset: refuses a grow that closes a hole",
+      r.returncode != 0 and "hole" in (r.stdout + r.stderr))
+
+# ...and a smaller grow must leave it open. Even-odd has to survive the round
+# trip through Shapely, or the hole silently fills with thread.
+dst = OFF / "hole_kept.svg"
+r = run_tool("svg_offset", OFF_SRC, dst, *MM, "--grow", "333333=0.2")
+check("svg_offset: a grow that clears the hole succeeds", r.returncode == 0,
+      r.stderr[-300:])
+if dst.exists():
+    area, mask = eo_area(off_paths(dst)["#333333"].get("d"))
+    check("svg_offset: the hole is still a hole", not box(mask, 19.8, 39.8, 20.2, 40.2).any())
+    # Outer 20x20 grown 0.2: 400 + 2*0.2*40 + pi*0.04 = 416.13. The 2x2 hole
+    # erodes to 1.6x1.6 less its rounded corners: 2.56 - (4-pi)*0.04 = 2.53.
+    check("svg_offset: holed area matches the Minkowski sum",
+          abs(area - 413.6) < 6.0, f"{area:.1f} mm2, expected 413.6 +/- raster bias")
+
+dst = OFF / "shrunk.svg"
+r = run_tool("svg_offset", OFF_SRC, dst, *MM, "--grow", "333333=-0.2")
+if r.returncode == 0 and dst.exists():
+    area, _ = eo_area(off_paths(dst)["#333333"].get("d"))
+    check("svg_offset: a negative grow shrinks", area < 396.0, f"{area:.1f} mm2")
+
+# An offset ellipse is not an ellipse. Leaving the tag alone would keep the old
+# geometry attributes and a renderer would draw the shape it used to be.
+dst = OFF / "tuft.svg"
+r = run_tool("svg_offset", OFF_SRC, dst, *MM, "--grow", "555555=0.3")
+if r.returncode == 0 and dst.exists():
+    root_ = ET.parse(dst).getroot()
+    check("svg_offset: an offset polygon is retagged as a path",
+          not list(root_.iter(f"{{{SVG_NS}}}polygon")) and "#555555" in off_paths(dst))
+
+# Geometry in the wrong place still renders as a plausible drawing and still
+# stitches — the vtracer registration bug. Refused rather than ignored.
+tf = OFF / "transformed.svg"
+tf.write_text(SVG_HDR + '<g transform="scale(2)"><path d="M 10 10 L 90 10 L 90 12 '
+              'L 10 12 Z" fill="#111111"/></g></svg>', encoding="utf-8")
+r = run_tool("svg_offset", tf, OFF / "x.svg", *MM, "--grow", "111111=0.3")
+check("svg_offset: refuses a transform rather than offsetting in the wrong frame",
+      r.returncode != 0 and "transform" in (r.stdout + r.stderr))
+
+# --- svg_stroke ------------------------------------------------------------ #
+r = run_tool("svg_stroke", OFF_SRC, OFF / "s_thin.svg", *MM, "--stroke", "333333=0.7")
+check("svg_stroke: refuses a stroke below the satin minimum",
+      r.returncode != 0 and "minimum" in (r.stdout + r.stderr))
+
+r = run_tool("svg_stroke", OFF_SRC, OFF / "s_thin.svg", *MM,
+             "--stroke", "333333=0.7", "--allow-thin")
+check("svg_stroke: --allow-thin overrides it", r.returncode == 0, r.stderr[-300:])
+
+dst = OFF / "s_key.svg"
+r = run_tool("svg_stroke", OFF_SRC, dst, *MM, "--stroke", "333333=1.4:EE2028")
+check("svg_stroke: strokes in another colour", r.returncode == 0, r.stderr[-300:])
+if dst.exists():
+    el = off_paths(dst)["#333333"]
+    # One user unit is one mm here, so the written width is the requested one.
+    check("svg_stroke: stroke-width is written in user units",
+          abs(float(el.get("stroke-width")) - 1.4) < 1e-6, el.get("stroke-width"))
+    check("svg_stroke: stroke colour is the one asked for", el.get("stroke") == "#EE2028")
+    check("svg_stroke: a new colour is called out",
+          "new colour" in r.stdout and "#EE2028" in r.stdout)
+
+# style beats a presentation attribute in a renderer and loses in svg_prep.prop,
+# so leaving a stale declaration behind makes the render and the stitch file
+# disagree about a colour — and the render is what gets trusted.
+styled = OFF / "styled.svg"
+styled.write_text(SVG_HDR + '<path d="M 10 10 L 90 10 L 90 30 L 10 30 Z" '
+                  'fill="#333333" style="stroke:none;fill-opacity:1"/></svg>',
+                  encoding="utf-8")
+dst = OFF / "s_style.svg"
+r = run_tool("svg_stroke", styled, dst, *MM, "--stroke", "333333=1.4")
+if r.returncode == 0 and dst.exists():
+    el = off_paths(dst)["#333333"]
+    check("svg_stroke: clears a conflicting style declaration",
+          "stroke" not in (el.get("style") or "") and el.get("stroke") == "#333333",
+          f"style={el.get('style')!r} stroke={el.get('stroke')!r}")
+    check("svg_stroke: leaves unrelated style declarations alone",
+          "fill-opacity" in (el.get("style") or ""))
+
+# --------------------------------------------------------------------------- #
+section("svgdoc / svgops: atomic operations")
+
+from embroidery_tools import svgops  # noqa: E402
+from embroidery_tools.svgdoc import Doc  # noqa: E402
+
+OPS = TMP / "ops"
+OPS.mkdir(exist_ok=True)
+
+# A group-level stroke, which is how LemonCat is drawn. Body 0..60 wide with a
+# 4-unit stroke gives a 64-unit bbox, so --artwork-mm 64 makes one unit one mm.
+GROUPED = OPS / "grouped.svg"
+GROUPED.write_text(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+    'viewBox="-10 -10 100 100"><g stroke="#000000" stroke-width="4">'
+    f'<path id="body" d="{sq(0, 0, 60, 40)}" fill="#FFD400"/>'
+    f'<path id="mark" d="{sq(20, 10, 40, 14)}" fill="#000000" stroke="none"/>'
+    "</g></svg>", encoding="utf-8")
+
+doc = Doc.load(GROUPED, 64.0)
+check("svgdoc: resolves a stroke declared on an ancestor <g>",
+      any(r.kind == "stroke" and r.colour == "000000" for r in doc.regions))
+# SVG's initial stroke is `none`, unlike fill. Defaulting it to black gave every
+# unstroked element a phantom hairline and invented 22 cloth pockets from nothing.
+check("svgdoc: an explicit stroke=none makes no phantom stroke region",
+      len([r for r in doc.regions if r.kind == "stroke"]) == 1,
+      f"{[(r.colour, r.kind) for r in doc.regions]}")
+check("svgdoc: one element yields both a fill and a stroke region",
+      len([r for r in doc.regions if r.el.get('id') == 'body']) == 2)
+
+before_black = doc.mm2(doc.geom_of("000000"))
+svgops.OPS["subtract"]["fn"](doc, colour="FFD400", by="000000")
+# `d` is shared by an element's fill and its stroke, so reshaping the fill drags
+# the outline with it — the body's own keyline came to re-trace every internal
+# cut, tripling the black region and over-cutting the next layer.
+check("svgops: subtract does not inflate the cutting colour",
+      abs(doc.mm2(doc.geom_of("000000")) - before_black) < 1.0,
+      f"black {before_black:.0f} -> {doc.mm2(doc.geom_of('000000')):.0f} mm2")
+check("svgops: the stroke survives the fill being reshaped",
+      any(r.kind == "stroke" and r.colour == "000000" for r in doc.regions))
+
+# A whole layer in ONE path is the normal case, not the exception: PissMuffy's
+# 29 letters, eyes, brows and mouth share a single <path>, so an element-level
+# filter matches the centroid of the entire design and selects nothing.
+BANDED = OPS / "banded.svg"
+BANDED.write_text(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+    'viewBox="0 0 100 100">'
+    f'<path id="both" fill="#000000" d="{sq(0, 0, 20, 10)} {sq(0, 80, 20, 90)}"/>'
+    "</svg>", encoding="utf-8")
+doc = Doc.load(BANDED, 20.0)
+check("svgdoc: two disjoint subpaths are one region", len(doc.regions) == 1)
+svgops.OPS["recolour"]["fn"](doc, colour="000000", to="FFFFFF", band=(0.0, 20.0))
+cols = doc.colours()
+check("svgops: --band splits one element by COMPONENT",
+      abs(cols.get("FFFFFF", 0) - 200) < 5 and abs(cols.get("000000", 0) - 200) < 5,
+      f"{ {k: round(v) for k, v in cols.items()} }")
+
+doc = Doc.load(BANDED, 20.0)
+try:
+    svgops.OPS["recolour"]["fn"](doc, colour="000000", to="FFFFFF", band=(40.0, 60.0))
+    check("svgops: a band matching nothing is an error, not a silent no-op", False)
+except SystemExit:
+    check("svgops: a band matching nothing is an error, not a silent no-op", True)
+
+# Dropped on GROUPED rather than BANDED: `mark` is black-only and must vanish,
+# while `body` carries a black stroke AND a yellow fill and must survive with
+# just the stroke removed. Absent `fill` means black and absent `stroke` means
+# none — reading those the same way leaves emptied elements painting black.
+doc = Doc.load(GROUPED, 64.0)
+svgops.OPS["drop"]["fn"](doc, colour="000000")
+ids = {el.get("id") for el in doc.tree.getroot().iter(f"{{{SVG_NS}}}path")}
+check("svgops: drop removes an element whose only paint is gone", "mark" not in ids)
+check("svgops: drop keeps an element that still has another paint", "body" in ids)
+check("svgops: drop leaves no black behind", "000000" not in doc.colours())
+
+# --- end to end through the driver ----------------------------------------- #
+dst = OPS / "out.svg"
+# --log-dir keeps the test out of the repo's build/. Without it the log defaults
+# to build/ops/, which is right for a real build and wrong for a test run.
+r = run_tool("svg_edit", GROUPED, dst, "--artwork-mm", "64", "--log-dir", OPS,
+             "--op", "subtract --colour FFD400 --by 000000",
+             "--op", "drop --colour 000000")
+check("svg_edit: applies a sequence", r.returncode == 0, r.stderr[-300:])
+log = OPS / (dst.stem + ".ops.jsonl")
+check("svg_edit: writes an op log", log.exists(), str(log))
+
+if log.exists():
+    dst2 = OPS / "replay.svg"
+    r = run_tool("svg_edit", GROUPED, dst2, "--artwork-mm", "64",
+                 "--log-dir", OPS, "--replay", log)
+    # The log IS the declaration; if replay drifted it would be worthless as one.
+    check("svg_edit: --replay reproduces the output byte for byte",
+          r.returncode == 0 and dst2.exists()
+          and dst2.read_bytes() == dst.read_bytes(), r.stderr[-200:])
+
+r = run_tool("svg_edit", GROUPED, OPS / "x.svg", "--artwork-mm", "64",
+             "--op", "subtract --colour ABCDEF --by 000000")
+check("svg_edit: an op matching nothing fails loudly",
+      r.returncode != 0 and "ABCDEF" in (r.stdout + r.stderr))
+
+r = run_tool("svg_edit", GROUPED, OPS / "x.svg", "--artwork-mm", "64",
+             "--op", "nosuchop --colour 000000")
+check("svg_edit: an unknown op names the ones that exist",
+      r.returncode != 0 and "subtract" in (r.stdout + r.stderr))
+
+# --- gap and widen-negative: the two dark-cloth stitch-out defects ---------- #
+# Both answer MuffyHat_on_black coming off the machine (photos/PXL_20260812_
+# 064352867.jpg) with the white hat and the gold body reading as one pale mass
+# and the knocked-out SOUR PUSS barely legible. Both were clean in `validate`,
+# solid in `stitch proof` and invisible in `stitch render` at design size.
+
+# Two 20 mm bars sharing an edge at x=20, one unit per mm.
+TOUCHING = OPS / "touching.svg"
+TOUCHING.write_text(
+    SVG_HDR + f'<path id="a" fill="#FFFFFF" d="{sq(0, 0, 20, 20)}"/>'
+            + f'<path id="b" fill="#F6BE00" d="{sq(20, 0, 40, 20)}"/>'
+    + "</svg>", encoding="utf-8")
+doc = Doc.load(TOUCHING, 40.0)
+white, gold = doc.geom_of("FFFFFF"), doc.geom_of("F6BE00")
+check("svgops: two colours drawn edge to edge start at zero distance",
+      white.distance(gold) < 1e-6)
+svgops.OPS["gap"]["fn"](doc, colour="F6BE00", by="FFFFFF", mm=0.8)
+sep = doc.geom_of("FFFFFF").distance(doc.geom_of("F6BE00")) / doc.upm
+check("svgops: gap opens the declared channel between two colours",
+      abs(sep - 0.8) < 0.05, f"{sep:.3f} mm apart")
+# The channel comes out of ONE colour: cutting both would move both silhouettes.
+check("svgops: gap takes the channel only from the named colour",
+      abs(doc.mm2(doc.geom_of("FFFFFF")) - 400) < 1.0,
+      f"white {doc.mm2(doc.geom_of('FFFFFF')):.0f} mm2, expected 400")
+
+doc = Doc.load(TOUCHING, 40.0)
+msg = svgops.OPS["gap"]["fn"](doc, colour="F6BE00", by="FFFFFF", mm=0.0)
+check("svgops: a zero gap changes nothing", "0.0 mm2" in msg or "0 mm2" in msg
+      or abs(doc.mm2(doc.geom_of("F6BE00")) - 400) < 1.0, msg)
+
+# A plate with two holes 6 mm apart: wide enough to open, and the op must open
+# them without joining them.
+def plate(gap_mm: float) -> str:
+    """20x10 plate with two 2 mm-wide slots separated by `gap_mm` of material."""
+    x0 = 10 - gap_mm / 2 - 2
+    x1 = 10 + gap_mm / 2
+    return (sq(0, 0, 20, 10)
+            + f" M {x0} 3 L {x0} 7 L {x0 + 2} 7 L {x0 + 2} 3 Z"
+            + f" M {x1} 3 L {x1} 7 L {x1 + 2} 7 L {x1 + 2} 3 Z")
+
+ROOMY = OPS / "roomy.svg"
+ROOMY.write_text(SVG_HDR + f'<path fill="#FFFFFF" fill-rule="evenodd" '
+                 f'd="{plate(6.0)}"/></svg>', encoding="utf-8")
+def slots_of(doc):
+    """(hole count, narrowest slot width in mm) for the plate's knockouts."""
+    hs = [p.interiors for r in doc.select("FFFFFF", "fill")
+          for p in svgops.G.polys(r.geom)]
+    n = sum(len(i) for i in hs)
+    from shapely.geometry import Polygon as _P
+    from shapely.ops import unary_union as _u
+    neg = _u([_P(ring) for i in hs for ring in i]) if n else None
+    m = svgops._rasterise(neg, doc.upm, 24.0) if n else None
+    return n, (float(np.median(measure.widths_mm(m, 24.0)))
+               if n and m is not None and m.any() else 0.0)
+
+doc = Doc.load(ROOMY, 20.0)
+before = doc.mm2(doc.geom_of("FFFFFF"))
+msg = svgops.OPS["widen-negative"]["fn"](doc, colour="FFFFFF", to_min=3.0)
+holes, w = slots_of(doc)
+check("svgops: widen-negative opens a knockout that has room",
+      "opened 2 hole(s)" in msg and holes == 2, msg)
+check("svgops: and the slots really do end up at the target width",
+      w >= 3.0 - 0.15, f"narrowest slot now {w:.2f} mm, wanted 3.0")
+check("svgops: the widening is paid for out of the surrounding fill",
+      doc.mm2(doc.geom_of("FFFFFF")) < before,
+      f"{before:.1f} -> {doc.mm2(doc.geom_of('FFFFFF')):.1f} mm2")
+
+# THE ONE THAT SHIPPED. The first version of this op guarded on SHELL count,
+# which RISES when widening severs the shape between two holes — read as benign,
+# and it was. What it could not see is the holes MERGING into each other, which
+# is a closed letter counter. It widened SOUR PUSS until every counter had shut,
+# making the lettering less legible than the defect it was fixing. The render
+# caught it; the guard did not. For a knockout the topology that matters is the
+# hole count, and the opening has to be clamped to preserve it.
+TIGHT = OPS / "tight.svg"
+TIGHT.write_text(SVG_HDR + f'<path fill="#FFFFFF" fill-rule="evenodd" '
+                 f'd="{plate(0.6)}"/></svg>', encoding="utf-8")
+doc = Doc.load(TIGHT, 20.0)
+msg = svgops.OPS["widen-negative"]["fn"](doc, colour="FFFFFF", to_min=3.0)
+holes, _ = slots_of(doc)
+check("svgops: widen-negative never merges two knockouts into one",
+      holes == 2, f"{holes} hole(s) left, {msg}")
+check("svgops: a clamped widen says how far it could not go",
+      "CLAMPED" in msg and "would have merged" in msg, msg)
+
+# Slots all but touching: the clamp binds so hard that opening buys nothing.
+# Refuse outright rather than half-do it — lettering has an enormous perimeter,
+# so even 0.02 mm per side took 71 mm2 out of MuffyHat's crown while moving the
+# width figure not at all.
+SHUT = OPS / "shut.svg"
+SHUT.write_text(SVG_HDR + f'<path fill="#FFFFFF" fill-rule="evenodd" '
+                f'd="{plate(0.04)}"/></svg>', encoding="utf-8")
+doc = Doc.load(SHUT, 20.0)
+before = doc.mm2(doc.geom_of("FFFFFF"))
+msg = svgops.OPS["widen-negative"]["fn"](doc, colour="FFFFFF", to_min=3.0)
+check("svgops: a widen that would buy nothing is refused, and says why",
+      "CANNOT" in msg and "stitch it as thread" in msg, msg)
+check("svgops: a refused widen costs no material",
+      abs(doc.mm2(doc.geom_of("FFFFFF")) - before) < 1e-6,
+      f"{before:.2f} -> {doc.mm2(doc.geom_of('FFFFFF')):.2f} mm2")
+
+from shapely.ops import unary_union  # noqa: E402
+
+# --- scale / space-out / move: redrawing detail that is too small ---------- #
+# Four 4x6 mm bars 0.5 mm apart on one row, and a second row 0.4 mm below it —
+# the shape of SOUR PUSS, where BOTH the knockout strokes and the thread bridges
+# between them are under limit at once and there is no material to move.
+def bars(y, n=4, w=4.0, h=6.0, gap=0.5, x0=2.0):
+    return " ".join(sq(x0 + i * (w + gap), y, x0 + i * (w + gap) + w, y + h)
+                    for i in range(n))
+
+TYPE = OPS / "type.svg"
+TYPE.write_text(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="60" height="40" '
+    f'viewBox="0 0 60 40"><path fill="#000000" d="{bars(2.0)} {bars(8.4)}"/></svg>',
+    encoding="utf-8")
+
+doc = Doc.load(TYPE, 17.5)
+comps = svgops.G.polys(doc.geom_of("000000"))
+rows = svgops._rows_of(doc, comps)
+# A nearness test would fuse the two lines: they sit 0.4 mm apart, which is less
+# than any sane tolerance, yet they are plainly different rows. Only real
+# vertical OVERLAP separates a row from the line below it. The first version
+# used a 1 mm nearness tolerance, merged all eight bars into one row, and
+# re-spaced them into an interleaved single line.
+check("svgops: _rows_of splits lines that are closer than one line apart",
+      [len(r) for r in rows] == [4, 4], f"rows {[len(r) for r in rows]}")
+
+doc = Doc.load(TYPE, 17.5)
+svgops.OPS["space-out"]["fn"](doc, colour="000000", gap=2.0, line_gap=2.0)
+comps = svgops.G.polys(doc.geom_of("000000"))
+rows = svgops._rows_of(doc, comps)
+gaps = [rw[i + 1].distance(rw[i]) / doc.upm for rw in rows for i in range(len(rw) - 1)]
+# Every gap, not just the first: the shift for each component is solved against
+# the one before it, which has itself already moved. The bracket for that search
+# was sized from the target gap, so a component that had to travel several times
+# the target — the fourth letter of SOUR moved 14.5 mm to open a 2.2 mm gap —
+# ran off the end of the bracket and quietly came back short. No error, just the
+# wrong answer, in the one place a wrong answer is invisible.
+check("svgops: space-out opens EVERY gap, not just the first",
+      gaps and max(abs(g - 2.0) for g in gaps) < 0.05,
+      "gaps " + ", ".join(f"{g:.2f}" for g in gaps))
+check("svgops: space-out keeps the rows apart too",
+      len(rows) == 2 and abs(unary_union(rows[0]).distance(unary_union(rows[1]))
+                             / doc.upm - 2.0) < 0.05)
+
+# Scaling components in place makes neighbours collide, and the union that must
+# follow — evenodd would XOR an overlap into a HOLE, not merge it — fuses them
+# irreversibly. Every later op then sees one blob: `space-out` reported
+# "re-spaced 1 component(s)" and moved nothing at all.
+doc = Doc.load(TYPE, 17.5)
+try:
+    svgops.OPS["scale"]["fn"](doc, colour="000000", factor=1.4)
+    check("svgops: scale refuses to fuse components it would collide", False)
+except SystemExit as e:
+    check("svgops: scale refuses to fuse components it would collide",
+          "space-out" in str(e), str(e)[:120])
+
+# Space first, then scale into the room that makes — the order the specs use.
+doc = Doc.load(TYPE, 17.5)
+svgops.OPS["space-out"]["fn"](doc, colour="000000", gap=2.0, line_gap=2.0)
+svgops.OPS["scale"]["fn"](doc, colour="000000", factor=1.25)
+comps = svgops.G.polys(doc.geom_of("000000"))
+check("svgops: space-out then scale keeps every component distinct",
+      len(comps) == 8, f"{len(comps)} component(s)")
+w = max(p.bounds[2] - p.bounds[0] for p in comps) / doc.upm
+check("svgops: and the components really are 1.25x wider",
+      abs(w - 5.0) < 0.1, f"widest bar {w:.2f} mm, expected 5.0")
+gaps = [rw[i + 1].distance(rw[i]) / doc.upm
+        for rw in svgops._rows_of(doc, comps) for i in range(len(rw) - 1)]
+# Scaling closes the gaps again by the growth — this is why the spec asks
+# space-out for 1.64 mm to land a 1.2 mm bridge, and why the figure is not 1.2.
+check("svgops: scaling closes the gaps it was given, by the growth",
+      abs(min(gaps) - 1.0) < 0.1, f"min gap {min(gaps):.2f} mm, expected 1.0")
+
+# A millimetre must not change length part-way through a sequence. `upm` was
+# recomputed on every rescan from the current bounds, so any op that resized the
+# drawing silently rescaled every op after it — and `drop`, which shrinks the
+# bbox, is in almost every dark-cloth sequence here. The extent is allowed to
+# move; the scale is not.
+doc = Doc.load(TYPE, 17.5)
+upm0 = doc.upm
+svgops.OPS["space-out"]["fn"](doc, colour="000000", gap=3.0, line_gap=3.0)
+check("svgdoc: the mm scale is frozen at load, not re-derived per rescan",
+      doc.upm == upm0, f"{upm0:.4f} -> {doc.upm:.4f} units/mm")
+gaps = [rw[i + 1].distance(rw[i]) / doc.upm
+        for rw in svgops._rows_of(doc, svgops.G.polys(doc.geom_of("000000")))
+        for i in range(len(rw) - 1)]
+check("svgdoc: so a gap measures back as the gap it was asked for",
+      abs(max(gaps) - 3.0) < 0.05 and abs(min(gaps) - 3.0) < 0.05,
+      "gaps " + ", ".join(f"{g:.2f}" for g in gaps))
+
+doc = Doc.load(TYPE, 17.5)
+at0 = unary_union(svgops.G.polys(doc.geom_of("000000"))).centroid
+msg = svgops.OPS["move"]["fn"](doc, colour="000000", dx=3.0, dy=-1.5)
+at1 = unary_union(svgops.G.polys(doc.geom_of("000000"))).centroid
+check("svgops: move translates by exactly what it was asked",
+      abs((at1.x - at0.x) / doc.upm - 3.0) < 1e-6
+      and abs((at1.y - at0.y) / doc.upm + 1.5) < 1e-6,
+      f"moved {(at1.x - at0.x) / doc.upm:+.3f},{(at1.y - at0.y) / doc.upm:+.3f}")
+# A positional op must report what it did, or a silent miss stays silent.
+check("svgops: move reports where it landed", "now at" in msg, msg)
 
 # --------------------------------------------------------------------------- #
 print(f"\n{'=' * 60}")

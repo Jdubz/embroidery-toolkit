@@ -57,7 +57,15 @@ MANIFEST = BUILD / "manifest.json"
 #: record so a design can be tied to the exact tooling that made it.
 TOOL_SCRIPTS = [
     "tools/svg_to_pes.ps1", "tools/svg_prep.py", "tools/satin_params.py",
-    "tools/svg_subpath_filter.py", "tools/embroidery_tools/svgpath.py",
+    "tools/svg_subpath_filter.py", "tools/svg_knockout.py", "tools/svg_recolor.py",
+    "tools/svg_dark_invert.py", "tools/svg_offset.py", "tools/svg_stroke.py",
+    "tools/svg_edit.py", "tools/embroidery_tools/svggeom.py",
+    "tools/embroidery_tools/svgdoc.py", "tools/embroidery_tools/svgops.py",
+    # The raster path. Only designs whose spec names inkstitch_pipeline use
+    # these, but the hash list is per-repo rather than per-design, so they mark
+    # everything stale — same as svg_subpath_filter, which only Scream uses.
+    "tools/inkstitch_pipeline.ps1", "tools/color_separate.py", "tools/svg_merge.py",
+    "tools/embroidery_tools/svgpath.py",
     "tools/embroidery_tools/measure.py", "tools/embroidery_tools/convert.py",
     "reference/machine-profile.json",
 ]
@@ -138,8 +146,17 @@ def validate_spec(spec: dict, where: str) -> None:
     for key in ("tool", "input", "artwork_mm"):
         if key not in b:
             raise ValueError(f"{where}: build is missing '{key}'")
-    if b["tool"] != "svg_to_pes":
+    if b["tool"] not in ("svg_to_pes", "inkstitch_pipeline"):
         raise ValueError(f"{where}: unknown build tool '{b['tool']}'")
+    if b["tool"] == "inkstitch_pipeline":
+        # Vector sources go through svg_to_pes, which is the better path in every
+        # way; this one exists for artwork that only ever was pixels. Layers are
+        # not optional, and color_separate treats any colour that is in neither
+        # --layer nor --skip as background, so a missing layer is silently
+        # unstitched rather than an error.
+        if not (b.get("options") or {}).get("Layer"):
+            raise ValueError(f"{where}: inkstitch_pipeline needs build.options.Layer, "
+                             "e.g. [\"E6B10C:fill\", \"25270A:auto\"], bottom layer first")
     if not isinstance(b["artwork_mm"], (int, float)):
         raise ValueError(f"{where}: build.artwork_mm must be a number")
     if b.get("skip") is not None and not isinstance(b["skip"], list):
@@ -155,6 +172,44 @@ def validate_spec(spec: dict, where: str) -> None:
             raise ValueError(f"{where}: no such prepare tool: tools/{p['tool']}.py")
 
 
+def _in_dependency_order(specs: list[dict]) -> list[dict]:
+    """Order specs so one reading another's prepare output builds after it.
+
+    A design may take a sibling's prepared derivative as its own input —
+    IHeartScreaming_on_black reads the SVG that IHeartScreaming_on_white's
+    prepare step writes, so the sub-minimum vein surgery declared once applies
+    to both. Filename order happened to satisfy that and was relied on. It is
+    not a rule: renaming either design can invert it silently, and the dependent
+    build then digitizes the *previous* run's intermediate — reproducible-looking
+    output from a stale input, which is the exact failure the manifest exists to
+    prevent. Ordering is derived from the declarations instead.
+    """
+    produced = {s["prepare"]["output"]: s["name"] for s in specs if s.get("prepare")}
+    deps = {}
+    for s in specs:
+        need = set()
+        for key in ("prepare", "build"):
+            step = s.get(key)
+            owner = produced.get(step["input"]) if step else None
+            if owner and owner != s["name"]:
+                need.add(owner)
+        deps[s["name"]] = need
+
+    ordered: list[dict] = []
+    done: set[str] = set()
+    remaining = list(specs)
+    while remaining:
+        ready = sorted((s for s in remaining if deps[s["name"]] <= done),
+                       key=lambda s: s["name"])
+        if not ready:
+            stuck = ", ".join(sorted(s["name"] for s in remaining))
+            raise ValueError(f"prepare inputs and outputs form a cycle among: {stuck}")
+        ordered += ready
+        done |= {s["name"] for s in ready}
+        remaining = [s for s in remaining if s["name"] not in done]
+    return ordered
+
+
 def load_specs(names: list[str] | None = None) -> list[dict]:
     specs = []
     for p in sorted(SPECS.glob("*.json")):
@@ -165,6 +220,7 @@ def load_specs(names: list[str] | None = None) -> list[dict]:
         validate_spec(spec, rel(p))
         spec["_path"] = p
         specs.append(spec)
+    specs = _in_dependency_order(specs)
     if names:
         want = {n.lower() for n in names}
         specs = [s for s in specs if s["name"].lower() in want]
@@ -216,39 +272,65 @@ def _prepare(spec: dict, quiet: bool) -> Path | None:
     return dst
 
 
-def ps_args(spec: dict, src: Path, dst: Path) -> list[str]:
-    """The svg_to_pes.ps1 command line for a spec. Pure, so it can be tested.
+def _options(b: dict) -> list[str]:
+    """Free-form `options` mapped onto PowerShell parameters.
 
-    `skip` is comma-joined into one argument on purpose: passing argv directly
-    means PowerShell never gets to split it, so the .ps1 splits on commas
-    itself. Sending each colour as its own `-Skip` would bind only the last.
+    A list is comma-joined for the same reason `skip` is — see ps_args.
     """
-    b = spec["build"]
-    args = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
-            "-File", str(REPO / "tools" / "svg_to_pes.ps1"),
-            "-Svg", str(src), "-Out", str(dst), "-ArtworkMm", str(b["artwork_mm"])]
-    if b.get("skip"):
-        args += ["-Skip", ",".join(b["skip"])]
+    args: list[str] = []
     for k, v in (b.get("options") or {}).items():
         if v is True:                     # a PowerShell [switch]
             args.append(f"-{k}")
         elif v is False or v is None:     # explicitly off, or "leave default"
             continue
+        elif isinstance(v, list):
+            if v:
+                args += [f"-{k}", ",".join(str(x) for x in v)]
         else:
             args += [f"-{k}", str(v)]
     return args
+
+
+def ps_args(spec: dict, src: Path, dst: Path) -> list[str]:
+    """The build command line for a spec. Pure, so it can be tested.
+
+    `skip` is comma-joined into one argument on purpose: passing argv directly
+    means PowerShell never gets to split it, so the .ps1 splits on commas
+    itself. Sending each colour as its own `-Skip` would bind only the last —
+    and PowerShell actually refuses a repeated parameter outright.
+    """
+    b = spec["build"]
+    if b["tool"] == "inkstitch_pipeline":
+        # Raster source. `artwork_mm` is the width of the whole CANVAS here, not
+        # of the drawing inside it: color_separate scales the image, and the ink
+        # usually has margin around it. The stitched size lands in the
+        # manifest's `measured`, which is the number to trust.
+        args = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                "-File", str(REPO / "tools" / "inkstitch_pipeline.ps1"),
+                "-Image", str(src), "-Out", str(dst), "-WidthMm", str(b["artwork_mm"])]
+        if b.get("skip"):
+            args += ["-Skip", ",".join(b["skip"])]
+        return args + _options(b)
+
+    args = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+            "-File", str(REPO / "tools" / "svg_to_pes.ps1"),
+            "-Svg", str(src), "-Out", str(dst), "-ArtworkMm", str(b["artwork_mm"])]
+    if b.get("skip"):
+        args += ["-Skip", ",".join(b["skip"])]
+    return args + _options(b)
 
 
 def _stitch_out(spec: dict, quiet: bool) -> Path:
     b = spec["build"]
     src, dst = REPO / b["input"], OUT / f"{spec['name']}.pes"
     dst.parent.mkdir(parents=True, exist_ok=True)
+    tool = b["tool"]
     args = ps_args(spec, src, dst)
     if not quiet:
-        print(f"  build    svg_to_pes    -> {rel(dst)}")
-    _run(args, "svg_to_pes", quiet)
+        print(f"  build    {tool:<13s}-> {rel(dst)}")
+    _run(args, tool, quiet)
     if not dst.exists():
-        raise RuntimeError(f"svg_to_pes reported success but wrote nothing to {rel(dst)}")
+        raise RuntimeError(f"{tool} reported success but wrote nothing to {rel(dst)}")
     return dst
 
 

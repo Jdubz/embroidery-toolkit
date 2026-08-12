@@ -79,7 +79,7 @@ Neither of the two changes above was the cause of any known stitch-out failure.
 They are adopted on vendor-guidance grounds — see the correction below before
 citing them as fixes for anything.
 
-*Correction, kept deliberately — this one cost a session.* LemonY came off the
+*Correction, kept deliberately — this one cost a session.* LemonCat_outline_on_yellow came off the
 machine with white bobbin thread lying over the entire 2.56 mm satin outline
 while its fills, one pass earlier on the same thread and the same bobbin, came
 out solid black. **The cause was an improperly threaded bobbin.** Confirmed on
@@ -156,12 +156,91 @@ nothing rather than reporting a problem:
 | Artwork | Tool |
 |---|---|
 | SVG with **strokes** | `svg_prep` prints the stroke-width range |
-| SVG of **fills only** | `tools/svg_subpath_filter.py --report` |
+| SVG of **fills only** | `tools/svg_offset.py --report` (per colour) or `tools/svg_subpath_filter.py --report` (per subpath) |
 | Raster | `tools/artwork_prep.py --report` |
 
 `svg_prep` is blind to a fill that is too thin — it only knows declared stroke
 widths. The I-heart-Screaming artwork is three fill paths and no strokes at all,
 so `svg_prep` reported nothing while 14 subpaths sat at 0.40–0.80 mm.
+
+**Then there are three ways to fix it, and they are not interchangeable:**
+
+| The thin thing | Fix | Tool |
+|---|---|---|
+| detail that was never going to survive | delete it | `svg_subpath_filter --drop-thin` |
+| the drawing itself | thicken the shape | `svg_offset --to-min` |
+| an edge that needs to read harder | outline it in satin | `svg_stroke` |
+
+`svg_offset` is the one that was missing, which is why the answer for both Muffy
+designs was "centreline it and accept a running stitch". It offsets with
+**Shapely**, the same library Ink/Stitch bundles and uses for its own
+`knockdown_fill` offsets, so the geometry matches what the consumer would have
+produced. `--to-min 25270A=1.2` searches for the smallest growth that brings all
+but `--tolerate` percent of that colour's ink area up to 1.2 mm; `--grow` sets it
+by hand. **It is a look change** — 0.6 mm to 1.2 mm is twice the line weight —
+so grow the least that clears the limit and then look at the render.
+
+**Growing merges things, and nothing downstream can see it.** Two features
+0.8 mm apart become one when each grows 0.4 mm, and a 0.5 mm hole closes.
+Neither is visible in a render at design size, and `validate` cannot see either,
+because the stitches are perfectly good stitches of the wrong shape. `svg_offset`
+counts shells and holes before and after and makes a change an **error**;
+`--allow-topology-change` proceeds. Same guard as `raster._clean_mask`, and for
+the same reason: a hairline join costs almost no area, so an area test misses it.
+
+**Inkscape cannot do this, and two plausible ways of making it are traps.**
+Path > Outset is GUI-only — verified, it is absent from all 1213 entries of
+`inkscape --action-list`, which carries only the booleans, `object-stroke-to-path`,
+`object-to-path`, `path-simplify` and friends. Of the two headless substitutes:
+
+- the **Offset live path effect** does bake, on load/save, into `d` — but
+  running `object-to-path` on it **reverts `d` to `inkscape:original-d` and drops
+  the effect**, silently un-thickening the shape. Verified on a 10×2 mm bar.
+- **stroke-width + `object-stroke-to-path` + `path-union`** grows by exactly
+  half the stroke width and keeps the fill colour, but rewrites the whole style
+  block. Usable; not worth a subprocess.
+
+**`svg_stroke` writes a satin keyline, because a stroke *is* the satin.**
+`svg_prep` splits each shape into a fill op and a stroke op and hands the stroke
+to `stroke_to_satin` at the declared width. Stroking a shape in **its own
+colour** costs no stop and no rethread — `svg_prep` groups ops by colour — so it
+is the cheap way to firm an edge. A different colour costs a manual rethread.
+
+Two measured facts it reports and you will otherwise get wrong:
+
+- **Inkscape's `--query-width` is the VISUAL bbox**, so adding a stroke widens
+  the drawing and `svg_prep` scales everything back down to `--artwork-mm`. A
+  1.2 mm stroke on an 87 mm design arrives as **1.18 mm** — under the safe width
+  it was set to. `svg_offset` prints the same drift for a grow that reaches the
+  bbox.
+- **`style` beats a presentation attribute in a renderer and loses in
+  `svg_prep.prop`**, which reads the attribute first. A file with both stitches
+  one colour and previews another, so `svg_stroke` strips the conflicting
+  declaration rather than leaving two sources of truth.
+
+**Both tools refuse a `transform` rather than ignoring it**, and walk
+`polygon`/`ellipse`/`rect`/`circle` as well as `path` via
+`svgpath.parse_shape`. Reading only `<path>` is the silent-partial-application
+version of the vtracer registration bug: LemonCat draws its ear tufts as
+`<polygon>` and its pupils as `<ellipse>`, both filled #000000, so a path-only
+tool reports that layer smaller than it is and offsets part of it.
+
+*A measurement discrepancy worth knowing about, found while building this.*
+`svg_offset` samples **pixel centres** (`shapely.contains_xy`);
+`svg_subpath_filter` and `svg_dark_invert` rasterise with
+`PIL.ImageDraw.polygon`, whose fill is boundary-inclusive. Measured on bars of
+known width at 10, 16, 24, 32 and 40 px/mm, PIL is a flat **+2 px** wider at
+every resolution — **+0.2 mm at the 10 px/mm those two use**, against a
+1.0–1.2 mm limit. So the width figures quoted throughout this file are that much
+generous, and `--drop-thin 1.0` really drops at about 0.8 mm. Not retro-fitted,
+because restating every figure belongs in the same change as the fix.
+
+**For "how much of this is too thin", use `measure.frac_below_mm`, not a
+percentile of `widths_mm`.** `thickness_map` steps radii by a whole pixel, so
+every width it can report is a multiple of 2 px and a threshold can only land on
+one of those. `frac_below_mm` erodes at exactly `width/2` px — two distance
+transforms instead of a sweep of fifty, and it can resolve a limit that falls
+between steps. It cut `svg_offset --to-min` on a real design from 62 s to 29 s.
 
 **Width means local thickness, and it lives in `embroidery_tools.measure`.**
 Do not re-derive it; three plausible methods have already failed here, each
@@ -235,6 +314,21 @@ $env:PYTHONPATH = "D:\Development\Embroidery\tools"
   `stitch build` executes exactly that and records provenance in
   `build/manifest.json`. Never hand-run the pipeline for a design that has a
   spec: edit the spec and rebuild, or the file and its record diverge.
+  **Names are spelled out: `<Design>_<variant>_on_<background>`** —
+  `LemonCat_solid_on_white`, `IHeartScreaming_on_black`. No abbreviations; a
+  one-letter cloth suffix means nothing to the next reader. *An earlier rule
+  here demanded short names because "the on-screen list truncates", and
+  `validate` enforced 8 characters. **No manual says that.** A full-text search
+  of all four finds no filename length rule, and the retrieve screen picks
+  patterns from a thumbnail grid — thumbnail size and background are settings
+  (p.15). Only `.dst` is shown by name, and nothing here is `.dst`. The
+  guideline now lives in `machine-profile.json` as `usb.filename_long_chars`.*
+  **Build order is derived from the declarations, not from filenames.** A spec
+  whose `prepare.input` is another spec's `prepare.output` builds after it —
+  `IHeartScreaming_on_black` reads the SVG the white version prepares, so the
+  vein surgery is declared once. That used to rest on alphabetical order by
+  luck, and renaming inverted it: `_on_black` sorts *before* `_on_white`, which
+  would have digitized the previous run's intermediate rather than failing.
   `stitch audit` fails on anything undeclared. Four states, one directory each:
   `art/originals/` inbound and never edited · `art/prepared/` generated
   derivatives · `designs/out/` **`.pes` only**, because it is the DDT staging
@@ -370,6 +464,242 @@ substitutions. Do not "optimise" that away.
 
 Corollary: layer count, layer *order*, and the segmentation that decides which
 pixels join which layer all matter enormously. The specific hue does not.
+
+## Unstitched cloth is a colour — so the fabric is a design input
+
+Every design here uses bare fabric as a colour: that is why `LemonCat_solid_on_white` is named for
+white cloth and `LemonCat_outline_on_yellow` for yellow, and why `IHeartScreaming_on_white` has white eyeballs, teeth
+and lettering while carrying no white thread. Move the file to black cloth and
+that colour changes underneath you. Full procedure in
+`docs/14-designing-for-dark-cloth.md`; the decisions that are easy to get wrong:
+
+**Which tool depends on how the artwork is built, and two of the three wrong
+answers validate clean.** Open the SVG rather than looking at the picture — white
+areas that are *paths with a white fill* are overpainted; white areas that are
+*subpaths of the ink path* are holes. `svg_subpath_filter --report` prints
+nesting depth and settles it.
+
+| Artwork | Dark-cloth job | Tool |
+|---|---|---|
+| One colour, linework | relabel the thread | `tools/svg_recolor.py` |
+| Shapes painted over each other | knock upper out of lower | `tools/svg_knockout.py` |
+| Ink layer with holes | recover holes as thread, drop the ink | `tools/svg_dark_invert.py` |
+| **Anything else** | **compose it** | **`tools/svg_edit.py --op …`** |
+
+**Prefer `svg_edit` for new work; the three above are fixed sequences of it.**
+It applies atomic operations — `subtract · drop · recolour · offset · pockets ·
+set-stroke · report` — previewing after each and logging them so `--replay`
+reproduces the run byte-for-byte. `--list-ops` prints the vocabulary. A new asset
+is a new *sequence in the spec*, not new Python; that is the whole point, after
+one tool had to be extended twice in a session because the code that fitted one
+asset was wrong for the next. LemonCat_solid_on_black's entire treatment:
+
+```
+subtract --colour FFD400 --by 000000    cut the linework out of the body
+subtract --colour FFFFFF --by 000000    and out of the eyes
+subtract --colour FFD400 --by FFFFFF    knock the eyes out of the body
+drop     --colour 000000                let the cloth supply the linework
+```
+
+**Three defects are visible only ON DARK CLOTH, and no check in this repo could
+see any of them.** From the `MuffyHat_on_black` stitch-out
+(`photos/PXL_20260812_064352867.jpg`): `validate` clean, `coverage` fine, render
+and `proof` both convincing. Every gate here asks whether the stitches are
+*sound*; none asked whether they were *distinguishable*. Full working in
+`docs/14`.
+
+- **The validated fill density is validated on WHITE.** 0.4 mm covers; what it
+  does not do is hide the cloth between rows, which is invisible on cream and a
+  black dot at every penetration on black. Use `Cloth: dark` in the spec →
+  `design_limits.fill_density_mm_dark` (0.33 mm), ~21% more rows. Check
+  `density_max_per_mm2` against the 16 cap afterwards; it stayed ≤13 here.
+- **Two light colours drawn edge to edge stitch as one mass.** Pull
+  compensation grows both independently, so a shared boundary is claimed twice:
+  339 mm of MuffyHat's white perimeter sat at *zero* distance from the gold and
+  the two overlapped by 136 mm² once expanded. This never bit on light cloth
+  because a black keyline separated everything — and **inverting for dark cloth
+  is the operation that drops that keyline.** The rule below says dropped ink
+  must be subtracted from what lies *under* it; this is its other half. Dropped
+  ink that lay *between* two colours must be replaced by a cut:
+  `gap --colour F6BE00 --by FFFFFF --mm 0.6`. Take the channel out of the shape
+  that can afford it, **not** out of the one stitched first — cutting the white
+  hat consumed two shells outright, cutting the gold body cost 262 mm² of 3,455
+  and changed no topology. A cut of N shows as N − 2·expand.
+- **Knocked-out detail is measured on the wrong side of every limit.**
+  `design_limits` sizes thread; a hole is the complement, and it is attacked
+  from both rails at once. SOUR PUSS is drawn at a 1.42 mm median gap — clear of
+  the 1.2 mm safe width, which is why nothing flagged it — and 0.2 mm of pull
+  compensation per side takes it to 1.00 mm and closes 29% of the negative
+  outright. Size knockouts against `design_limits.negative_space_mm` (1.8 mm).
+
+**Widening a knockout usually is not available, and the guard must count HOLES,
+not shells.** `widen-negative` fails by holes running into each other — a closed
+letter counter — which is invisible from the shell side. The first version here
+guarded on shells, watched them rise (widening lettering severs the shape it
+sits in, which is harmless), and produced a SOUR PUSS with every counter shut:
+**less legible than the defect it was fixing.** The render caught it; the guard
+did not. It now clamps to the largest opening that keeps every hole distinct and
+refuses outright when that buys nothing, which is what both Muffy designs get —
+the letters are as narrow as the thread between them, so there is no material to
+move.
+
+*A second bug in the same op, caught by a test rather than by fabric.* The
+"how much is still too narrow" metric measured the **union** of the holes, so
+two holes growing into each other read as one wide hole and the number
+**improved** — the metric rewarded exactly the failure the clamp exists to
+prevent. Measure each hole separately and area-weight. It hid at design
+resolution and only showed on a plate whose two slots sat 0.04 mm apart.
+
+**Measure BOTH sides of a knockout — the thread between the holes is the side
+that usually fails.** The obvious read on illegible knocked-out lettering is
+that the letters are too thin. On SOUR PUSS that was the *second* problem: the
+letter strokes are bare cloth at 1.33–1.42 mm against a 1.8 mm limit, and the
+**white thread bridges between the letters are 0.45–0.67 mm against 1.2 mm**. A
+0.5 mm sliver of fill does not form, it bleeds into its neighbours, and that is
+what the photograph shows. **When both sides are under limit at once there is no
+material to move** — which is precisely what `widen-negative` reports — and only
+redrawing helps.
+
+**Redrawing is `svg_edit` ops, not a new original.** `space-out`, `scale` and
+`move` are declared in the spec, so `art/originals/` is still never edited and
+the change rebuilds like anything else. Three things that bite:
+
+- **Order is forced and `scale` enforces it.** Scaling first makes the letters
+  collide, and the union that must follow — even-odd XORs an overlap into a
+  *hole* rather than merging it — fuses eight letters into one polygon for good.
+  Every later op then addresses one blob and silently does nothing: `space-out`
+  reported "re-spaced 1 component(s)" and moved nothing. Space first, then scale
+  into the room that makes; ask `space-out` for more than the target, because
+  scaling closes the gaps again by the growth.
+- **The scale ceiling is set by the enclosing shape.** 1.10× leaves the block
+  1.02 mm clear of the crown edge, and that margin is *itself* a thread bridge
+  under the same 1.2 mm limit. The usable interior is the pocket **less the gold
+  ridge arcs crossing it**, far smaller than its bounding box.
+- **Growing a block needs `move` too.** `space-out` re-centres each row where it
+  was, and this block was never centred on its crown — 11.1 mm clear left
+  against 22.1 mm right — so it grew off the near edge while a third of the
+  crown stayed empty.
+
+*A row is components that vertically OVERLAP, not ones that are near each
+other.* SOUR and PUSS sit 0.4 mm apart, so a nearness tolerance merged all eight
+letters into one row and re-spaced them into an interleaved single line.
+
+*And `_shift_to_gap` must bracket by doubling.* A component that has to clear
+one already pushed along can travel many times the target gap — the fourth
+letter moved 14.5 mm to open a 2.2 mm gap. A bracket sized from the target
+capped it and quietly returned 1.79 mm. No error, just the wrong answer.
+
+**`svgdoc.Doc.upm` is frozen at load — do not re-derive it per rescan.** It used
+to be recomputed from the current bounds, so a millimetre changed length every
+time an op resized the drawing and every later op silently worked in a different
+unit. Measured on a test document: `space-out` widened it 17.5 → 22 units, and
+the 2.0 mm gaps it had just made read back as 1.59 mm. `drop` shrinks the bbox
+and is in nearly every dark-cloth sequence here. `bounds` stays live on purpose —
+the extent really does move, and positional selectors are relative to it.
+
+**When widening is refused, drop `--expand` instead.** Pull compensation exists
+to stop a hairline of cloth appearing where two colours meet, and after a `gap`
+op there is nowhere they meet — all that is left of its effect is the 0.2 mm per
+side it takes off every knockout. `"options": {"Cloth": "dark", "Expand": 0.05}`
+returns the lettering from 1.00 mm to 1.25 mm, and the share of the negative that closes outright from 29% to 7%. **When both levers are exhausted
+the artwork is what is wrong**: at 5 mm cap height that lettering is at
+`min_text_cap_height_mm` for *positive* text, and a knockout is harder.
+
+**On dark cloth, ask first whether the design should carry the ink colour at
+all.** `LemonCat_solid_on_black` was stitching 1,341 mm² of black thread onto
+black cloth. 74% of it lay over the yellow, where black-on-yellow reads fine, but
+26% lay on bare cloth doing nothing — the silhouette stroke 50.8% over cloth and
+both whiskers 49.7%, so they stitched at half width. Inverting it **cost a colour
+rather than adding one**: 3 → 2, and 8,768 stitches → 3,994.
+
+**Dropped ink must be SUBTRACTED from what lies under it.** Muffy's yellow and
+black intersect over 0 units², so dropping alone works there; LemonCat is drawn
+the normal way round and they overlap by 993 mm², so dropping alone lets the
+yellow fill back in and the cat loses its face while `validate` stays clean.
+
+**`fill` and `stroke` have OPPOSITE initial values, and getting that backwards
+has caused four separate bugs here.** Absent `fill` means black; absent `stroke`
+means `none`. Defaulting a stroke to black gave every unstroked element a phantom
+hairline and invented 22 cloth pockets out of nothing. Reading it the other way
+in the removal check left emptied elements in the document still painting black.
+Check both directions whenever either is touched.
+
+Three more, all found the moment a shared document model made state explicit
+between operations — the per-asset tools hid them by parsing once and never
+re-reading:
+
+- **`d` is shared by an element's fill and its stroke.** Reshaping the fill drags
+  the outline with it: cutting LemonCat's linework out of its body made the
+  body's own keyline re-trace every whisker, tripling the black region, so the
+  next operation cut 333 mm² out of the eyes instead of 163. Nothing errored.
+  `svgdoc` splits the stroke onto a clone at its original path.
+- **Stroke resolution must go through ancestors.** LemonCat declares `stroke`
+  once on a wrapping `<g>`, so reading the element alone finds none — which
+  silently disabled the split above.
+- **Selectors must address connected COMPONENTS, not elements.** PissMuffy's 29
+  letters, eyes, brows and mouth are one `<path>`, so a centroid band matched the
+  middle of the whole design and selected nothing. A partial match now splits the
+  element. Same class as the hand-placed circle that silently clipped the `?` out
+  of `HOT PISS?` — prefer measured predicates over coordinates, and make a
+  positional selector report what it matched.
+
+**Dropping ink shrinks the drawing's bounding box, and `svg_prep` scales what is
+left UP to reach `--artwork-mm`.** `LemonCat_solid_on_black` finishes at
+91.4 × 58.0 mm against the white version's 91.0 × 59.8. An inverted design is not
+dimensionally identical to its light-cloth sibling.
+
+Architecture and the survey of what already exists — Graphite, vpype, Penrose,
+build123d, Penpot MCP, and the MoVer result that verification lifts LLM
+generation from 58.8% to 93.6% — are in `docs/15-composable-svg-architecture.md`.
+
+**`svg_prep` orders light to dark, and the artwork paints in document order. When
+those disagree the lower colour is stitched LAST and covers the upper one.**
+`LemonCat_embroidery_solid_yellow.svg` draws a full-silhouette yellow body then
+white eyes on top; luminance order stitches white first and the body over it, and
+the eyes come out yellow. **`validate` was clean and `coverage` reported 100%** —
+the yellow really does cover the artwork, and coverage asks whether pixels got
+stitched, not whether they got the right colour. Only `stitch render` on the
+target fabric showed it. Read the `stitch order` line `svg_prep` prints: a colour
+listed before something that sits under it is the warning sign. `svg_knockout`
+makes the upper shape a hole in the lower, which is `--skip`'s geometry without
+`--skip`'s dropping.
+
+*A cheap check for this would be wrong.* Comparing document order against stitch
+order needs no geometry, but it fires on the **fixed** LemonCat_solid_on_black too — the white is
+still later and still lighter, it simply no longer overlaps. Same rule as
+everywhere: run a new check against a known-good file first. A real check has to
+test whether the lower fill still covers the upper one *after* knockouts, which
+means rasterising, which `svg_prep` currently has no machinery for. The honest
+generalisation is to teach `coverage` to compare **colour** and not just
+presence — it already maps stitches to source pixels, and it would have caught
+this directly. Not built.
+
+**On dark cloth the ink layer is usually free.** Bare fabric already is that
+colour, so `svg_dark_invert` drops it: outlines, pupils, tooth gaps and mouths
+still read as the fabric showing between stitched areas. `IHeartScreaming_on_black` is *cheaper*
+than `IHeartScreaming_on_white` — 7,054 stitches against 10,751 — because 2,742 mm² of ink came out
+and only 1,630 mm² of white went in. *(All four figures re-verified against the
+build of 2026-08-11.)* What does not survive is a solid ink mass
+with nothing under it; `--promote-at` rescues one by position, which is how the
+"I" of "I ♥ Screaming" was kept.
+
+**Which holes to fill has to be measured, not read off the artwork.** Three of
+IHeartScreaming_on_white's 27 holes reveal the green head, the red heart and the red tongue rather
+than cloth. Filling those stitches white *under* a colour that is then stitched
+over it — the manual's "three or more overlapping stitches", which broke two
+needles here. `svg_dark_invert` rasterises every other colour and measures each
+hole's bare fraction. Its mixed-verdict warning band starts at 10%, not 5%,
+because a hole cleanly over another colour still loses ~4% of its pixels to its
+own rasterised perimeter, and a warning that fires on every correct design stops
+being read.
+
+**Emitting nested even-odd regions: emit only regions with no selected ancestor.**
+A selected hole already carries its islands and their sub-holes as alternating
+rings, so emitting a descendant again XORs it back out and that area silently
+comes out unstitched. Both eye glints in `IHeartScreaming_on_black` are depth-3 subpaths inside
+selected holes and hit this exactly. The test for it needs a tight tolerance: at
+8 px/mm the bug lands 27 mm² from the right answer, close enough to
+discretisation error to slip past.
 
 ## Previews: the machine's own is misleading
 
@@ -517,14 +847,28 @@ distinct case and easy to mangle:
 - `--no-underlay`: perpendicular underlay under a ~1 mm stroke adds density and
   supports nothing.
 - One colour means one stop and no rethread — outline designs are dramatically
-  cheaper (LemonY, via Ink/Stitch: 1,741 stitches, 27 jumps, 4 min).
+  cheaper.
+
+**Do not copy a design's stitch count into this file as a record of what that
+design is.** `measured` in `build/manifest.json` records stitches, jumps, run
+time and peak density for every build, automatically and always current, and
+`stitch info` prints them on demand. The figure that used to sit on the line
+above — "1,741 stitches, 27 jumps, 4 min" for LemonCat_outline_on_yellow — had
+drifted to 3,919 stitches and 14 jumps once `satin_params.py` started adding
+satin underlay, and nothing could have caught it, because a hand-copied number
+is checked by nothing. A design is declared, not remembered.
+
+Where a figure is instead **carrying an argument** — the dark-cloth passage
+needs "7,054 against 10,751" to make the counterintuitive point that the black
+version is the cheaper one — keep it, but date it, and re-measure before citing
+it rather than trusting the line.
 
 ## Prefer Ink/Stitch over `stitch trace` for new work
 
-Inkscape 1.4.4 + Ink/Stitch 3.3.0 are installed. See
-`docs/11-inkstitch-pipeline.md`. On the same LemonCat outline, Ink/Stitch cut
-jumps from 178 to 27 and stitches from 4,504 to 1,741 — 12 minutes of hand
-snipping down to 2.
+Inkscape 1.4.4 + Ink/Stitch 3.3.0 are installed. `docs/11-inkstitch-pipeline.md`
+carries the tracer-versus-Ink/Stitch A/B across three designs; Ink/Stitch won on
+every column, and hand-snipping — the thing actually being complained about —
+was where it won by the most. Read the numbers there rather than from a copy.
 `stitch trace` stays for one-shot conversions and as a fallback when
 Ink/Stitch's fill router is too slow; everything else in this repo —
 `validate`, `info`, `render`, `fix-pes`, `stage` — applies to its output too and
@@ -532,6 +876,48 @@ should still be run.
 
 Entry points: `tools/inkstitch_pipeline.ps1 -Mode redwork|layered`, backed by
 `tools/vectorize.py` (line art) and `tools/color_separate.py` (flat colour).
+
+### Raster designs are declarable — `build.tool: "inkstitch_pipeline"`
+
+`build.tool` accepts `svg_to_pes` (vector, always better when you have it) or
+`inkstitch_pipeline` (raster). `MuffyHat_on_white` and `PissMuffy_on_white` are the raster ones.
+Three things about that path:
+
+- **Declare the background colour in `skip`, or the design stitches as a solid
+  block.** `color_separate` assigns every pixel to the *nearest declared colour*
+  and treats anything in neither `--layer` nor `--skip` as background — but
+  "background" is a leftover category, not a detector. Cream is nearer yellow
+  than black, so with only yellow and black declared the entire canvas became
+  one yellow rectangle with the artwork faintly outlined on top. `--skip`
+  colours take part in the assignment and are then never stitched, which is the
+  whole mechanism. Caught by `render`; `validate` was clean.
+- **`artwork_mm` is the width of the CANVAS, not of the drawing.** The pipeline
+  scales the image, and sticker art has margin: 75.8 mm of canvas puts
+  `PissMuffy_on_white` at 70.4 × 95.6 mm. Size by measuring the ink bbox and working
+  backwards, then read `measured` in the manifest for the truth. This differs
+  from `svg_to_pes`, where `artwork_mm` really is the artwork.
+- **List options are comma-joined into one argument** (`_options` in `build.py`).
+  PowerShell only splits `-Layer A,B` when it parses a command line string, and
+  passing the flag twice is a hard error — "parameter specified more than once"
+  — not a silent last-one-wins. `inkstitch_pipeline.ps1` splits on commas
+  itself, the same way `svg_to_pes.ps1` already did for `-Skip`.
+
+**Measure the linework before choosing `fill` vs `line` vs `auto`.** Both Muffy
+designs read as bold line art and are not: the dark layer measures 0.60 mm
+(`PissMuffy_on_white`) and 0.96 mm (`MuffyHat_on_white`) median local thickness, **below the
+1.0 mm satin minimum**, so `:auto` centrelines 68% and 93% of it respectively.
+Filling would lose it and satin cannot hold it; a centreline plus the default
+2 bean repeats is the only treatment that puts real thread on a 0.6 mm line.
+Use `embroidery_tools.measure.widths_mm` per colour layer — area-weighted, so
+the percentage means percentage of the ink.
+
+**Bean-stitched centrelines are the density hot spot on raster work.** Each
+repeat re-penetrates the same holes, so peaks land far above the vector designs:
+27/mm² on `PissMuffy_on_white` and 24 on `MuffyHat_on_white`, against 16 for the worst vector file
+and a 30 danger threshold. Zero cells reached 30 in either, so both shipped —
+but classify before reacting. `PissMuffy_on_white`'s hottest cells are inside the
+lettering (single colour), `MuffyHat_on_white`'s are 81% on colour boundaries, which are
+two different causes and two different fixes.
 
 ### "Line art" is rarely all line — default to `:auto`
 
@@ -611,7 +997,7 @@ Two fixes, both needed:
 - `validate` gained a `short-stitches` finding so any file, whatever produced
   it, gets checked. It counts **mid-run** shorts only: tie-in and tie-off are
   deliberately short and must stay short, and counting them flags every
-  correctly locked design. On LemonY, 42 of 57 remaining shorts were locks.
+  correctly locked design. On LemonCat_outline_on_yellow, 42 of 57 remaining shorts were locks.
 
 When adding any new generator, ask which of the invariants in the table above it
 silently skips.
@@ -645,7 +1031,7 @@ Things a reviewer should check, all of which were real defects at some point:
 
 ## Tests
 
-`tools/tests/test_toolkit.py` — 55 invariant checks, no framework needed:
+`tools/tests/test_toolkit.py` — 253 invariant checks, no framework needed:
 
 ```powershell
 .venv\Scripts\python.exe tools\tests\test_toolkit.py
@@ -719,15 +1105,26 @@ has, or small elements get merged away silently.
 
 **Flatten can merge a pale design element into a pale background, and then no
 downstream setting can recover it.** Observed: a white hard-hat on cream
-(`MuffyHat`) merged into a single 65%-coverage colour, so the connectivity-aware
+(`MuffyHat_on_white`) merged into a single 65%-coverage colour, so the connectivity-aware
 background strip ate the hat and left floating text. Raising `--colors` to 7 did
 not separate them, and `--bg-tolerance` down to 4 did not either — once k-means
 merges two colours they are literally the same pixel value.
 
-The fix is to **skip flatten and trace the original**: on the unflattened image
-the hat measured 91% opaque after stripping versus 24% flattened. Check for this
-by running `recolor --list` on the flattened file — if the background colour
-holds a suspiciously large share, a design element has been absorbed.
+Check for it by running `recolor --list` on the flattened file — if the
+background colour holds a suspiciously large share, a design element has been
+absorbed. Reproduced when `MuffyHat_on_white` was finally built: 65.1% at `--colors 5`,
+still 63.2% at 7.
+
+Two fixes, and the cheap one is usually right. **Skip flatten and trace the
+original** if the element must carry thread — on the unflattened image the hat
+measured 91% opaque after stripping versus 24% flattened. But first ask whether
+it needs thread at all: **`MuffyHat_on_white` shipped by leaving the hat unstitched**, as
+white cloth, which is the same trick `IHeartScreaming_on_white` uses for teeth and `LemonCat_solid_on_white` for
+eyes. The hat is drawn completely by its outline and its lettering, cream is
+declared as the skip colour, the hat and its grey shading fall to cream as their
+nearest declared colour, and the merge that could not be undone stopped
+mattering. Coverage reports 96% and the missing 4% is hat shading, by intent.
+**A pale element on pale cloth may not be a separation problem at all.**
 
 Never label a colour count from `flatten` as the thread count; subtract the
 background.

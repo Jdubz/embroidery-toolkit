@@ -77,7 +77,7 @@ one. The nest forms underneath because the top thread has no tension holding it.
 | Occasional flecks of bobbin colour | Upper tension too tight | Lower the tension dial |
 
 > **"Swamped" does not have to mean everywhere, and this is the trap.** On
-> LemonY the bobbin lay white over the entire 2.56 mm satin outline while the
+> LemonCat_outline_on_yellow the bobbin lay white over the entire 2.56 mm satin outline while the
 > fills — one pass earlier, same thread, same bobbin, same run — came out solid
 > black. That reads overwhelmingly like a defect in the *design*, and a whole
 > session went into measuring the file. It was the bobbin.
@@ -293,6 +293,45 @@ cannot reach the spot, jump to the start of that colour and step forward.
 
 Note this is also why a thread break is not a disaster on a 30-minute design:
 you lose seconds, not the run.
+
+The keys, which the manual shows only as icons (read off p.71 of the PDF, since
+the text extraction drops them):
+
+| Key | Does |
+|---|---|
+| `−/+` | opens the stitch-position screen — everything below is on it |
+| `−1` `−10` `−100` | step the needle **back** that many stitches |
+| `+1` `+10` `+100` | step **forward** again if you overshoot |
+| `0` | back to the very beginning of the design |
+| spool `−` | to the **start of the current colour** |
+
+Full sequence: **Start/Stop** to stop · rethread · `−/+` · step back · **OK** ·
+lower the presser foot · **Start/Stop**.
+
+**Convert the time you watched it go wrong into stitches.** Embroidery speed is
+a fixed 400 spm on this machine, so it is exactly **6.7 stitches per second** —
+there is no speed setting to make this ambiguous:
+
+| It ran wrong for | Stitches | Press |
+|---|---|---|
+| ~5 s | ~35 | `−10` ×4 |
+| ~10 s | ~65 | `−10` ×7 |
+| ~15 s | ~100 | `−100` ×1 |
+| ~30 s | ~200 | `−100` ×2 |
+| ~1 min | ~400 | `−100` ×4 |
+
+One press of `−100` is about fifteen seconds of stitching. Round **up** — going
+too far back only re-sews good ground, and on the same colour that costs
+nothing but time.
+
+**The machine does not stop itself for this.** The manual's step (a) is "press
+the Start/Stop button to stop the machine", so the running-on is expected and
+the overshoot is yours to undo. There *is* a bobbin thread sensor (p.88, in the
+cleaning instructions), but no procedure here relies on it.
+
+**If you cannot get back far enough**, the manual's own fallback (p.71 Memo):
+touch the spool key to select the colour, which jumps to the **beginning of that
+colour**, then use `+1`/`+10`/`+100` to walk forward to just before the trouble.
 
 **After a power cut, or if you switch off mid-run** (manual p.71): the machine
 saves the current colour and stitch number. On the next power-on it offers to

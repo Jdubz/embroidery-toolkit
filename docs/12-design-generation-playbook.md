@@ -52,6 +52,36 @@ What it handles that the raster path cannot:
 
 Only fall through to the raster path below when there is no vector source.
 
+### Tailoring the artwork before `svg_prep`
+
+`svg_prep` digitizes what it is given; it does not change the drawing. When the
+artwork itself needs work — a feature under the machine's minimum, a colour that
+should not be stitched, linework that must become negative space — do that first
+with `tools/svg_edit.py`, which applies atomic operations and previews each one:
+
+```powershell
+.\.venv\Scripts\python.exe tools\svg_edit.py in.svg work\ready.svg --artwork-mm 91 `
+    --preview work\steps `
+    --op "report" `
+    --op "offset --colour 25270A --mm 0.3" `
+    --op "drop --colour 000000"
+```
+
+`--list-ops` prints the vocabulary: `subtract · drop · recolour · offset ·
+pockets · set-stroke · report`. Start with `report` to see what colours and areas
+are actually in the file, which is usually not what the picture suggests.
+
+Two specialised tools measure things the operations do not, and are worth running
+before deciding anything:
+
+| Question | Tool |
+|---|---|
+| Is any feature below the minimum, and by how much? | `svg_offset --report` (per colour) · `svg_subpath_filter --report` (per subpath) |
+| What is the smallest growth that clears the limit? | `svg_offset --to-min <hex>=1.2` |
+
+For dark cloth this step is usually the *whole* design — see
+`14-designing-for-dark-cloth.md`.
+
 ## 0. Raster input — pick the mode
 
 Do **not** classify the artwork by eye. Measure it.
@@ -151,7 +181,7 @@ eyebrows validates perfectly and renders beautifully.
 - Over 25%: the command exits non-zero. Solid areas are being centrelined; use
   `:auto`.
 
-Do **not** substitute connected-region counting. When LemonY lost every solid
+Do **not** substitute connected-region counting. When LemonCat_outline_on_yellow lost every solid
 mass, all ten source regions still reported ≥44% coverage. The component count
 showed nothing while a third of the artwork was gone.
 
@@ -211,7 +241,7 @@ Two things that do matter for satin, both learned on fabric:
   centre-walk does nothing there.
 
   **No stitch-out failure here has been traced to the band.** The one that
-  looked like it — LemonY, bobbin thread over the whole 2.56 mm outline while
+  looked like it — LemonCat_outline_on_yellow, bobbin thread over the whole 2.56 mm outline while
   its fills came out black — turned out to be an improperly threaded bobbin,
   and rethreading fixed it with no change to the file. Treat the bands as
   vendor guidance worth following, not as a diagnosis. If a satin comes out
@@ -318,11 +348,11 @@ All three built through this playbook, all `[INFO]` on every gate:
 
 | | size mm | stitches | cols | jumps | short mid-run | peak /mm² | machine | snip |
 |---|---|---|---|---|---|---|---|---|
-| LemonY (outline, yellow cloth) | 84.8 × 58.8 | 1,548 | 1 | 26 | 1.2% | 14 | 4 min | 2 min |
-| LemonW (solid, white cloth) | 85.0 × 59.2 | 5,548 | 2 | 31 | 0.4% | 14 | 15 min | 2 min |
+| LemonCat_outline_on_yellow (outline, yellow cloth) | 84.8 × 58.8 | 1,548 | 1 | 26 | 1.2% | 14 | 4 min | 2 min |
+| LemonCat_solid_on_white (solid, white cloth) | 85.0 × 59.2 | 5,548 | 2 | 31 | 0.4% | 14 | 15 min | 2 min |
 | scream2 (2 colour, white cloth) | 82.2 × 80.6 | 9,863 | 2 | 152 | 1.5% | 18 | 26 min | 10 min |
 
-Coverage against source: LemonW 100%, scream2 98%, LemonY 84% — the last being
+Coverage against source: LemonCat_solid_on_white 100%, scream2 98%, LemonCat_outline_on_yellow 84% — the last being
 line art, where the outer half of every centrelined stroke is legitimately
 unstitched.
 
@@ -360,3 +390,10 @@ the previous one missed:
 4. `render`, not the machine preview.
 5. Count paths **at the source** — underlay / fill / outline. Inferring jump
    origins from totals sent this work down two wrong paths.
+
+None of these can see a shape stitched in the **wrong colour**. `coverage` asks
+whether pixels got stitched, not which thread reached them, so a fill sewn over
+the shape that was meant to sit on top reports 100% and validates clean. Render
+on the fabric colour the piece is actually for — `render --fabric` — and check
+the `stitch order` line `svg_prep` prints against the artwork's own painting
+order. See `14-designing-for-dark-cloth.md`, where this is the main hazard.

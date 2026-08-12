@@ -83,7 +83,16 @@ ap.add_argument("--artwork-mm", type=float, required=True,
                 help="target width of the DRAWING, not the canvas")
 ap.add_argument("--spacing", type=float, default=None, metavar="MM",
                 help="fill row spacing; defaults to the machine profile's "
-                     "design_limits.fill_density_mm")
+                     "design_limits.fill_density_mm, or to the --cloth variant "
+                     "of it")
+ap.add_argument("--cloth", choices=("light", "dark", "knits"), default="light",
+                metavar="KIND",
+                help="what the design is stitched ON, which sets the default "
+                     "row spacing. 'dark' tightens it to "
+                     "design_limits.fill_density_mm_dark: the validated 0.4 mm "
+                     "covers on white and speckles on black, because every "
+                     "needle penetration shows the cloth and on black that is a "
+                     "dark dot. Explicit --spacing overrides it.")
 ap.add_argument("--expand", type=float, default=0.2, metavar="MM",
                 help="pull compensation: how far each colour grows outward. "
                      "Every colour expands independently, so at a shared "
@@ -112,7 +121,13 @@ ap.add_argument("--colour-order", nargs="+", metavar="RRGGBB",
                      "the colour stitched last owns the shared boundary.")
 a = ap.parse_args()
 if a.spacing is None:
-    a.spacing = prof.design_limit("fill_density_mm", 0.4)
+    key = {"light": "fill_density_mm",
+           "dark": "fill_density_mm_dark",
+           "knits": "fill_density_mm_knits"}[a.cloth]
+    a.spacing = prof.design_limit(key, 0.4)
+    if a.cloth != "light":
+        print(f"  {a.cloth} cloth: row spacing {a.spacing:g} mm "
+              f"(design_limits.{key})")
 
 src, dst = Path(a.src), Path(a.dst)
 tree = ET.parse(src)

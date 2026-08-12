@@ -59,6 +59,8 @@
     "design_location": "Root of the drive works. Many guides recommend a top-level BROTHER folder; both are read.",
     "filename_charset": "A-Z a-z 0-9 - _",
     "filename_charset_source": "SE700 Operation Manual, Specifications note (p.96)",
+    "filename_long_chars": 32,
+    "filename_long_chars_note": "A legibility guideline for the Design Database Transfer list, NOT a machine limit. analyze.validate carried a hard-coded 8 with no source behind it; a full-text search of all four manuals finds no filename length or truncation rule at all, and the embroidery retrieve screen selects patterns from a THUMBNAIL grid - the settings screen has entries for thumbnail size and thumbnail background colour (p.15). Filenames only drive selection for .dst, which carries no thumbnail; every design here is .pes. The old 8 fired on every descriptive name, which is how a check stops being read.",
     "firmware_update_rule": "Place ONLY the update file on the drive when updating machine software.",
     "compatibility_list": "https://s.brother/cpjap/"
   },
@@ -136,6 +138,12 @@
     "safe_colour_count": 4,
     "fill_density_mm": 0.4,
     "fill_density_mm_knits": 0.45,
+    "fill_density_mm_dark": 0.33,
+    "fill_density_note_dark": "Row spacing for a light thread on dark cloth. 0.4 mm covers on white and does NOT cover on black: the same gold fill that reads solid on cream stitched out speckled on black twill (photos/PXL_20260812_064352867.jpg), because at 0.4 mm the cloth between rows is still visible and on black it is visible as a dark dot at every needle penetration. It is a contrast problem, not a coverage problem, which is why nothing measured it - `coverage` asks whether a pixel got stitched, `validate` asks whether the stitches are sound, and both are right. Applies whenever thread is much lighter than cloth, not to a dark thread on dark cloth. Costs stitches and time in proportion: 0.4 -> 0.33 is ~21% more rows.",
+    "negative_space_mm": 1.8,
+    "negative_space_note": "Minimum width of a knocked-out gap - bare cloth inside a stitched area - as DRAWN. Everything else in design_limits sizes thread; this sizes its absence, and the two are not the same number. A hole is attacked from both rails at once: pull compensation takes svg_prep's --expand off each side, and the thread on those rails blooms over the edge on top of that. So a knockout has to be drawn at roughly safe_satin_width + 2*expand + bloom. Measured: MuffyHat_on_black's SOUR PUSS lettering was drawn at a 1.42 mm median gap - clear of the 1.2 mm safe width, clean in validate, solid in every render - and came off the machine barely legible, because 0.2 mm of pull compensation per side took it to 1.00 mm and closed 29% of the negative area outright. Enforced by the 'negative-space' validate finding and fixed by `svg_edit --op widen-negative`.",
+    "colour_gap_mm": 0.9,
+    "colour_gap_note": "Channel of bare cloth to cut between two adjacent colours of similar lightness, as DRAWN. Two colours drawn edge to edge stitch as one mass, because pull compensation grows both independently and each claims the same band: measured on MuffyHat_on_black, 339 mm of the white hat's perimeter sat at zero distance from the gold body and the two overlapped by 136 mm2 after 0.2 mm of expansion. A cut of N leaves N - 2*expand visible, so 0.9 mm shows as 0.8 mm of cloth at the 0.05 mm expand these designs use, which is enough to read as a drawn outline separating two elements rather than as a seam. The dropped ink keyline it stands in for measures 1.33 mm median, so this is a lighter line than the artwork's own, chosen deliberately. Only needed when the two colours are close in lightness; a black keyline against yellow separates itself. Take the channel out of whichever shape can afford it, NOT out of the one stitched first: cutting MuffyHat's white hat consumed two white shells outright, cutting the gold body cost 262 mm2 of 3,455 and changed no topology. Applied by `svg_edit --op gap`.",
     "source": "docs/10-designing-for-the-se700.md - derived for a 100 x 100 mm field at 400 spm, not generic commercial digitizing figures."
   },
   "consumables": {

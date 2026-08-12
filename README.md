@@ -125,6 +125,8 @@ projects/      Per-project stitch-out logs
 10. [Designing for the SE700](docs/10-designing-for-the-se700.md) — **why generic digitizing advice misleads here**: minimum feature sizes, colour budget, run time
 11. [The Ink/Stitch Pipeline](docs/11-inkstitch-pipeline.md) — **the preferred digitizer**: line art as continuous running stitch, flat colour as layered fills, and the traps in driving it headless
 12. [Design Generation Playbook](docs/12-design-generation-playbook.md) — **start here to make a design**: which mode to use, and the five gates that catch every failure this repo has shipped
+13. [Repository Layout](docs/13-repository-layout.md) — the four states every file is in, and why a design is declared rather than remembered
+14. [Designing for Dark Cloth](docs/14-designing-for-dark-cloth.md) — bare fabric is a colour in the design; what changes when it stops being white, and the ordering trap that validates clean
 
 ## Two things worth knowing up front
 

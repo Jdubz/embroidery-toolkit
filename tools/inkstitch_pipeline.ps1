@@ -167,9 +167,17 @@ else {
     Write-Host "1. colour separation" -ForegroundColor Cyan
     $layerDir = Join-Path $WorkDir 'layers'
     if (Test-Path $layerDir) { Remove-Item $layerDir -Recurse -Force }
+    # Split on commas as well as taking an array, the same way svg_to_pes.ps1
+    # does and for the same reason: PowerShell's parser turns `-Layer A,B` into
+    # two elements only when it parses a command line string. A caller passing
+    # argv directly (build.py does) hands over the single element "A,B", which
+    # color_separate then reads as one malformed layer spec. Layer specs use a
+    # colon, never a comma, so this cannot split one in half.
+    $LayerList = @($Layer | ForEach-Object { $_ -split '[,;]' } | Where-Object { $_.Trim() })
+    $SkipList  = @($Skip  | ForEach-Object { $_ -split '[,;]' } | Where-Object { $_.Trim() })
     $sepArgs = @($Image, $layerDir, $WidthMm, '--spacing', $SpacingMm, '--split-mm', $SplitMm) +
-               ($Layer | ForEach-Object { @('--layer', $_) }) +
-               ($Skip  | ForEach-Object { @('--skip',  $_) })
+               ($LayerList | ForEach-Object { @('--layer', $_.Trim()) }) +
+               ($SkipList  | ForEach-Object { @('--skip',  $_.Trim()) })
     & $py (Join-Path $PSScriptRoot 'color_separate.py') @sepArgs
     if ($LASTEXITCODE -ne 0) { throw "colour separation failed" }
 

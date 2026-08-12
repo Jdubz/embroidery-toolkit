@@ -31,9 +31,9 @@ space?* Every current design, rebuilt:
 
 | design | | stitches | jumps | machine | hand-snipping |
 |---|---|---|---|---|---|
-| **LemonY** (outline, yellow cloth) | tracer | 4,504 | 178 | 11 min | 12 min |
+| **LemonCat_outline_on_yellow** (outline, yellow cloth) | tracer | 4,504 | 178 | 11 min | 12 min |
 | | Ink/Stitch | **1,741** | **27** | **4 min** | **2 min** |
-| **LemonW** (solid, white cloth) | tracer | 7,906 | 275 | 21 min | 18 min |
+| **LemonCat_solid_on_white** (solid, white cloth) | tracer | 7,906 | 275 | 21 min | 18 min |
 | | Ink/Stitch | **6,197** | **31** | **17 min** | **2 min** |
 | **scream2** (2 colour, white cloth) | tracer | 12,742 | 400 | 33 min | 27 min |
 | | Ink/Stitch | **11,487** | **152** | **30 min** | **10 min** |
@@ -41,8 +41,19 @@ space?* Every current design, rebuilt:
 The hand-snipping column is the one that was the actual complaint. Nothing in
 any of the three peaks at or above 30 penetrations/mm².
 
+**These are the figures as measured when the switch was made, and the Ink/Stitch
+column has moved since.** `satin_params.py` did not exist yet, so those builds
+carried no satin underlay; adding it more than doubles an outline design's
+stitch count. LemonCat_outline_on_yellow builds today at **3,919 stitches,
+14 jumps, ~10 min machine, ~1 min snipping** — more stitches than the row below
+says, and fewer jumps. The comparison stands as a comparison, because both
+columns were measured in the same batch against the same artwork; it is not a
+statement about any current file. For that, read `measured` in
+`build/manifest.json`, or run `stitch info`. Every absolute figure in the rest
+of this section is from the same batch and carries the same caveat.
+
 All three run in `layered` mode with `:auto`. **Pure `redwork` mode was tried
-first on LemonY and was wrong** — see below.
+first on LemonCat_outline_on_yellow and was wrong** — see below.
 
 Ink/Stitch's own Fill-to-Stroke dialog states the underlying point plainly:
 *"Fill outlines never look nice when embroidered."* Filling a 1 mm-wide outline
@@ -79,7 +90,7 @@ artwork's area went unstitched and the render still looked like a cat.
 Diagnose it by **overlaying the stitch path on the source mask** and measuring
 unstitched area, not by looking at the render:
 
-| LemonY build | unstitched source area | peak density |
+| LemonCat_outline_on_yellow build | unstitched source area | peak density |
 |---|---|---|
 | `-Mode redwork` | 243 mm² of 714 (**34%**) | 20/mm² |
 | `-Mode layered -Layer '000000:auto'` | 81 mm² of 714 (11%) | 13/mm² |
@@ -125,7 +136,7 @@ Stages:
 ```powershell
 .\tools\inkstitch_pipeline.ps1 `
     -Image images\LemonCat_solid_yellow.png `
-    -Out   designs\out\LemonW.pes `
+    -Out   designs\out\LemonCat_solid_on_white.pes `
     -Mode  layered -WidthMm 91 `
     -Layer 'FFD600:fill','000000:line' -Skip 'FFFFFF'
 ```
@@ -261,6 +272,61 @@ stitches it, and the PES passes `validate`. The error is invisible until it is
 on fabric. `color_separate.check_registration` compares the traced bounding box
 against the mask it came from and fails on a gross mismatch. Validity is not
 registration; check both.
+
+---
+
+## What the CLI can actually reach
+
+Measured on this machine, Inkscape 1.4.4 with Ink/Stitch 3.3.0, by dumping
+`inkscape --action-list` (1213 entries) and reading the bundled `.inx` files.
+Worth having written down, because the useful half is not the half you would
+guess from the menus.
+
+**Inkscape's own geometry, all headless:** `path-union`, `path-difference`,
+`path-intersection`, `path-exclusion`, `path-division`, `path-cut`,
+`path-flatten`, `path-fracture`, `path-split`, `path-break-apart`,
+`path-combine`, `path-simplify`, `object-stroke-to-path`, `object-to-path`,
+plus `select-by-id`, `object-set-attribute` and `object-set-property`.
+
+**There is no offset action.** No `path-inset`, `path-outset` or `path-offset`
+exists; Path > Outset and Dynamic Offset are GUI-only. Two headless
+substitutes, both verified on a 10 x 2 mm bar:
+
+- The **Offset live path effect** bakes into `d` when the document is loaded and
+  saved. But `object-to-path` on an LPE path **reverts `d` to
+  `inkscape:original-d` and removes the effect** — the opposite of flattening,
+  and silent. If you use the LPE, bake by open/save and strip
+  `inkscape:path-effect` and `inkscape:original-d` yourself.
+- **`stroke-width` = 2 x growth, then
+  `object-stroke-to-path;selection-ungroup;path-union`** grows by exactly the
+  intended amount and preserves the fill colour. It rewrites the style block
+  into Inkscape's verbose form, which is harmless but noisy.
+
+`tools/svg_offset.py` uses neither: it offsets with Shapely in process. Shapely
+is what Ink/Stitch itself uses — the library is bundled at
+`extensions/inkstitch/inkstitch/bin/shapely` alongside numpy — so the geometry
+agrees with the tool that consumes it, and there is no subprocess to hang.
+
+**Ink/Stitch extensions are callable as actions**, `org.inkstitch.<name>`, and
+several are worth knowing:
+
+| Action | What it does |
+|---|---|
+| `knockdown-fill` | offset -50..+50 mm around a selection, round/mitre/bevel, `keep-holes` — a full offset engine, though it emits a knockdown *fill* |
+| `outline` | generates an outline around stitch paths (`threshold`, `buffer`, `smoothness`, `inset`) |
+| `fill-to-satin`, `fill-to-stroke`, `stroke-to-satin`, `zigzag-line-to-satin` | conversions between element kinds |
+| `cleanup` | removes small unstitchable elements |
+| `break-apart` | breaks apart and repairs broken fill shapes |
+| `troubleshoot` | marks problematic spots in the document |
+| `density-map` | a coloured dot at every stitch position |
+
+**Two of them will hang a headless run**, because their `.inx` declares
+`implements-custom-gui="true"` and they open a modal dialog: **`apply-palette`**
+and **`element-info`**. `apply-palette` is the tempting one — matching document
+colours to a palette sounds like the answer to PES's fixed 64-entry Brother
+palette — and it is exactly the one that blocks forever at ~0% CPU. Check that
+attribute in the `.inx` before scripting any extension; see the trap above about
+12 minutes elapsed against 1 second of CPU.
 
 ---
 

@@ -6,6 +6,13 @@ Pillow>=10.0          # also backs pyembroidery's PNG preview writer
 numpy>=1.26
 scipy>=1.11           # k-means colour clustering + binary morphology on masks
 
+# Polygon offsetting and boolean geometry (`svg_offset.py`). Chosen because
+# Ink/Stitch bundles and uses the same library for its own offsets — see
+# extensions/inkstitch/inkstitch/bin/shapely — so the geometry this repo
+# produces matches what the tool consuming it would have produced. Inkscape is
+# no substitute: Path > Outset is GUI-only and absent from `--action-list`.
+shapely>=2.0          # 2.0 for prepare()/contains_xy() on arrays
+
 # Reading the bundled Brother PDF manuals.
 pypdf>=5.0
 cryptography>=3.1     # some Brother PDFs use AES encryption; pypdf needs this

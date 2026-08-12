@@ -41,6 +41,10 @@ param(
     # nothing; reach for them when the machine is bending or breaking needles.
     [double]$Spacing = 0,
     [double]$Expand = -1,
+    # What the design is stitched ON. 'dark' tightens the default row spacing to
+    # design_limits.fill_density_mm_dark, because the validated 0.4 mm covers on
+    # white and speckles on black. Explicit -Spacing still wins.
+    [ValidateSet('light', 'dark', 'knits')][string]$Cloth = 'light',
     [switch]$NoFillUnderlay,
     # Tack style at the start and end of every run. Defaults to svg_prep's;
     # -LockStyle default restores Ink/Stitch's half_stitch behaviour.
@@ -93,6 +97,7 @@ $SkipList = @($Skip | ForEach-Object { $_ -split '[,;]' } | Where-Object { $_.Tr
 $args = @($Svg, $prepped, '--artwork-mm', $ArtworkMm) +
         ($SkipList | ForEach-Object { @('--skip', $_.Trim()) }) +
         $(if ($Spacing -gt 0) { @('--spacing', $Spacing) } else { @() }) +
+        $(if ($Cloth -ne 'light') { @('--cloth', $Cloth) } else { @() }) +
         $(if ($Expand -ge 0) { @('--expand', $Expand) } else { @() }) +
         $(if ($NoFillUnderlay) { @('--no-fill-underlay') } else { @() }) +
         $(if ($LockStyle) { @('--lock-style', $LockStyle) } else { @() }) +
