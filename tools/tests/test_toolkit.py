@@ -1120,6 +1120,22 @@ if out_svg.exists():
     check("merged document declares min_stitch_len_mm (it is what gets exported)",
           el is not None and float(el.text) == prof.min_stitch_mm())
 
+# Ink/Stitch sews a jump shorter than collapse_len_mm as ordinary stitches, so
+# the value decides whether travel between nearby shapes lands on the fabric.
+# Its 3.0 mm default put black thread across MuffyHat_on_white's hat, between
+# letters 1.2 mm apart. The behavioural evidence is a measured three-way build
+# comparison recorded in svg_prep; what is checkable cheaply is the reasoning
+# behind the number, which is that a hop shorter than the narrowest thread this
+# machine holds cannot be seen and anything longer can.
+_collapse = prof.design_limit("max_collapse_mm", None)
+_minw = prof.design_limit("min_satin_width_mm", None)
+check("profile declares max_collapse_mm", isinstance(_collapse, (int, float)))
+check("and it is no wider than the narrowest visible thread feature",
+      _collapse is not None and _minw is not None and _collapse <= _minw,
+      f"collapse {_collapse} vs min feature {_minw}")
+check("and well under Ink/Stitch's own 3.0 mm default, which is what failed",
+      _collapse is not None and _collapse < 3.0, f"{_collapse}")
+
 # --------------------------------------------------------------------------- #
 section("dark-cloth variants: recolor, knockout, invert")
 

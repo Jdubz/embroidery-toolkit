@@ -46,6 +46,7 @@ param(
     # white and speckles on black. Explicit -Spacing still wins.
     [ValidateSet('light', 'dark', 'knits')][string]$Cloth = 'light',
     [switch]$NoFillUnderlay,
+    [double]$CollapseMm = -1,
     # Tack style at the start and end of every run. Defaults to svg_prep's;
     # -LockStyle default restores Ink/Stitch's half_stitch behaviour.
     [string]$LockStyle = "",
@@ -100,6 +101,7 @@ $args = @($Svg, $prepped, '--artwork-mm', $ArtworkMm) +
         $(if ($Cloth -ne 'light') { @('--cloth', $Cloth) } else { @() }) +
         $(if ($Expand -ge 0) { @('--expand', $Expand) } else { @() }) +
         $(if ($NoFillUnderlay) { @('--no-fill-underlay') } else { @() }) +
+        $(if ($CollapseMm -ge 0) { @('--collapse-mm', $CollapseMm) } else { @() }) +
         $(if ($LockStyle) { @('--lock-style', $LockStyle) } else { @() }) +
         $(if ($ColourOrder) { @('--colour-order') + $ColourOrder } else { @() })
 & $py (Join-Path $PSScriptRoot 'svg_prep.py') @args

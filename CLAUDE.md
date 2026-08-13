@@ -501,6 +501,30 @@ subtract --colour FFD400 --by FFFFFF    knock the eyes out of the body
 drop     --colour 000000                let the cloth supply the linework
 ```
 
+**Ink/Stitch's `collapse_len_mm` default of 3.0 mm sews travel across bare
+cloth.** Any hop shorter than it becomes ordinary stitches instead of a jump, so
+two shapes a couple of millimetres apart get joined by a sewn line. On
+MuffyHat_on_white that put three black threads across the white hat, between
+SOUR PUSS letters 1.2 mm apart. It had always done it — at the artwork's
+original 0.5 mm letter spacing the travel was too short to see, and **re-spacing
+the lettering is what made it visible**. Now set from
+`design_limits.max_collapse_mm` (1.0 mm, matching `min_satin_width_mm`: a hop
+shorter than the narrowest thread this machine holds cannot be seen).
+
+**This inverts the jumps-are-expensive rule, deliberately.** Elsewhere here,
+minimise jumps — extra stitches are unattended machine time while extra jumps
+are floats you snip. But a jump float is **cut off** and collapsed travel is
+**sewn down and stays**. Across bare cloth in a visible area the jump wins. Cost
+across the library: a few more jumps each, 0.3–2.5 min of snipping.
+
+*Splitting the fill into one element per component does NOT fix this,* and it is
+the obvious first guess — it was built here and then removed. Measured three ways
+on the same design: default 3.0 → 13 jumps / 7,520 stitches / travel visible;
+split at 3.0 → 13 jumps / 7,584 / still visible; collapse 1.0 unsplit → 20 jumps
+/ 7,044 / **gone**. Ink/Stitch already routes subpaths as separate sections and
+collapses afterwards, so splitting only adds a lock and an underlay per letter.
+**Verify a fix changes the output before keeping the machinery.**
+
 **NEVER stitch thread the colour of the cloth.** It costs stitches, machine time
 and a rethread and shows nothing. The risk is specific to inverted dark-cloth
 work: the whole technique is to **drop** the ink layer and let the fabric supply

@@ -107,6 +107,12 @@ ap.add_argument("--lock-style", default="bowtie", metavar="STYLE",
                      "short opens a colour with sub-0.5 mm ties. Pass 'default' "
                      "to leave it alone. Valid in 3.3.0: half_stitch, triangle, "
                      "star, bowtie — see the note in the source.")
+ap.add_argument("--collapse-mm", type=float, default=None, metavar="MM",
+                help="hops shorter than this are sewn as ordinary stitches "
+                     "instead of jumped. Ink/Stitch defaults it to 3.0 mm, which "
+                     "sews visible travel across bare cloth between anything more "
+                     "than a hair apart. Defaults to "
+                     "design_limits.max_collapse_mm.")
 ap.add_argument("--no-fill-underlay", action="store_true",
                 help="drop the underlay beneath fills. Ink/Stitch turns it on "
                      "by default at 3x the fill spacing, perpendicular to it, "
@@ -120,6 +126,8 @@ ap.add_argument("--colour-order", nargs="+", metavar="RRGGBB",
                 help="explicit stitch order. Default is light to dark, because "
                      "the colour stitched last owns the shared boundary.")
 a = ap.parse_args()
+if a.collapse_mm is None:
+    a.collapse_mm = prof.design_limit("max_collapse_mm", 1.0)
 if a.spacing is None:
     key = {"light": "fill_density_mm",
            "dark": "fill_density_mm_dark",
@@ -147,8 +155,33 @@ print(f"  document set to {doc_mm:.1f} mm so the artwork is "
       f"{a.artwork_mm:.0f} x {a.artwork_mm * bh / bw:.1f} mm")
 
 meta = ET.SubElement(root, f"{{{SVG}}}metadata")
+# collapse_len_mm is the distance below which Ink/Stitch turns a JUMP into
+# ordinary stitches. Its 3.0 mm default is the whole reason MuffyHat_on_white
+# came out with black thread sewn across the white hat: the re-spaced SOUR PUSS
+# letters sit 1.2 mm apart, comfortably under 3.0, so every hop between them was
+# collapsed into a sewn line rather than jumped. The letters had always been one
+# path with eight subpaths; at the artwork's original 0.5 mm spacing that travel
+# was too short to see, and re-spacing the lettering made it visible.
+#
+# **Splitting the fill into one element per component does NOT fix this**, which
+# is worth knowing because it is the obvious first guess and it was tried here.
+# Measured on this design, all three ways:
+#
+#     default (collapse 3.0)          13 jumps, 7,520 stitches, travel visible
+#     split into components, 3.0      13 jumps, 7,584 stitches, travel visible
+#     collapse 1.0, no split          20 jumps, 7,044 stitches, travel GONE
+#
+# Ink/Stitch already routes those subpaths as separate sections; collapsing
+# happens afterwards, so splitting changes nothing except adding a lock and an
+# underlay to every letter. Collapse alone is both the fix and the cheaper file.
+#
+# Set from design_limits.max_collapse_mm. The trade is real and runs the
+# opposite way to the usual one: a lower value means more jumps, and every jump
+# on this machine is a float to snip by hand. But a jump float gets CUT OFF,
+# while collapsed travel is sewn down and stays on the finished piece.
 for k, v in (("inkstitch_svg_version", "4"),
-             ("min_stitch_len_mm", f"{prof.min_stitch_mm():g}")):
+             ("min_stitch_len_mm", f"{prof.min_stitch_mm():g}"),
+             ("collapse_len_mm", f"{a.collapse_mm:g}")):
     ET.SubElement(meta, f"{{{INK}}}{k}").text = v
 
 # Only override what there is a machine-specific reason to override.
@@ -398,7 +431,8 @@ for colour, kind, *_ in ops:
     seq[-1][1] += 1
 print(f"  {n_stroke} stroked -> satin columns (via stroke_to_satin), "
       f"{n_fill} filled -> auto_fill")
-print(f"  overrides written: {', '.join(FILL)} + min_stitch_len_mm; "
+print(f"  overrides written: {', '.join(FILL)} + min_stitch_len_mm, "
+      f"collapse_len_mm={a.collapse_mm:g}; "
       f"everything else left at Ink/Stitch defaults")
 print(f"  stroke ids -> {ids_file.name}, widths -> {widths_file.name}")
 print(f"  stitch order: " + " -> ".join(f"#{c} x{n}" for c, n in seq)
