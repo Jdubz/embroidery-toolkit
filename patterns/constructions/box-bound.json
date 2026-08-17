@@ -51,6 +51,11 @@
       "kind": "technique"
     },
     {
+      "title": "A zipped pocket built into a panel",
+      "path": "patterns/techniques/panel-pocket.md",
+      "kind": "technique"
+    },
+    {
       "title": "The box-bound family",
       "path": "patterns/BoxBound_family.md",
       "kind": "reference"
@@ -244,6 +249,7 @@
       "stitch": "straight, two rows, 3.0 mm, zipper foot, Microtex 90/14",
       "body": "A panel that carries a pocket is not one piece and it is not two. The INNER layer is a full {panel_w} × {panel_h} panel — the compartment's wall, bound on all four edges like any panel, and the reason the pocket is a sealed space rather than a second way into the bag. The OUTER layer is the one the zip is cut into: lap the {bp_upper} upper and the {bp_lower} lower onto the pocket zipper's tape by {bp_lap} each and topstitch two rows, exactly as you did the gusset's zipper panel. The reassembled outer measures {panel_h}, matching the inner. Lay outer over inner, wrong sides together, and from here treat the pair as one panel: the pocket is the cavity between them and the zip is its only mouth. Every pocketed panel on this bag uses the same two outer pieces at the same zip height, so cut them as pairs and build them together. Shorten each zipper and bar-tack a new stop just inside the seam line at both ends — the ends themselves get bound over.",
       "see": [
+        "patterns/techniques/panel-pocket.md",
         "patterns/techniques/zippers.md",
         "patterns/techniques/binding.md"
       ]
@@ -258,7 +264,8 @@
       "stitch": "box-X, twice round, 2.5–3.0 mm",
       "body": "The back pocket has already given this panel two layers, and the inner one is bound on all four edges — a better keeper anchor than any strip, so there is no anchor strip to cut. Fold each {keeper_w} × {keeper_len} keeper around a scrap of the belt itself to get the tunnel right, then box-X both ends through keeper, outer panel AND inner panel at once. That is what keeps the bag whole with the pocket zip open under load: the belt pulls on a panel bound to the gusset ring on every side, and the zip is nowhere in the load path. Both tacks sit above the zip, so neither crosses the pocket. Do it before the panel goes into the ring.",
       "see": [
-        "patterns/techniques/webbing-hardware.md"
+        "patterns/techniques/webbing-hardware.md",
+        "patterns/techniques/panel-pocket.md"
       ]
     },
     {

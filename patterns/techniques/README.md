@@ -9,6 +9,7 @@ re-explaining it, so the explanation improves in one place.
 | [binding.md](binding.md) | Wrapping a raw edge in a strip: width formula, single vs double fold, straight vs bias, the one-pass method, mitred corners, inside corners, 3D seams, closing the loop |
 | [webbing-hardware.md](webbing-hardware.md) | The box-X tack and why it cannot be sewn in one pass, assembling a belt keeper and its anchor strip, threading a tri-glide, hot-knifing |
 | [zippers.md](zippers.md) | Coil chain and what #5 means, the lapped panel that cuts no opening, shortening and bar-tacking a new stop, ends that get bound over, two sliders and which way they face, getting a slider back on |
+| [panel-pocket.md](panel-pocket.md) | Building a zipped pocket INTO a panel: the two layers and the cavity between them, the sum the outer pieces have to reassemble to, why the compartment stays sealed and no load crosses the zip, and where a tack may go |
 
 ## Diagrams
 
