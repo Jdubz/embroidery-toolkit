@@ -1,0 +1,82 @@
+{
+  "name": "SlingPack_13x7x4",
+  "title": "Sling Pack 13 × 7 × 4",
+  "construction": "box-bound",
+  "description": "Crossbody sling — a small tablet, a packed jacket, or a day's worth of everything. Wears across the chest or dropped onto the hip. The most comfortable size in the family to build: at 4\" of depth the coil clears the binding flange by ⅜\" and the webbing by 7/16\", so nothing is marginal and 1\" webbing fits without argument.",
+  "finished_in": {
+    "w": 13,
+    "h": 7,
+    "d": 4
+  },
+  "shell": "cordura-1000d",
+  "windows": false,
+  "closure": {
+    "coil_in": 0.25,
+    "lap_in": 0.5
+  },
+  "features": {
+    "d_rings": 4,
+    "handle_in": 10,
+    "placements": [
+      { "kind": "dring", "face": "left",   "u": 2.0, "v": 1.0, "label": "1 — sling upper, left" },
+      { "kind": "dring", "face": "right",  "u": 2.0, "v": 1.0, "label": "2 — sling upper, right" },
+      { "kind": "dring", "face": "bottom", "u": 2.5, "v": 2.0, "label": "3 — sling lower / stabiliser" },
+      { "kind": "dring", "face": "bottom", "u": 10.5, "v": 2.0, "label": "4 — sling lower / stabiliser" },
+      { "kind": "handle", "face": "top", "from": 3.75, "to": 9.25, "label": "10\" grab handle, bracketing the chassis overlap" },
+      { "kind": "logo", "face": "front", "u": 4.61, "v": 1.61, "w": 3.78, "h": 3.78, "label": "96 mm embroidery field" }
+    ]
+  },
+  "chassis": {
+    "webbing_in": 1.0,
+    "overlap_in": 4.0
+  },
+  "hardware": [
+    { "item": "#5 nylon coil zipper", "qty": "1 × 14\"", "note": "opening is 12⅛\"; shorten with a new bar-tacked stop" },
+    { "item": "1\" D-rings", "qty": 4, "note": "each on a 4\" external tab, tacked through to the chassis" },
+    { "item": "1\" tri-glide slider", "qty": 1, "note": "sling adjustment" },
+    { "item": "1\" swivel snap hooks", "qty": 2, "note": "so the sling comes off" },
+    { "item": "1\" nylon webbing, sling strap", "qty": "56\"", "note": "adjustable ~30–52\". DECLARED, not derived" },
+    { "item": "Heavy polyester topstitch thread", "qty": "1 spool", "note": "top and bobbin" }
+  ],
+  "notes": [
+    {
+      "kind": "note",
+      "title": "This is the size with margin everywhere",
+      "body": "Depth is the constraint that bites first in this family — below about 2½\" a webbing chassis stops fitting beside the zipper, and below about 1½\" the gusset face gets too narrow to bind cleanly. At 4\" nothing is close: ⅜\" of visible shell outboard of the coil and a 7/16\" gap to the webbing. If you are learning the construction, build this one first and the HipPack second."
+    },
+    {
+      "kind": "note",
+      "title": "Two rings carry, two stabilise",
+      "body": "Rings 1 and 2 sit at the top of each side face and take the sling. Rings 3 and 4 on the base give a stabiliser strap something to pull against so the bag does not swing forward when you lean — the same geometry the tote uses for its backpack lower pair. Both stay rigged at once."
+    },
+    {
+      "kind": "note",
+      "title": "Make a shoulder pad",
+      "body": "Interface-pressure research is unambiguous that wider straps are markedly more comfortable, with the best results around 8 cm, and 1\" webbing is narrow for a single strap carrying the whole bag. A slip-on pad, or a Cordura sleeve over closed-cell foam, costs nothing structurally."
+    },
+    {
+      "kind": "note",
+      "title": "The whole bag nests in a third of a yard",
+      "body": "Cordura comes 60\" wide and every piece — both panels, the gusset cut long, both zip strips and the binding — shelf-nests into a strip well under 12\" deep. Buy half a yard and the offcut covers a wear strip and a pocket."
+    }
+  ],
+  "open_questions": [
+    {
+      "title": "The sling strap is declared, not derived",
+      "body": "56\" of webbing, a tri-glide and two hooks are written down, but nothing computes them from the finished size or from a declared wearer. Change the bag and the strap figure will not move with it."
+    },
+    {
+      "title": "No pockets",
+      "body": "A 13 × 7 × 4 bag with one cavity is a sack. At this size a divided back-panel pocket earns its place more than it does on the HipPack — the StadiumTote's full-width, no-bottom-seam pocket is the pattern to copy, and it costs one hand-declared piece plus its bound top edge."
+    },
+    {
+      "title": "Not yet built"
+    }
+  ],
+  "docs": [],
+  "embroidery": {
+    "panel": "front",
+    "design": null,
+    "field_mm": [96, 96]
+  }
+}

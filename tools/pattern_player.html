@@ -1,0 +1,962 @@
+<title>Pattern Player</title>
+<style>
+  :root{
+    --paper:#EDEFEA; --sheet:#F7F8F4; --sunk:#E4E7E0;
+    --ink:#191F1C; --muted:#6B756F; --faint:#8B948E;
+    --rule:#D3D8CF; --rule-soft:#E2E6DE;
+    --cut:#B3261E; --stitch:#2C5A8C; --amber:#8A5E12; --good:#2F6B45;
+    --shell:#2C312E; --shell-lit:#3D4440; --shell-dim:#222624;
+    --binding:#9AA39B; --web:#8A7F55; --coil:#A8842C; --metal:#8E9691;
+    --stage-hi:#F1F3EE; --stage-lo:#C9CFC7;
+    --f-label:"Arial Narrow","Helvetica Neue","Liberation Sans Narrow","Nimbus Sans Narrow",Arial,sans-serif;
+    --f-body:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --f-data:"Cascadia Mono","SFMono-Regular",ui-monospace,Consolas,"Liberation Mono",monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#141917; --sheet:#1B211E; --sunk:#101413;
+      --ink:#E5E9E3; --muted:#8F9A94; --faint:#77827C;
+      --rule:#2F3833; --rule-soft:#242C28;
+      --cut:#E37C6B; --stitch:#7FB2E0; --amber:#D2A445; --good:#6FBF8F;
+      --shell:#3A423D; --shell-lit:#4B544E; --shell-dim:#2C332F;
+      --binding:#6E7772; --web:#AC9F69; --coil:#D6B356; --metal:#9BA49E;
+      --stage-hi:#39413C; --stage-lo:#1A1F1D;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#141917; --sheet:#1B211E; --sunk:#101413;
+    --ink:#E5E9E3; --muted:#8F9A94; --faint:#77827C;
+    --rule:#2F3833; --rule-soft:#242C28;
+    --cut:#E37C6B; --stitch:#7FB2E0; --amber:#D2A445; --good:#6FBF8F;
+    --shell:#3A423D; --shell-lit:#4B544E; --shell-dim:#2C332F;
+    --binding:#6E7772; --web:#AC9F69; --coil:#D6B356; --metal:#9BA49E;
+    --stage-hi:#39413C; --stage-lo:#1A1F1D;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:var(--f-body); font-size:16px; line-height:1.6;
+       -webkit-font-smoothing:antialiased}
+  :focus-visible{outline:2px solid var(--stitch); outline-offset:2px}
+
+  .lab{font-family:var(--f-label); text-transform:uppercase; letter-spacing:.13em;
+       font-size:10px; color:var(--muted)}
+  .num{font-family:var(--f-data); font-variant-numeric:tabular-nums}
+
+  /* ---------- masthead ---------- */
+  header{border-bottom:2px solid var(--ink); background:var(--paper);
+         position:sticky; top:0; z-index:30}
+  .mast{max-width:1240px; margin:0 auto; padding:16px 24px 0;
+        display:flex; flex-wrap:wrap; gap:14px 26px; align-items:flex-end}
+  .brand{font-family:var(--f-label); text-transform:uppercase; font-weight:700;
+         letter-spacing:.02em; font-size:26px; line-height:1; margin:0}
+  .brand small{display:block; font-size:10px; letter-spacing:.13em; color:var(--muted);
+               font-weight:400; margin-top:5px}
+  .picker{display:flex; align-items:center; gap:10px; margin-left:auto}
+  select{font-family:var(--f-label); text-transform:uppercase; letter-spacing:.08em;
+         font-size:13px; font-weight:700; color:var(--ink); background:var(--sheet);
+         border:1px solid var(--rule); border-radius:2px; padding:8px 12px; cursor:pointer}
+  .stats{max-width:1240px; margin:0 auto; padding:12px 24px 0;
+         display:flex; flex-wrap:wrap; gap:0; border-top:1px solid var(--rule-soft)}
+  .stat{padding:8px 22px 10px 0; margin-right:22px; border-right:1px solid var(--rule-soft)}
+  .stat:last-child{border-right:0}
+  .stat b{display:block; font-family:var(--f-data); font-size:14px; font-weight:400;
+          font-variant-numeric:tabular-nums; margin-top:2px}
+  .flagline{max-width:1240px; margin:0 auto; padding:8px 24px 12px;
+            display:flex; flex-wrap:wrap; gap:6px}
+  .chip{font-family:var(--f-label); text-transform:uppercase; letter-spacing:.1em;
+        font-size:9.5px; padding:3px 8px; border:1px solid var(--rule); border-radius:2px;
+        color:var(--muted)}
+  .chip.on{color:var(--stitch); border-color:var(--stitch)}
+  .chip.warn{color:var(--cut); border-color:var(--cut)}
+
+  /* ---------- shell ---------- */
+  .wrap{max-width:1240px; margin:0 auto; padding:0 24px 90px;
+        display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:0 40px; align-items:start}
+  main{min-width:0}
+
+  /* ---------- viewer ---------- */
+  .stage{position:relative; height:420px; margin-top:26px; border:1px solid var(--rule);
+         background:radial-gradient(130% 100% at 50% 12%, var(--stage-hi), var(--stage-lo));
+         perspective:1600px; display:flex; align-items:center; justify-content:center;
+         touch-action:none; cursor:grab; overflow:hidden}
+  .stage:active{cursor:grabbing}
+  .shadow{position:absolute; left:50%; bottom:52px; width:56%; height:30px;
+          transform:translateX(-50%);
+          background:radial-gradient(50% 50%, rgba(0,0,0,.32), rgba(0,0,0,0) 70%);
+          pointer-events:none}
+  .box{position:relative; transform-style:preserve-3d; transition:transform .12s linear}
+  .face{position:absolute; overflow:hidden; background:var(--shell);
+        border:0 solid var(--binding); backface-visibility:visible}
+  .face.lit{background:var(--shell-lit)}
+  .face.dim{background:var(--shell-dim)}
+  .face.win{background:linear-gradient(135deg, rgba(186,214,226,.42),
+              rgba(236,247,250,.14) 48%, rgba(172,200,218,.38))}
+  .ftag{position:absolute; left:4px; top:3px; font-family:var(--f-label);
+        text-transform:uppercase; letter-spacing:.12em; font-size:9px; color:#fff;
+        opacity:.5; pointer-events:none}
+  .box.noTags .ftag{display:none}
+  .ft{position:absolute}
+  .ft-zip{background:var(--coil);
+          background-image:repeating-linear-gradient(90deg, rgba(0,0,0,.45) 0 1px, transparent 1px 4px)}
+  .ft-web{background:var(--web); opacity:.5}
+  .ft-weblap{background:var(--web); opacity:.85}
+  .ft-dring{border:2.5px solid var(--metal); border-radius:2px; background:transparent}
+  .ft-logo{border:1.5px dashed var(--stitch); background:rgba(44,90,140,.13)}
+  .ft-rib{background:var(--shell-dim); box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+  .ft-pocket{background:rgba(255,255,255,.14); border-top:2px solid var(--binding)}
+  .ft-patch{border:2px solid var(--metal); opacity:.7}
+  .ft-belt-loop{background:var(--shell-lit); border:1.5px solid var(--shell-dim)}
+  .hpart{position:absolute; background:var(--web); border-radius:1px}
+  .box.xray .face{opacity:.42}
+  .box.xray .ft{opacity:1}
+
+  .ctl{display:flex; flex-wrap:wrap; gap:12px 24px; align-items:center;
+       padding:12px 2px 0; font-family:var(--f-label); text-transform:uppercase;
+       letter-spacing:.1em; font-size:10px; color:var(--muted)}
+  .ctl label{display:flex; align-items:center; gap:8px}
+  .ctl input[type=range]{width:120px; accent-color:var(--stitch)}
+  .ctl input[type=checkbox]{width:14px; height:14px; accent-color:var(--stitch)}
+  .legend{display:flex; flex-wrap:wrap; gap:6px 20px; padding:10px 2px 0}
+  .lg{display:flex; align-items:center; gap:8px; font-family:var(--f-label);
+      text-transform:uppercase; letter-spacing:.1em; font-size:9.5px; color:var(--muted)}
+  .sw{width:20px; height:3px; flex:none}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex; gap:0; margin-top:34px; border-bottom:2px solid var(--ink);
+        overflow-x:auto}
+  .tab{font-family:var(--f-label); text-transform:uppercase; letter-spacing:.12em;
+       font-size:11px; font-weight:700; color:var(--muted); background:none;
+       border:0; border-bottom:3px solid transparent; margin-bottom:-2px;
+       padding:10px 16px 9px; cursor:pointer; white-space:nowrap}
+  .tab[aria-selected=true]{color:var(--ink); border-bottom-color:var(--cut)}
+  .panel{padding-top:26px}
+  .panel[hidden]{display:none}
+
+  h2{font-family:var(--f-label); text-transform:uppercase; letter-spacing:.14em;
+     font-size:12px; font-weight:700; margin:34px 0 0; padding-bottom:7px;
+     border-bottom:1px solid var(--rule)}
+  .panel > h2:first-child{margin-top:0}
+  p{margin:14px 0 0; max-width:64ch}
+  .lede{font-size:17px}
+
+  table{border-collapse:collapse; width:100%; margin-top:16px; font-size:14px}
+  th,td{text-align:left; padding:8px 14px 8px 0; border-bottom:1px solid var(--rule-soft);
+        vertical-align:top}
+  th{font-family:var(--f-label); text-transform:uppercase; letter-spacing:.11em;
+     font-size:9.5px; color:var(--muted); font-weight:700;
+     border-bottom:1px solid var(--rule); padding-bottom:6px; white-space:nowrap}
+  td.d{font-family:var(--f-data); font-variant-numeric:tabular-nums; white-space:nowrap}
+  td.sub{color:var(--muted); font-size:13px}
+  .scroll{overflow-x:auto}
+
+  .cards{display:grid; gap:0; margin-top:8px}
+  .card{border-top:1px solid var(--rule); padding:18px 0;
+        display:grid; grid-template-columns:96px 1fr; gap:0 22px}
+  .card:last-child{border-bottom:1px solid var(--rule)}
+  .card h3{font-family:var(--f-body); font-size:18px; margin:0 0 6px; line-height:1.3}
+  .card p{margin:0 0 8px}
+  .card p:last-child{margin-bottom:0}
+  .kick{font-family:var(--f-label); text-transform:uppercase; letter-spacing:.11em;
+        font-size:9.5px; font-weight:700; padding-top:4px}
+  .kick::before{content:""; display:block; width:30px; height:3px; margin-bottom:6px}
+  .k-note{color:var(--stitch)} .k-note::before{background:var(--stitch)}
+  .k-warning{color:var(--cut)} .k-warning::before{background:var(--cut)}
+  .k-open{color:var(--amber)} .k-open::before{background:var(--amber)}
+  .k-step{color:var(--muted)} .k-step::before{background:var(--muted)}
+  .k-step b{display:block; font-family:var(--f-data); font-size:19px; color:var(--ink);
+            font-weight:400; letter-spacing:0}
+  .stitchnote{font-family:var(--f-data); font-size:12px; color:var(--stitch); margin-top:8px}
+
+  .checks{margin-top:16px}
+  .chk{display:grid; grid-template-columns:16px 1fr; gap:0 12px; padding:7px 0;
+       border-bottom:1px solid var(--rule-soft); font-size:14px}
+  .chk i{font-style:normal; font-family:var(--f-data); font-weight:700}
+  .chk.ok i{color:var(--good)} .chk.no i{color:var(--cut)}
+  .chk span{color:var(--muted); font-family:var(--f-data); font-size:12px; display:block}
+
+  /* nesting diagram */
+  .nest{margin-top:16px; border:1px solid var(--rule); background:var(--sheet); padding:14px}
+  .nest svg{display:block; width:100%; height:auto}
+
+  /* ---------- help rail ---------- */
+  aside{position:sticky; top:150px; padding-top:26px}
+  aside h2{margin-top:0}
+  .helplist{list-style:none; margin:0; padding:0}
+  .helplist li{border-bottom:1px solid var(--rule-soft)}
+  .helpbtn{display:block; width:100%; text-align:left; background:none; border:0;
+           padding:11px 0; cursor:pointer; color:var(--ink); font-family:var(--f-body);
+           font-size:14px; line-height:1.35}
+  .helpbtn:hover{color:var(--stitch)}
+  .helpbtn em{display:block; font-family:var(--f-label); text-transform:uppercase;
+              letter-spacing:.11em; font-size:9px; color:var(--faint); font-style:normal;
+              margin-top:3px}
+
+  /* ---------- reader overlay ---------- */
+  .reader{position:fixed; inset:0; z-index:60; background:rgba(10,14,12,.55);
+          display:flex; justify-content:flex-end}
+  .reader[hidden]{display:none}
+  .sheet{background:var(--paper); width:min(760px,100%); height:100%; overflow-y:auto;
+         border-left:2px solid var(--ink); padding:0 40px 80px}
+  .sheetbar{position:sticky; top:0; background:var(--paper); padding:18px 0 12px;
+            border-bottom:1px solid var(--rule); display:flex; gap:16px;
+            align-items:baseline; z-index:2}
+  .sheetbar h2{flex:1; margin:0; border:0; padding:0; font-size:13px}
+  .closebtn{background:none; border:1px solid var(--rule); border-radius:2px;
+            font-family:var(--f-label); text-transform:uppercase; letter-spacing:.12em;
+            font-size:10px; padding:6px 12px; cursor:pointer; color:var(--ink)}
+  .md h1{font-family:var(--f-label); text-transform:uppercase; font-size:30px;
+         line-height:1.05; margin:28px 0 0; letter-spacing:.01em}
+  .md h2{font-family:var(--f-body); text-transform:none; letter-spacing:0; font-size:22px;
+         margin:32px 0 0; padding-bottom:6px; border-bottom:1px solid var(--rule)}
+  .md h3{font-family:var(--f-body); font-size:17px; margin:24px 0 0}
+  .md h4{font-family:var(--f-label); text-transform:uppercase; letter-spacing:.11em;
+         font-size:11px; margin:20px 0 0; color:var(--muted)}
+  .md p{margin:13px 0 0}
+  .md ul,.md ol{margin:12px 0 0; padding-left:22px}
+  .md li{margin:5px 0}
+  .md blockquote{margin:18px 0 0; padding:2px 0 2px 18px; border-left:3px solid var(--stitch);
+                 color:var(--muted)}
+  .md blockquote h3,.md blockquote h4{color:var(--ink); margin-top:6px}
+  .md table{font-size:13.5px}
+  .md pre{background:var(--sunk); padding:12px 14px; overflow-x:auto; margin:16px 0 0;
+          font-family:var(--f-data); font-size:12px; line-height:1.6}
+  .md code{font-family:var(--f-data); font-size:.87em; background:var(--rule-soft);
+           padding:1px 5px; border-radius:2px}
+  .md pre code{background:none; padding:0}
+  .md hr{border:0; border-top:1px solid var(--rule); margin:30px 0 0}
+  .md .dgm{margin:22px 0 0; padding:16px; background:var(--sheet);
+           border:1px solid var(--rule)}
+  .md .dgm svg{display:block; width:100%; height:auto; max-width:640px; margin:0 auto}
+  .seebtn{display:inline-flex; align-items:center; gap:7px; margin-top:10px;
+          background:none; border:1px solid var(--stitch); border-radius:2px;
+          color:var(--stitch); font-family:var(--f-label); text-transform:uppercase;
+          letter-spacing:.11em; font-size:9.5px; padding:6px 11px; cursor:pointer}
+  .seebtn:hover{background:var(--stitch); color:var(--sheet)}
+  .md a{color:var(--stitch)}
+  .md strong{font-weight:700}
+
+  footer{border-top:1px solid var(--rule); margin-top:40px; padding-top:16px;
+         font-family:var(--f-label); text-transform:uppercase; letter-spacing:.11em;
+         font-size:9.5px; color:var(--faint); display:flex; flex-wrap:wrap; gap:6px 24px}
+
+  @media (max-width:900px){
+    .wrap{grid-template-columns:minmax(0,1fr)}
+    aside{position:static; border-top:2px solid var(--ink); margin-top:40px}
+    .sheet{padding:0 22px 60px}
+    .card{grid-template-columns:1fr; gap:8px}
+  }
+  @media (prefers-reduced-motion:reduce){ .box{transition:none} }
+</style>
+
+<header>
+  <div class="mast">
+    <h1 class="brand">Pattern Player<small>Sewing patterns, declared and derived</small></h1>
+    <div class="picker">
+      <span class="lab">Pattern</span>
+      <select id="pick" aria-label="Choose a pattern"></select>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="flagline" id="flags"></div>
+</header>
+
+<div class="wrap">
+  <main>
+    <div class="stage" id="stage">
+      <div class="shadow"></div>
+      <div class="box" id="box"></div>
+    </div>
+    <div class="ctl">
+      <label>Turn <input type="range" id="ry" min="-180" max="180" value="-34"></label>
+      <label>Tilt <input type="range" id="rx" min="-60" max="30" value="-16"></label>
+      <label><input type="checkbox" id="xray"> See inside</label>
+      <label><input type="checkbox" id="tags" checked> Face labels</label>
+      <span id="scaleNote" class="num" style="margin-left:auto;color:var(--faint)"></span>
+    </div>
+    <div class="legend" id="legend"></div>
+
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div id="panels"></div>
+  </main>
+
+  <aside>
+    <h2>Quick help</h2>
+    <ul class="helplist" id="helplist"></ul>
+    <footer id="prov"></footer>
+  </aside>
+</div>
+
+<div class="reader" id="reader" hidden>
+  <div class="sheet">
+    <div class="sheetbar">
+      <h2 id="readerTitle" class="lab"></h2>
+      <button class="closebtn" id="readerClose">Close</button>
+    </div>
+    <div class="md" id="readerBody"></div>
+  </div>
+</div>
+
+<script type="application/json" id="library">__LIBRARY_JSON__</script>
+<script>
+(function(){
+"use strict";
+const LIB = JSON.parse(document.getElementById("library").textContent);
+const $ = s => document.querySelector(s);
+const el = (t, cls, txt) => { const n = document.createElement(t);
+  if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
+
+/* ---------------- Markdown ----------------------------------------------
+   A deliberate subset: exactly what the notes in patterns/ and docs/ use.
+   Rendered here rather than in Python so adding a document is a path in a
+   spec, not a code change. */
+function esc(s){ return s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+function inline(s){
+  return esc(s)
+    .replace(/`([^`]+)`/g, (m,a) => "<code>"+a+"</code>")
+    /* Non-greedy, and NOT [^*]+: bold routinely contains an italic run, and a
+       character class that excludes the asterisk silently declines to match
+       the whole thing -- leaving literal ** in the rendered page. */
+    .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>")
+    .replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g, '<a href="$2" rel="noopener">$1</a>');
+}
+function cells(line){
+  return line.replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+}
+function markdown(src){
+  const lines = src.replace(/\r/g, "").split("\n");
+  const out = []; let i = 0;
+  const para = [];
+  const flush = () => { if (para.length){ out.push("<p>"+inline(para.join(" "))+"</p>"); para.length = 0; } };
+  while (i < lines.length){
+    let ln = lines[i];
+    let quote = false;
+    if (/^>\s?/.test(ln)){ quote = true; }
+    if (quote){
+      flush();
+      const buf = [];
+      while (i < lines.length && (/^>\s?/.test(lines[i]) || (buf.length && lines[i].trim() === ""))){
+        if (!/^>/.test(lines[i]) && lines[i].trim() === "") { if (!/^>/.test(lines[i+1]||"")) break; }
+        buf.push(lines[i].replace(/^>\s?/, "")); i++;
+      }
+      out.push("<blockquote>"+markdown(buf.join("\n"))+"</blockquote>");
+      continue;
+    }
+    if (/^```/.test(ln)){
+      flush();
+      const info = ln.slice(3).trim().toLowerCase();
+      i++; const buf = [];
+      while (i < lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]);
+      i++;
+      /* An ```svg fence passes through verbatim. Technique notes need real
+         diagrams and the page can fetch nothing, so the diagram has to BE the
+         document. These files are repo-local and authored here; nothing from
+         outside the repo ever reaches this branch. */
+      if (info === "svg") out.push('<figure class="dgm">' + buf.join("\n") + '</figure>');
+      else out.push("<pre><code>"+esc(buf.join("\n"))+"</code></pre>");
+      continue;
+    }
+    const h = /^(#{1,4})\s+(.*)$/.exec(ln);
+    if (h){ flush(); const n = h[1].length; out.push(`<h${n}>${inline(h[2])}</h${n}>`); i++; continue; }
+    if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(ln)){ flush(); out.push("<hr>"); i++; continue; }
+    if (/^\s*\|/.test(ln) && /^\s*\|[\s:|-]+\|?\s*$/.test(lines[i+1] || "")){
+      flush();
+      const head = cells(ln.trim()); i += 2;
+      const rows = [];
+      while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(cells(lines[i++].trim()));
+      out.push('<div class="scroll"><table><thead><tr>'
+        + head.map(c => "<th>"+inline(c)+"</th>").join("")
+        + "</tr></thead><tbody>"
+        + rows.map(r => "<tr>"+r.map(c => "<td>"+inline(c)+"</td>").join("")+"</tr>").join("")
+        + "</tbody></table></div>");
+      continue;
+    }
+    const li = /^\s*([-*+]|\d+\.)\s+(.*)$/.exec(ln);
+    if (li){
+      flush();
+      const ordered = /\d/.test(li[1]);
+      const items = [];
+      while (i < lines.length){
+        const m = /^\s*([-*+]|\d+\.)\s+(.*)$/.exec(lines[i]);
+        if (m){ items.push(m[2]); i++; }
+        else if (/^\s{2,}\S/.test(lines[i]) && items.length){ items[items.length-1] += " " + lines[i].trim(); i++; }
+        else break;
+      }
+      const tag = ordered ? "ol" : "ul";
+      out.push(`<${tag}>` + items.map(t => "<li>"+inline(t)+"</li>").join("") + `</${tag}>`);
+      continue;
+    }
+    if (ln.trim() === ""){ flush(); i++; continue; }
+    para.push(ln.trim()); i++;
+  }
+  flush();
+  return out.join("\n");
+}
+
+/* ---------------- the 3D model ------------------------------------------
+   Every face and every feature is positioned from the package's model3d at a
+   computed px-per-inch. No pattern has rendering code of its own: a new spec
+   previews the moment it is packaged. */
+const FACE = {
+  front:  { w:"w", h:"h", axis:"d", sign:1,  tone:"lit"  },
+  back:   { w:"w", h:"h", axis:"d", sign:1,  tone:""     },
+  left:   { w:"d", h:"h", axis:"w", sign:1,  tone:"dim"  },
+  right:  { w:"d", h:"h", axis:"w", sign:1,  tone:""     },
+  top:    { w:"w", h:"d", axis:"h", sign:1,  tone:"lit"  },
+  bottom: { w:"w", h:"d", axis:"h", sign:1,  tone:"dim"  }
+};
+const XFORM = {
+  front:  (W,H,D) => `translateZ(${D/2}px)`,
+  back:   (W,H,D) => `rotateY(180deg) translateZ(${D/2}px)`,
+  left:   (W,H,D) => `rotateY(-90deg) translateZ(${W/2}px)`,
+  right:  (W,H,D) => `rotateY(90deg) translateZ(${W/2}px)`,
+  top:    (W,H,D) => `rotateX(90deg) translateZ(${H/2}px)`,
+  bottom: (W,H,D) => `rotateX(-90deg) translateZ(${H/2}px)`
+};
+/* Each face is laid out as its own div and then rotated into place, so its
+   local axes do not all run the same way round the bag. Two of them disagree
+   with "measured from the front", and a band drawn on the wrong side of the
+   depth is the one error in here that would look plausible. */
+const FLIP_V = { top:true },  FLIP_U = { left:true };
+
+function depthPos(face, across, width, D){
+  if (face === "top")    return { along:"v", pos: D - across - width };
+  if (face === "bottom") return { along:"v", pos: across };
+  if (face === "left")   return { along:"u", pos: D - across - width };
+  return { along:"u", pos: across };            /* right */
+}
+
+let scale = 20;
+function build(pkg){
+  const box = $("#box");
+  box.innerHTML = "";
+  const m = pkg.model3d;
+  const inch = k => pkg.finished[k].in;
+  const W0 = inch("w"), H0 = inch("h"), D0 = inch("d");
+  const stage = $("#stage").getBoundingClientRect();
+  scale = Math.min((stage.width * 0.62) / Math.max(W0, D0),
+                   (stage.height * 0.62) / Math.max(H0, D0));
+  const W = W0*scale, H = H0*scale, D = D0*scale;
+  box.style.width = W + "px";
+  box.style.height = H + "px";
+  $("#scaleNote").textContent = scale.toFixed(1) + " px per inch — drawn from the cut list";
+
+  const bindPx = m.binding_show.in * scale;
+  const rPx = (m.corner_radius ? m.corner_radius.in : 0) * scale;
+
+  for (const name of Object.keys(FACE)){
+    const cfg = FACE[name];
+    const fw = m.faces[name].w.in * scale, fh = m.faces[name].h.in * scale;
+    const f = el("div", "face " + (cfg.tone || "") + (pkg.flags.has_windows &&
+              (name === "front" || name === "back") ? " win" : ""));
+    f.style.width = fw + "px";
+    f.style.height = fh + "px";
+    f.style.left = (W - fw)/2 + "px";
+    f.style.top  = (H - fh)/2 + "px";
+    f.style.transform = XFORM[name](W, H, D);
+    f.style.borderWidth = bindPx + "px";
+    /* The bag is an EXTRUSION: two flat panels and a gusset band wrapping
+       their outline. A rounded corner is a curve in that outline, so only the
+       panels get a radius -- the band has no crease there and runs straight
+       through. Rounding the side faces as well would fillet the wrong edges
+       and turn an extruded profile into a rounded box. */
+    if (rPx && (name === "front" || name === "back")){
+      f.style.borderBottomLeftRadius = rPx + "px";
+      f.style.borderBottomRightRadius = rPx + "px";
+    }
+    /* ...and the band's flat faces have to stop where the curve starts. */
+    if (rPx && (name === "left" || name === "right")){
+      f.style.height = (fh - rPx) + "px";
+      f.style.top = "0px";
+    }
+    if (rPx && name === "bottom"){
+      f.style.width = (fw - 2*rPx) + "px";
+      f.style.left = (W - (fw - 2*rPx))/2 + "px";
+    }
+    f.dataset.face = name;
+    f.appendChild(el("span", "ftag", name));
+    box.appendChild(f);
+  }
+  /* CSS cannot bend a face, so the curved run of the gusset is built as a
+     ribbon of flat facets following the arc. It is the same band -- one piece
+     of fabric, no creases, no seams -- and faceting it is purely how a box
+     model has to draw a curve. Six per quarter turn is under 0.2% short of the
+     true arc length, which is finer than the binding is wide. */
+  const FACETS = 6;
+  if (rPx){
+    const seg = [];
+    const q = Math.PI / 2 / FACETS;
+    for (const [cx, cy, a0] of [[W/2 - rPx, H/2 - rPx, 0],            // bottom right
+                                [-W/2 + rPx, H/2 - rPx, Math.PI/2]]){ // bottom left
+      for (let k = 0; k < FACETS; k++){
+        const am = a0 + (k + 0.5) * q;
+        const d = rPx * Math.cos(q/2);
+        seg.push({ x: cx + d*Math.cos(am), y: cy + d*Math.sin(am),
+                   len: 2*rPx*Math.sin(q/2), th: am + Math.PI/2 });
+      }
+    }
+    for (const s of seg){
+      const f = el("div", "face dim");
+      f.style.width = s.len + "px";
+      f.style.height = D + "px";
+      f.style.left = (W - s.len)/2 + "px";
+      f.style.top = (H - D)/2 + "px";
+      f.style.borderWidth = bindPx + "px 0";
+      f.style.transform = `translate3d(${s.x}px, ${s.y}px, 0) `
+                        + `rotateZ(${s.th * 180/Math.PI}deg) rotateX(90deg)`;
+      f.dataset.face = "curve";
+      box.appendChild(f);
+    }
+  }
+
+  const faceOf = n => box.querySelector(`.face[data-face="${n}"]`);
+
+  const place = (face, u, v, w, h, cls, title) => {
+    const host = faceOf(face); if (!host) return;
+    const fw = m.faces[face].w.in, fh = m.faces[face].h.in;
+    let U = FLIP_U[face] ? fw - u - w : u;
+    let V = FLIP_V[face] ? fh - v - h : v;
+    const d = el("div", "ft " + cls);
+    d.style.left = (U*scale - bindPx) + "px";
+    d.style.top  = (V*scale - bindPx) + "px";
+    d.style.width = w*scale + "px";
+    d.style.height = h*scale + "px";
+    if (title) d.title = title;
+    host.appendChild(d);
+    return d;
+  };
+
+  for (const ft of m.features){
+    if (ft.kind === "webbing" && ft.ring){
+      for (const face of ["top","right","bottom","left"]){
+        const fw = m.faces[face].w.in, fh = m.faces[face].h.in;
+        const p = depthPos(face, ft.across_depth_in, ft.width_in, D0);
+        if (p.along === "v") place(face, 0, p.pos, fw, ft.width_in, "ft-web", ft.label);
+        else                 place(face, p.pos, 0, ft.width_in, fh, "ft-web", ft.label);
+      }
+      if (ft.overlap_in){
+        const fw = m.faces.top.w.in;
+        const p = depthPos("top", ft.across_depth_in, ft.width_in, D0);
+        place("top", (fw - ft.overlap_in)/2, p.pos, ft.overlap_in, ft.width_in,
+              "ft-weblap", "chassis overlap — the only joint");
+      }
+      continue;
+    }
+    if (ft.kind === "zip"){ place(ft.face, ft.u, ft.v, ft.w, ft.h, "ft-zip", ft.label); continue; }
+    if (ft.kind === "dring"){
+      place(ft.face, ft.u - 0.625, ft.v - 0.30, 1.25, 0.60, "ft-dring", ft.label); continue;
+    }
+    if (ft.kind === "patch"){ place(ft.face, ft.u - .5, ft.v - .5, 1, 1, "ft-patch", ft.label); continue; }
+    if (ft.kind === "rib"){
+      place(ft.face, ft.u, 0, ft.w, m.faces[ft.face].h.in, "ft-rib", ft.label); continue;
+    }
+    if (ft.kind === "handle"){
+      const c = Math.abs(ft.to - ft.from);
+      const L = (pkg.geometry.handle ? pkg.geometry.handle.in : c + 2) - 2;
+      const rise = L > c ? c * Math.sqrt(3*(L/c - 1)/8) : 0.5;
+      const p = depthPos("top", (D0 - 1)/2, 1, D0);
+      const wpx = 0.9*scale, risePx = rise*scale;
+      const zTop = H/2 + risePx;
+      const mk = (w, h, tf, t) => { const d = el("div","hpart"); d.style.width = w+"px";
+        d.style.height = h+"px"; d.style.left = (W - w)/2 + "px";
+        d.style.top = (H - h)/2 + "px"; d.style.transform = tf; d.title = t || "";
+        box.appendChild(d); };
+      const mid = (ft.from + ft.to)/2 - W0/2;
+      mk(c*scale, wpx, `translate3d(${mid*scale}px, ${-zTop}px, 0) rotateX(90deg)`,
+         `${pkg.geometry.handle ? pkg.geometry.handle.text : ""} grab handle`);
+      for (const end of [ft.from, ft.to]){
+        mk(wpx, risePx, `translate3d(${(end - W0/2)*scale}px, ${-(H/2 + risePx/2)}px, 0)`);
+      }
+      continue;
+    }
+    if (ft.face) place(ft.face, ft.u, ft.v, ft.w || 1, ft.h || 1, "ft-" + ft.kind, ft.label);
+  }
+}
+
+/* ---------------- rotation ---------------------------------------------- */
+let rx = -16, ry = -34;
+function apply(){
+  $("#box").style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+  $("#rx").value = rx; $("#ry").value = ry;
+}
+(function drag(){
+  const st = $("#stage"); let on = false, px = 0, py = 0;
+  st.addEventListener("pointerdown", e => { on = true; px = e.clientX; py = e.clientY;
+    st.setPointerCapture(e.pointerId); });
+  st.addEventListener("pointermove", e => { if (!on) return;
+    ry += (e.clientX - px) * 0.55; rx -= (e.clientY - py) * 0.45;
+    rx = Math.max(-60, Math.min(30, rx));
+    ry = ((ry + 180) % 360 + 360) % 360 - 180;
+    px = e.clientX; py = e.clientY; apply(); });
+  const stop = () => { on = false; };
+  st.addEventListener("pointerup", stop); st.addEventListener("pointercancel", stop);
+})();
+$("#rx").addEventListener("input", e => { rx = +e.target.value; apply(); });
+$("#ry").addEventListener("input", e => { ry = +e.target.value; apply(); });
+$("#xray").addEventListener("change", e => $("#box").classList.toggle("xray", e.target.checked));
+$("#tags").addEventListener("change", e => $("#box").classList.toggle("noTags", !e.target.checked));
+
+/* ---------------- panels ------------------------------------------------- */
+const TABS = ["Overview", "Comfort", "Materials", "Cut list", "Assembly", "Checks"];
+
+function tableOf(head, rows){
+  const wrap = el("div", "scroll"), t = el("table");
+  const th = el("thead"), tr = el("tr");
+  head.forEach(h => tr.appendChild(el("th", null, h)));
+  th.appendChild(tr); t.appendChild(th);
+  const tb = el("tbody");
+  rows.forEach(r => {
+    const x = el("tr");
+    r.forEach(c => {
+      const td = el("td", c && c.cls || null);
+      td.textContent = (c && c.t !== undefined) ? c.t : (c == null ? "" : c);
+      x.appendChild(td);
+    });
+    tb.appendChild(x);
+  });
+  t.appendChild(tb); wrap.appendChild(t); return wrap;
+}
+function cards(items, kind, docs){
+  const box = el("div", "cards");
+  items.forEach(n => {
+    const c = el("div", "card");
+    const k = el("div", "kick k-" + (kind || n.kind || "note"));
+    k.textContent = n.kickText || (kind === "open" ? "Open" : (n.kind || "note"));
+    if (n.stepNo !== undefined){ k.textContent = ""; k.appendChild(el("b", null, String(n.stepNo))); }
+    c.appendChild(k);
+    const b = el("div");
+    b.appendChild(el("h3", null, n.title));
+    if (n.body) b.appendChild(el("p", null, n.body));
+    if (n.stitch) b.appendChild(el("div", "stitchnote", "▸ " + n.stitch));
+    /* A step that needs a method rather than a number links to the technique
+       note that teaches it, instead of re-explaining it badly in eighty words. */
+    (n.see || []).forEach(path => {
+      const doc = (docs || []).find(d => d.path === path);
+      if (!doc) return;
+      const btn = el("button", "seebtn", "◆  " + doc.title);
+      btn.onclick = () => openDoc(doc);
+      b.appendChild(btn);
+    });
+    c.appendChild(b); box.appendChild(c);
+  });
+  return box;
+}
+function nestSvg(lay){
+  const roll = lay.roll_width_in, used = Math.max(lay.used.in, 1);
+  const S = 720 / roll, h = used * S;
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `-4 -18 ${roll*S + 8} ${h + 26}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `Nesting layout for ${lay.material}`);
+  const add = (tag, at, txt) => { const n = document.createElementNS(ns, tag);
+    for (const k in at) n.setAttribute(k, at[k]); if (txt != null) n.textContent = txt;
+    svg.appendChild(n); return n; };
+  add("rect", {x:0, y:0, width:roll*S, height:h, fill:"none",
+               stroke:"var(--muted)", "stroke-dasharray":"6 4"});
+  lay.pieces.forEach(p => {
+    /* A piece with rounded corners is not a rectangle, and a cutting layout
+       that draws it as one is a layout you cut wrong. Nested pieces are laid
+       long edge along the roll, so the curve is on whichever pair of corners
+       the short dimension puts at the bottom -- draw it on both ends of the
+       long edge, which is what the piece actually looks like. */
+    const R = Math.min((p.r || 0) * S, p.w*S/2, p.h*S/2);
+    const X = p.x*S, Y = p.y*S, Wp = p.w*S, Hp = p.h*S;
+    if (R > 0.5){
+      add("path", {d:`M${X},${Y} h${Wp} v${Hp-R} a${R},${R} 0 0 1 ${-R},${R} `
+                    + `h${-(Wp-2*R)} a${R},${R} 0 0 1 ${-R},${-R} Z`,
+                   fill:"var(--shell)", "fill-opacity":".14",
+                   stroke:"var(--cut)", "stroke-width":"1.4"});
+    } else {
+      add("rect", {x:X, y:Y, width:Wp, height:Hp,
+                   fill:"var(--shell)", "fill-opacity":".14",
+                   stroke:"var(--cut)", "stroke-width":"1.4"});
+    }
+    add("text", {x:p.x*S + 5, y:p.y*S + 13, fill:"var(--ink)",
+                 "font-size":"10", "font-family":"var(--f-label)"}, p.piece);
+    add("text", {x:p.x*S + 5, y:p.y*S + 25, fill:"var(--muted)",
+                 "font-size":"9.5", "font-family":"var(--f-data)"},
+        `${p.w.toFixed(2)} × ${p.h.toFixed(2)}`);
+  });
+  add("text", {x:roll*S/2, y:-6, "text-anchor":"middle", fill:"var(--muted)",
+               "font-size":"11", "font-family":"var(--f-data)"},
+      `${roll}" roll width — ${lay.used.text} consumed`);
+  return svg;
+}
+
+function panelFor(name, p){
+  const d = el("div", "panel");
+  if (name === "Overview"){
+    d.appendChild(el("p", "lede", p.description));
+    if (p.open_questions.length){
+      d.appendChild(el("h2", null, "Before you cut — open questions"));
+      d.appendChild(cards(p.open_questions.map(q => ({...q, kickText:"Open"})), "open"));
+    }
+    if (p.notes.length){
+      d.appendChild(el("h2", null, "Notes worth keeping"));
+      d.appendChild(cards(p.notes));
+    }
+    d.appendChild(el("h2", null, "Geometry"));
+    d.appendChild(el("p", null, p.summary));
+    d.appendChild(tableOf(["Measure", "Figure"], [
+      ["Finished overall", {t:`${p.finished.w.text} W × ${p.finished.d.text} D × ${p.finished.h.text} H`, cls:"d"}],
+      ["Interior", {t:`${p.interior.w.text} × ${p.interior.h.text} × ${p.interior.d.text} — ${p.interior.litres} L`, cls:"d"}],
+      ["Panel cut", {t:`${p.geometry.panel_w.text} × ${p.geometry.panel_h.text}`, cls:"d"}],
+      ["Gusset cut width", {t:p.geometry.gusset_w.text, cls:"d"}],
+      ["Ring at the stitch line", {t:p.geometry.ring.text, cls:"d"}],
+      ["Seam allowance / flange", {t:`${p.geometry.sa.text} / ${p.geometry.flange.text}`, cls:"d"}],
+      ["Binding shows, each face", {t:p.geometry.show.text, cls:"d"}]
+    ]));
+    if (p.docs.filter(x => x.kind === "pattern").length){
+      d.appendChild(el("h2", null, "Long-form notes"));
+      const ul = el("ul", "helplist");
+      p.docs.filter(x => x.kind === "pattern").forEach(doc => {
+        const li = el("li"), b = el("button", "helpbtn");
+        b.appendChild(document.createTextNode(doc.title));
+        b.appendChild(el("em", null, doc.path));
+        b.onclick = () => openDoc(doc);
+        li.appendChild(b); ul.appendChild(li);
+      });
+      d.appendChild(ul);
+    }
+  }
+  if (name === "Comfort"){
+    d.appendChild(el("p", "lede",
+      "Figures from the load-carriage literature and from published testing. "
+      + "None of them is a gate: the threshold that matters — 16 kPa, where "
+      + "contact pressure starts to occlude blood flow — depends on how hard the "
+      + "wearer cinches the belt, and nobody here has measured that. What can be "
+      + "stated without inventing a number is the tension at which a belt of this "
+      + "width reaches it."));
+    if ((p.assembly_load || []).length){
+      d.appendChild(el("h2", null, "What it costs to sew"));
+      d.appendChild(el("p", null,
+        "Ease of assembly was the one goal with no number behind it, so every "
+        + "decision that added a seam got judged on the feature it bought and never "
+        + "on the seam. Counted, in roughly the order they hurt."));
+      d.appendChild(tableOf(["Operation", "Count", "Why it costs"],
+        p.assembly_load.map(r => [r.item, {t:String(r.count), cls:"d"},
+                                  {t:r.note, cls:"sub"}])));
+    }
+    d.appendChild(el("h2", null, "Reported figures"));
+    const box = el("div", "cards");
+    (p.comfort || []).forEach(c => {
+      const card = el("div", "card");
+      const k = el("div", "kick k-note");
+      k.textContent = "";
+      k.appendChild(el("b", null, ""));
+      card.appendChild(k);
+      const b = el("div");
+      const h = el("h3");
+      h.appendChild(document.createTextNode(c.measure + " — "));
+      const v = el("span"); v.style.fontFamily = "var(--f-data)";
+      v.style.color = "var(--stitch)"; v.textContent = c.value;
+      h.appendChild(v);
+      b.appendChild(h);
+      b.appendChild(el("p", null, c.basis));
+      card.appendChild(b); box.appendChild(card);
+    });
+    d.appendChild(box);
+    if ((p.sources || []).length){
+      d.appendChild(el("h2", null, "Where these come from"));
+      d.appendChild(el("p", null,
+        "Nothing in this repository has been worn by anybody. The same caveat "
+        + "docs/16 carries about its webbing parameters applies here: these are "
+        + "starting points for a first build, not settled numbers."));
+      const ul = el("ul", "helplist");
+      p.sources.forEach(s => {
+        const li = el("li");
+        const a = el("a", "helpbtn");
+        a.href = s.url; a.target = "_blank"; a.rel = "noopener";
+        a.style.display = "block"; a.style.textDecoration = "none";
+        a.appendChild(document.createTextNode(s.title));
+        a.appendChild(el("em", null, s.gives));
+        li.appendChild(a); ul.appendChild(li);
+      });
+      d.appendChild(ul);
+    }
+  }
+  if (name === "Materials"){
+    d.appendChild(el("h2", null, "Materials"));
+    d.appendChild(tableOf(["Role", "Material", "Thickness", "Frays", "Note"],
+      p.materials.map(m => [m.role, m.material,
+        {t: m.thickness_mm != null ? m.thickness_mm.toFixed(2) + " mm" : "", cls:"d"},
+        {t: m.frays === undefined ? "" : (m.frays ? "yes" : "no"), cls:"d"},
+        {t: m.note || "", cls:"sub"}])));
+    d.appendChild(el("h2", null, "Buy this"));
+    d.appendChild(tableOf(["Item", "Quantity", "Note"],
+      p.takeoff.map(t => [t.item, {t:t.qty, cls:"d"}, {t:t.note, cls:"sub"}])));
+    d.appendChild(el("h2", null, "Thickness budget"));
+    d.appendChild(el("p", null,
+      "Derived from the material table, not copied from any document. Peak on this bag is "
+      + p.peak_mm.toFixed(2) + " mm — hand-wheel anything over 5."));
+    d.appendChild(tableOf(["Location", "Stack", "mm"],
+      p.thickness.map(t => [t.location, {t:t.stack, cls:"sub"},
+        {t:t.mm.toFixed(2), cls:"d"}])));
+    d.appendChild(el("h2", null, "Tools"));
+    d.appendChild(tableOf(["Tool", "Why"], p.tools.map(t => [t.tool, {t:t.why, cls:"sub"}])));
+  }
+  if (name === "Cut list"){
+    d.appendChild(el("h2", null, "Cut list"));
+    d.appendChild(el("p", null,
+      "Derived from the finished envelope. Never hand-edit it — change the spec and regenerate."));
+    d.appendChild(tableOf(["Piece", "Qty", "Cut size", "Corners", "Material", "Note"],
+      p.cut_list.map(c => [c.piece, {t:String(c.qty), cls:"d"},
+        {t:`${c.w.text} × ${c.l.text}`, cls:"d"},
+        {t: c.corners === "square" ? "square"
+            : `bottom R${c.corner_r.text}`,
+         cls: c.corners === "square" ? "sub" : "d"},
+        {t:c.material, cls:"d"}, {t:c.note, cls:"sub"}])));
+    p.layouts.forEach(lay => {
+      d.appendChild(el("h2", null, "Nesting — " + lay.material));
+      const box = el("div", "nest");
+      box.appendChild(nestSvg(lay));
+      d.appendChild(box);
+    });
+    if (p.hardware.length){
+      d.appendChild(el("h2", null, "Hardware"));
+      d.appendChild(tableOf(["Item", "Qty", "Note"],
+        p.hardware.map(h => [h.item, {t:String(h.qty), cls:"d"}, {t:h.note, cls:"sub"}])));
+    }
+  }
+  if (name === "Assembly"){
+    d.appendChild(el("h2", null, "Before cutting"));
+    d.appendChild(tableOf(["Gate", "Why"],
+      p.checklist.map(c => [c.item, {t:c.why, cls:"sub"}])));
+    d.appendChild(el("h2", null, "Assembly order"));
+    d.appendChild(el("p", null,
+      "A bound seam cannot be unpicked — the holes stay. This order does all flat sewing first, "
+      + "so nothing has to be reached into. Steps that do not apply to this bag are already gone."));
+    d.appendChild(cards(p.assembly.map(s => ({...s, stepNo: s.n})), "step", p.docs));
+    d.appendChild(el("h2", null, "Stitch schedule"));
+    d.appendChild(tableOf(["Operation", "Stitch", "Length", "Foot", "Needle"],
+      p.stitch_schedule.map(s => [s.operation, s.stitch,
+        {t: s.length_mm + " mm", cls:"d"}, {t:s.foot, cls:"d"}, {t:s.needle, cls:"d"}])));
+  }
+  if (name === "Checks"){
+    const bad = p.checks.filter(c => !c.ok).length;
+    d.appendChild(el("p", "lede", bad
+      ? bad + " check(s) failed. A failed check is the design telling you something — "
+        + "both failures in this family so far were real, and neither wanted a fudge."
+      : "Every check passes. They run against the derived geometry, not against anything typed in."));
+    const box = el("div", "checks");
+    p.checks.forEach(c => {
+      const r = el("div", "chk " + (c.ok ? "ok" : "no"));
+      r.appendChild(el("i", null, c.ok ? "✓" : "✕"));
+      const b = el("div");
+      b.appendChild(document.createTextNode(c.name));
+      b.appendChild(el("span", null, c.detail));
+      r.appendChild(b); box.appendChild(r);
+    });
+    d.appendChild(box);
+  }
+  return d;
+}
+
+/* ---------------- reader ------------------------------------------------- */
+function openDoc(doc){
+  $("#readerTitle").textContent = doc.title + " — " + doc.path;
+  $("#readerBody").innerHTML = markdown(LIB.docs[doc.path] || "*Not available.*");
+  $("#reader").hidden = false;
+  $("#readerClose").focus();
+}
+$("#readerClose").onclick = () => { $("#reader").hidden = true; };
+$("#reader").addEventListener("click", e => { if (e.target.id === "reader") $("#reader").hidden = true; });
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("#reader").hidden = true; });
+
+/* ---------------- render ------------------------------------------------- */
+let current = 0;
+let activeTab = 0;
+
+function renderHelp(p){
+  const ul = $("#helplist"); ul.innerHTML = "";
+  const seen = new Set();
+  LIB.help.concat(p.docs).forEach(doc => {
+    if (seen.has(doc.path)) return; seen.add(doc.path);
+    const li = el("li"), b = el("button", "helpbtn");
+    b.appendChild(document.createTextNode(doc.title));
+    b.appendChild(el("em", null, doc.kind));
+    b.onclick = () => openDoc(doc);
+    li.appendChild(b); ul.appendChild(li);
+  });
+  $("#prov").innerHTML = "";
+  $("#prov").appendChild(el("span", null, "Schema " + p.schema_version));
+  $("#prov").appendChild(el("span", null, "Built " + p.provenance.generated_at.slice(0, 10)));
+  $("#prov").appendChild(el("span", null, p.provenance.spec.path));
+}
+
+function render(){
+  const p = LIB.patterns[current];
+  document.title = p.title + " — Pattern Player";
+
+  const bad = p.checks.filter(c => !c.ok).length;
+  const stats = $("#stats"); stats.innerHTML = "";
+  [["Finished", `${p.finished.w.text} W × ${p.finished.d.text} D × ${p.finished.h.text} H`],
+   ["Metric", `${p.finished.w_mm} × ${p.finished.d_mm} × ${p.finished.h_mm} mm`],
+   ["Capacity", p.interior.litres + " L"],
+   ["Ring", p.geometry.ring.text],
+   ["Shell", p.materials[0].material],
+   ["Peak stack", p.peak_mm.toFixed(2) + " mm"],
+   ["Checks", bad ? bad + " failed" : "all pass"]
+  ].forEach(([k, v]) => {
+    const s = el("div", "stat");
+    s.appendChild(el("span", "lab", k));
+    s.appendChild(el("b", null, v));
+    stats.appendChild(s);
+  });
+
+  const fl = $("#flags"); fl.innerHTML = "";
+  if (p.open_questions.length){
+    fl.appendChild(el("span", "chip warn",
+      p.open_questions.length + " open question" + (p.open_questions.length > 1 ? "s" : "")));
+  }
+  Object.entries(p.flags).forEach(([k, v]) => {
+    if (!v) return;
+    fl.appendChild(el("span", "chip on", k.replace(/_/g, " ")));
+  });
+
+  build(p);
+  apply();
+
+  const lg = $("#legend"); lg.innerHTML = "";
+  const items = [["var(--binding)", "binding, " + p.model3d.binding_show.text + " each face"],
+                 ["var(--coil)", "zip coil, " + p.geometry.coil_c.text + " from the cut edge"]];
+  if (p.flags.has_chassis) items.push(["var(--web)", p.geometry.loop.text + " chassis, inside the gusset"]);
+  if (p.flags.has_drings) items.push(["var(--metal)", "D-rings on external tabs"]);
+  items.push(["var(--stitch)", "embroidery field"]);
+  items.forEach(([c, t]) => {
+    const s = el("span", "lg"); const sw = el("span", "sw"); sw.style.background = c;
+    s.appendChild(sw); s.appendChild(document.createTextNode(t)); lg.appendChild(s);
+  });
+
+  const tabs = $("#tabs"); tabs.innerHTML = "";
+  const panels = $("#panels"); panels.innerHTML = "";
+  TABS.forEach((name, i) => {
+    const b = el("button", "tab", name);
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", String(i === activeTab));
+    b.onclick = () => { activeTab = i; render(); };
+    tabs.appendChild(b);
+    const pane = panelFor(name, p);
+    pane.hidden = i !== activeTab;
+    panels.appendChild(pane);
+  });
+
+  renderHelp(p);
+}
+
+const pick = $("#pick");
+LIB.patterns.forEach((p, i) => {
+  const o = el("option", null, p.title);
+  o.value = String(i); pick.appendChild(o);
+});
+pick.addEventListener("change", e => { current = +e.target.value; activeTab = 0; render(); });
+let rz = 0;
+window.addEventListener("resize", () => {
+  clearTimeout(rz);
+  rz = setTimeout(() => { build(LIB.patterns[current]); apply(); }, 120);
+});
+render();
+})();
+</script>

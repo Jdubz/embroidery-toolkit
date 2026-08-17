@@ -1,0 +1,101 @@
+{
+  "name": "BeltPouch_4x6",
+  "title": "Belt Pouch 4½ × 6½ × 2",
+  "construction": "box-bound",
+  "description": "A pouch on a fixed loop, carried by a belt you already own. Fits a large phone, cards and keys. At 4½ × 6½ it also happens to match the stadium small-bag allowance carried alongside a clear bag — a bonus, not a driver. The smallest bag in the family and the only one with no chassis, because the load path is belt → loop → back panel and never crosses the gusset.",
+  "finished_in": {
+    "w": 4.5,
+    "h": 6.5,
+    "d": 2
+  },
+  "shell": "cordura-1000d",
+  "windows": false,
+  "chassis": null,
+  "closure": {
+    "coil_in": 0.25,
+    "lap_in": 0.5
+  },
+  "features": {
+    "belt_loops": {
+      "for_in": 2.0,
+      "count": 1,
+      "width_in": 2.0
+    },
+    "placements": [
+      {
+        "kind": "belt-loop",
+        "face": "back",
+        "u": 1.25,
+        "v": 1.25,
+        "w": 2.0,
+        "h": 4.0,
+        "label": "fixed loop, box-X'd top and bottom, fits a 2\" belt"
+      },
+      {
+        "kind": "logo",
+        "face": "front",
+        "u": 1.0,
+        "v": 2.0,
+        "w": 2.5,
+        "h": 2.5,
+        "label": "63 mm embroidery field — see the note"
+      }
+    ]
+  },
+  "hardware": [
+    {
+      "item": "#5 nylon coil zipper",
+      "qty": "1 × 7\"",
+      "note": "opening is 3⅝\"; shorten with a new bar-tacked stop"
+    },
+    {
+      "item": "Heavy polyester topstitch thread",
+      "qty": "1 spool",
+      "note": "top and bobbin"
+    }
+  ],
+  "notes": [
+    {
+      "kind": "note",
+      "title": "A chassis is for bags carried by straps — this one is not",
+      "body": "The generator refused a chassis here before anyone thought to question it: at 2\" of depth the coil and the webbing physically overlap and the clearance check reported a NEGATIVE gap. The fix was not a fudge but a distinction worth stating. A chassis exists to take load off the shell and put it in a webbing loop round the girth. A belt pouch is carried by the belt — the load runs belt → loop → back panel and never crosses the gusset — so it needs none, and below about 2½\" of depth there is no room for one beside the zipper anyway. With `\"chassis\": null` the coil simply sits centred and the two zipper strips come out symmetrical at 1 5/16\" each. (That figure read 15/16\" until `frac()` learned to put a space between a whole number and a textual sixteenth — the geometry was always right.)"
+    },
+    {
+      "kind": "warning",
+      "title": "Size the loop to the belt you own",
+      "body": "Cut 2 × belt width + 1½\", so a 2\" belt takes a 2 × 5½\" piece. A loop cut for a 1½\" belt will not go over a 2\" one, and one cut for 2\" flaps on a 1½\". Box-X both ends to the back panel BEFORE it goes into the gusset ring, so the binding catches nothing but the panel edge."
+    },
+    {
+      "kind": "warning",
+      "title": "The front face cannot take a full 96 mm design",
+      "body": "The machine's field is 100 × 100 mm and this repo designs to 96, but the front face is only 4½\" — 114 mm — wide. A 96 mm design leaves 9 mm each side, which is less than the ½\" the binding shows, so it would run straight under the binding. Design to about 63 mm (2½\") and it sits clear with 25 mm of margin. This is the one bag in the family where the panel, not the machine, sets the limit."
+    },
+    {
+      "kind": "note",
+      "title": "Everything else in the family still applies",
+      "body": "The stitch schedule, lock-off policy, tool list and machine setup are properties of the materials and the machine, not of the size — so they come from the construction unchanged. What this bag drops is only what it genuinely does not have: no chassis steps, no ring tacks, no handle."
+    }
+  ],
+  "open_questions": [
+    {
+      "title": "A 2\" belt is assumed",
+      "body": "`belt_loop_for_in` is declared at 2.0 because that is the widest common trouser belt. Measure yours before cutting the loop — this is the one dimension in the pattern that depends on something outside it."
+    },
+    {
+      "title": "This keeper has no anchor strip behind it",
+      "body": "The HipPack backs its keepers with a strip whose ends are caught in the panel's side binding, so the belt load spreads into a seam instead of terminating in two stitch fields. This pouch does not — its single keeper box-Xes straight into one layer of Cordura. It is a much lighter bag and a trouser belt spreads load differently, so it is probably fine; but the reasoning that produced the anchor applies here too, and `\"anchor\": true` would add it for the cost of one 4½ × 2\" strip."
+    },
+    {
+      "title": "Not yet built"
+    }
+  ],
+  "docs": [],
+  "embroidery": {
+    "panel": "front",
+    "design": null,
+    "field_mm": [
+      63,
+      63
+    ]
+  }
+}

@@ -1,0 +1,307 @@
+{
+  "name": "HipPack_10x6x3",
+  "title": "Hip Pack 10 × 6 × 3",
+  "construction": "box-bound",
+  "description": "Everyday hip pack, in the utility register: black on black, matte hardware, no contrast anywhere, and a rounded bottom. It rides on a 1\" webbing belt through two keepers, so it slides round the body and the buckle moves off the hip bone; D-rings at the upper corners take a sling strap for crossbody wear and both stay rigged at once. Front and back panels are built identically — an inner layer that is the compartment wall, an outer one cut in two and lapped onto a zipper tape, and a sealed pocket in the cavity between. A divided slip pocket inside the front takes small items. No slit is cut anywhere, no zip is in any load path, and the two bottom corners are curves rather than mitres.",
+  "finished_in": {
+    "w": 10,
+    "h": 6,
+    "d": 3
+  },
+  "corners": {
+    "bottom_in": 1.5
+  },
+  "shell": "cordura-1000d",
+  "windows": false,
+  "chassis": null,
+  "closure": {
+    "coil_in": 0.25,
+    "lap_in": 0.5
+  },
+  "wearer": {
+    "waist_in": [
+      28,
+      44
+    ],
+    "crossbody_in": 52,
+    "handed": "right",
+    "taper_in_per_in": 0.75,
+    "tail_in": 6
+  },
+  "panel_pockets": {
+    "back": {
+      "zip_from_top_in": 2.125,
+      "must_hold_in": [
+        6.42,
+        3.06
+      ]
+    },
+    "front": {
+      "zip_from_top_in": 2.125
+    }
+  },
+  "divider": {
+    "face": "front",
+    "height_in": 3.25,
+    "attach": "topstitch",
+    "inset_in": 0.25,
+    "channels_in": [
+      2.5,
+      7.5
+    ]
+  },
+  "features": {
+    "d_rings": 2,
+    "d_ring_anchor": true,
+    "belt_loops": {
+      "for_in": 1.0,
+      "count": 2,
+      "width_in": 1.5,
+      "anchor": false
+    },
+    "placements": [
+      {
+        "kind": "dring",
+        "face": "left",
+        "u": 1.5,
+        "v": 1.0,
+        "label": "1 — sling, left upper corner"
+      },
+      {
+        "kind": "dring",
+        "face": "right",
+        "u": 1.5,
+        "v": 1.0,
+        "label": "2 — sling, right upper corner"
+      },
+      {
+        "kind": "belt-loop",
+        "face": "back",
+        "u": 1.5,
+        "v": 0.4375,
+        "w": 1.5,
+        "h": 1.5,
+        "label": "keeper 1 — box-X'd through keeper and BOTH layers of the back panel"
+      },
+      {
+        "kind": "belt-loop",
+        "face": "back",
+        "u": 7.0,
+        "v": 0.4375,
+        "w": 1.5,
+        "h": 1.5,
+        "label": "keeper 2 — 5½\" between centres, to resist the pack rocking"
+      },
+      {
+        "kind": "logo",
+        "face": "front",
+        "u": 3.5,
+        "v": 2.4375,
+        "w": 3.0,
+        "h": 3.0,
+        "label": "76 mm tonal field, below the front pocket zip"
+      }
+    ]
+  },
+  "hardware": [
+    {
+      "item": "#5 nylon coil zipper, main",
+      "qty": "1 × 12\"",
+      "note": "opening is 9⅛\"; buy long and shorten it with a new bar-tacked stop"
+    },
+    {
+      "item": "#5 sliders, main zip",
+      "qty": 2,
+      "note": "head to head, so the bag opens from whichever end your hand reaches first — which removes the handedness question from the main compartment entirely — matte black, and every piece of hardware matches"
+    },
+    {
+      "item": "#5 nylon coil zipper, back pocket",
+      "qty": "1 × 12\"",
+      "note": "spans the panel's full 9⅞\" cut width; both ends are bound over, so bar-tack a new stop just inside each seam line"
+    },
+    {
+      "item": "1\" side-release buckle",
+      "qty": 1,
+      "note": "belt closure — position it away from the iliac crest, which the keepers let you do — matte black, and every piece of hardware matches"
+    },
+    {
+      "item": "1\" tri-glide sliders",
+      "qty": 2,
+      "note": "one for the belt, one for the sling strap — matte black, and every piece of hardware matches"
+    },
+    {
+      "item": "1\" D-rings",
+      "qty": 2,
+      "note": "one at each upper corner of the gusset, on a 4\" tab tacked through to its anchor strip — matte black, and every piece of hardware matches"
+    },
+    {
+      "item": "1\" swivel snap hooks",
+      "qty": 2,
+      "note": "so the sling comes off and the bag goes back to being a belt bag — matte black, and every piece of hardware matches"
+    },
+    {
+      "item": "Heavy polyester topstitch thread",
+      "qty": "1 spool",
+      "note": "top and bobbin, so bound seams look the same from both faces"
+    },
+    {
+      "item": "#5 nylon coil zipper, front pocket",
+      "qty": "1 × 12\"",
+      "note": "identical to the back pocket's; both ends bound over, matte black tape and slider like everything else"
+    }
+  ],
+  "notes": [
+    {
+      "kind": "note",
+      "title": "The rounded bottom deletes the two hardest operations, not just softens the look",
+      "body": "A square corner costs a mitre in the binding and a clip in the gusset's seam allowance, and the mitre is the single thickest point on the bag — the one place the hand-wheel is not optional. A curve costs no mitre. It does still cost relief: a flat strip's raw edge has to reach a quarter further than its own stitch line round a convex curve, so the gusset's allowance is snipped every ⅜\" along the arc — 7 shallow snips per corner instead of one deep clip. Across two panels that is 8 mitres down to 4 and 8 deep clips down to 4, at the cost of 28 snips. The ring shortens too: each quarter turn replaces 2R of path with πR/2, so a 1½\" radius takes 1 5/16\" out and it closes at 27 3/16\" instead of 28½\"."
+    },
+    {
+      "kind": "warning",
+      "title": "A curve has to be bound on the bias, and that is the price",
+      "body": "Straight-grain binding has no give. Round a quarter turn the binding's outer fold has to travel 13/16\" further than its own stitch line, which is a third of the arc — nothing eases that but bias. So the whole perimeter goes on the bias: about 30% more material and the strips need piecing with 45° joins, which is exactly what `binding.md` says a curve costs. It is a good trade against four mitres, but it is a trade and not a free lunch. Put every join mid-edge, never at a corner or in a curve."
+    },
+    {
+      "kind": "note",
+      "title": "The divider came out of the binding, which was the other free seam",
+      "body": "It used to be caught in the front panel's binding on three sides with its top edge bound — one more bound edge, one more layer in the worst seam on the bag, and its own bottom corners would now have to be cut round the radius. Topstitched ¼\" clear of the seam instead, it costs three straight runs and gives all of that back: the front panel's mitred corner drops from 4.0 mm to 3.5, the binding strip from 1¼\" back to 1⅛\", and 9⅞\" comes off the binding run. Cordura is hot-knifed, so its top edge needs no binding and no hem at all."
+    },
+    {
+      "kind": "note",
+      "title": "Utility monochrome, and hardware consistency is the part that actually shows",
+      "body": "Black Cordura, black binding on black, matte black hardware on every one of the nine pieces, and a tonal logo — texture rather than colour. The research is blunt that mismatched hardware finishes read as unresolved even when each part is fine on its own, and this pack carries two buckle-family parts, two tri-glides, two D-rings, two hooks and three zip sliders. Consistency matters more than any single choice among them. The rest of the formula is the same everywhere: controlled silhouette, balanced proportions, restrained branding, matte over gloss. A boxy 10 × 6 × 3 reads as deliberate when nothing on it argues with anything else."
+    },
+    {
+      "kind": "note",
+      "title": "The front pocket is the one near-universal feature this pack was missing",
+      "body": "An external front zip pocket appears on the Hyperlite Versa, the Osprey Talon, the REI Trail 2, the Black Diamond Pursuit and LearnMYOG's own hip pack — it is what you reach for without opening the bag. It costs nothing new to learn: the front panel becomes the same three-layer sandwich the back already is, so the outer pieces cut as pairs, one assembly step describes both, and every check that guarded the back now guards the front too. That is what generalising `panel_pockets` bought — the alternative was a second copy of the same machinery with its own bugs."
+    },
+    {
+      "kind": "note",
+      "title": "The front pocket hid the divider's channel stitching",
+      "body": "The two channel lines are topstitched through the divider and the panel behind it. With a single-layer front that panel was the outside of the bag, so the lines showed and had to dodge the embroidery field. Now the divider lies against the INNER layer and the outer layer covers it: the stitching never reaches the outside at all. The check knows the difference and says so."
+    },
+    {
+      "kind": "warning",
+      "title": "The 96 mm field no longer fits — the logo dropped to 76 mm",
+      "body": "The front zip at 2⅛\" splits the outer face into 1⅝\" above and 3¼\" below. Neither takes a 96 mm design, which is why the field moved down and shrank to 76 mm centred on the lower piece. That is the real cost of the front pocket, and it suits the monochrome direction anyway: a tonal mark at 76 mm reads as a detail rather than a logo."
+    },
+    {
+      "kind": "note",
+      "title": "The belt is 1\" because two opposing findings meet there",
+      "body": "Static peak pressure predicts 85–86% of load-carriage discomfort, and 16 kPa is where contact pressure starts to occlude capillary blood flow. Pressure goes as 1/width, so a wider belt is directly better: at the smallest declared 28\" waist, ¾\" webbing reaches 16 kPa at 35 N of tension and 1\" reaches it at 46 N — a third more headroom for nothing but hardware size. Pushing wider runs into the opposite constraint. The waist is a truncated cone, gaining roughly ¾\" of girth per inch of drop, and a flat strap is the same length top and bottom; at 1\" it is out by ¾\" of circumference, at 1½\" by 1⅛\", and it rides. A belt cut curved solves that and webbing cannot be cut curved. 1\" is where the two bound each other."
+    },
+    {
+      "kind": "note",
+      "title": "Dropping the chassis is what made the belt width free",
+      "body": "Until the belt moved to keepers, the webbing ran round the gusset and the coil had to sit forward of it — which held the *coil clears the binding flange* check at ¼\", passing by exactly zero, and forced ¾\" webbing because 1\" failed outright. With the load path now belt → keepers → back panel → bound seam, the gusset carries nothing, the coil re-centres to 1 7/16\" and that check reads 15/16\". The belt width stopped being a geometry problem and became a comfort one, which is why the research could decide it."
+    },
+    {
+      "kind": "warning",
+      "title": "Belt width, pocket depth and panel height all come out of the same 5⅞\"",
+      "body": "The keepers sit on the upper back piece, in the band left between its seam allowance and its lap onto the pocket zip tape — and that band is exactly `zip_from_top − ½\"`. Move the pocket zip down to make room for a wider belt and the pocket gets shallower; move it up for a deeper pocket and the keepers run out of material. At 2⅛\" there is 1⅝\" of band (a 1\" belt plus ½\" of tacks needs 1½\") and 3 3/16\" of usable depth for a 78 mm phone, which needs 3.07\". A 1½\" belt would need the zip at 2½\", and the pocket would then be too shallow. Both are checked; neither is obvious."
+    },
+    {
+      "kind": "warning",
+      "title": "The pocket's usable depth is ⅜\" less than it looks",
+      "body": "Two bites come out of it and neither is visible in the cut list. The bottom ⅜\" of the cavity is seam allowance caught in the binding, so the 3⅝\" piece gives 3¼\" of interior. Then the rounded corners pinch the bottom, and how much depends on how wide the thing is: for a 6 7/16\" phone the usable depth is 3 3/16\", leaving ⅛\" to spare. That is why `must_hold_in` is declared and checked against the curve rather than eyeballed off a rectangle."
+    },
+    {
+      "kind": "warning",
+      "title": "The back panel is two layers, and both requirements depend on it",
+      "body": "An earlier version hung a partial pocket bag off the lower zip lip. That was wrong twice over. Opening the zip gave a slot with the pocket below it and the main compartment above it, so the two were one space — anything in the pocket could migrate into the bag. And the keepers tacked into the upper piece alone, a 2\" band whose bottom edge is nothing but zipper tape, so weight on the belt with the zip open hung the bag from three seams and a coil. The fix is one piece rather than two patches: the inner back panel is a full 9⅞ × 5⅞\" panel identical to the front, bound on all four edges. It is the main compartment's rear wall, the pocket is the sealed cavity behind it, and the keepers tack through both layers into something the gusset ring holds on every side. The zip carries nothing, open or shut."
+    },
+    {
+      "kind": "note",
+      "title": "The back pocket paid for its own anchor",
+      "body": "Doubling the panel removed the need for the 9⅞ × 1½\" belt anchor strip that used to sit behind the keepers: a full panel bound on four edges anchors better than a strip caught at two ends. The piece count went down, not up — front and inner are one cut-list line of two identical panels. `belt_loops.anchor` is false here now, and the check that used to depend on it is satisfied by the inner panel instead."
+    },
+    {
+      "kind": "note",
+      "title": "The divider is a slip pocket against the front panel, and its channels dodge the logo",
+      "body": "Small items in a 1.63 L cavity end up at the bottom under everything else. A 9⅞ × 3½\" panel lies flat against the front panel's interior with its sides and bottom caught in that panel's own binding — already structural, already there — so the only new seam is its own bound top edge. That is the StadiumTote's rule: a pocket's contents sit on its bottom seam, and putting that seam in the middle of a panel makes a loaded stitch line where there was none. It gives 3⅛\" of depth and leaves 2\" of open panel above it to reach past. Two lines of topstitching split it into channels of 2 1/16\", 5\" and 2 1/16\" — a pen or a lip balm at each end, cards and keys in the middle. Those lines go through the panel, so they SHOW on the outside, which is where the embroidery goes: at 2½\" and 7½\" they clear the 96 mm field by 5/8\" each side, and the generator checks it."
+    },
+    {
+      "kind": "note",
+      "title": "The cavity reaches above the opening, and the keeper tacks partition it",
+      "body": "The pocket is the whole space between the two layers, so it runs from the top binding to the bottom one with the zip as a slot partway down: 3¼\" of depth below the opening, which is what the phone check measures, plus 1⅝\" above it. The two keeper box-X tacks cross that upper part. That is useful rather than not — it stops a phone sliding up into a blind area you then have to fish it back out of."
+    },
+    {
+      "kind": "note",
+      "title": "The doubled panel is the thickest seam on the bag",
+      "body": "Both panels are doubled — an inner layer and an outer one the zip is cut into — so both bound seams carry two panels plus the gusset plus two layers of binding: 2.5 mm, and 3.5 mm at each mitred corner. The plain front-to-gusset figure of 2.0 mm no longer appears anywhere on this bag. Both are well inside the 5 mm warning, and the binding strip stays 1⅛\" because the generator sizes it from the worst seam rather than the average one."
+    },
+    {
+      "kind": "warning",
+      "title": "A D-ring needs something behind it, and dropping the chassis took that away",
+      "body": "The StadiumTote's rings tack through tab + gusset + the internal webbing loop — the tack is the connection, and the load ends up in the chassis rather than in the shell. This pack has no chassis, so a tab box-X'd to the upper corner of the gusset would put the entire bag into two stitch fields in one layer of Cordura, at the exact point that carries everything in sling mode. The answer is the same argument over a shorter span: a 2⅞ × 1½\" strip across the gusset's inside at each ring, running its full cut width so both ends finish flush with the panel edges and the bindings catch them. The load spreads into a seam that was carrying the bag anyway. `validate` now refuses any bag that has rings and neither a chassis nor an anchor behind them."
+    },
+    {
+      "kind": "note",
+      "title": "Rings at the upper corners, and why not on the back panel",
+      "body": "The back panel is doubled, so it would have made a fine ring anchor too. It is still the wrong place. A strap pulling off the back panel's corners drags it away from the body, and that panel already carries two keepers in the 2\" of finished height above its zip. The gusset's side faces are where a strap wants to pull from, they are a single uninterrupted piece, and 1\" below the top corner clears both the gusset-to-zip lap join above it and the binding flange around it."
+    },
+    {
+      "kind": "note",
+      "title": "The belt got shorter, because the sling took its second job",
+      "body": "At 58\" the belt had to reach a 52\" crossbody as well as a 44\" waist. With a dedicated sling strap on the rings it only has to be a belt: 50\", derived from the waist range alone. The sling is 56\" — 52\" of crossbody plus 4\" lost to two hook folds and the tri-glide. Both stay rigged at once, the way the StadiumTote keeps its backpack and crossbody rings live together, and unclipping the sling turns it straight back into a belt bag."
+    },
+    {
+      "kind": "note",
+      "title": "Keepers, not a sewn-on belt — and the reasons are usability, not construction",
+      "body": "A belt that slides through keepers can be repositioned three ways a fixed one cannot. The pack moves round the body to the front, the hip or the small of the back. The buckle moves off the iliac crest — testers named a buckle landing on the hip bone as a specific, repeatable complaint. And the same belt at 58\" wears the bag crossbody, which is how at least half of this class of bag is actually used now. None of that costs anything: it is the same two keepers either way."
+    },
+    {
+      "kind": "note",
+      "title": "There is no padding, and the arithmetic says there cannot be",
+      "body": "6 mm of EVA is the usual back-panel figure. Through this construction's bound seam that comes to 14.5 mm against a 6 mm stop-dead — a domestic machine will not drive it. A pad here has to float clear of the binding or not exist. It is also the least necessary padding on the body: the hip tolerates 2.14× the shoulder's contact pressure for equal discomfort, and testers rated several entirely unpadded packs as comfortable as padded ones. The pocket contents are the pad."
+    },
+    {
+      "kind": "note",
+      "title": "Two sliders on the main zip, one on the pocket",
+      "body": "A belt bag's zip should open away from the centre of the body toward the dominant hand — which means a single slider is handed, and gets it wrong for half of people. Two sliders head to head on the main zip removes the question: it opens from whichever end your hand reaches first. The back pocket keeps one slider, parked at the wearer's left so a right-handed wearer pulls it rightward. That is a decision you cannot see until the bag is finished and cannot change afterwards."
+    },
+    {
+      "kind": "note",
+      "title": "1.63 L is the middle of the band this bag lives in",
+      "body": "Across the fourteen hip packs OutdoorGearLab tested, capacity ran 1–3 L, and the specific complaint against the larger ones was sag when fully loaded. Keeping the keepers high on the panel — the belt sits in the top 2\" of a 6\" bag — and 5½\" apart is what resists the pack rocking outward under load. Wearing it higher on the hips rather than slung at the waist reduces bounce further."
+    },
+    {
+      "kind": "note",
+      "title": "A rigid bottle does not fit — the description means a soft flask",
+      "body": "The interior is 232 × 130 × 54 mm. A 500 ml bottle is about 200 mm long and 65 mm in diameter: it cannot stand, and 65 mm against 54 mm of depth means it cannot lie flat either. A filled soft flask is about 30 mm thick and goes in without argument."
+    },
+    {
+      "kind": "note",
+      "title": "The front panel is embroiderable, and Cordura is the worst substrate for it",
+      "body": "The StadiumTote puts its logo on the gusset because its panels are vinyl. Both panels here are shell fabric, and the front panel's 9⅛ × 5⅛\" face is the obvious place. The machine caps a design at 96 mm, which leaves 68 mm clear each side and only 17 mm above and below. If the embroidery matters more than the abrasion resistance, 12 oz denim bound in nylon tape passes every check at a 3.5 mm mitred corner and is a far better substrate; denim bound in denim fails at 7.5 mm."
+    }
+  ],
+  "open_questions": [
+    {
+      "title": "Every comfort figure here is literature, not fabric",
+      "body": "The 16 kPa occlusion threshold, the 2.14× hip tolerance and the ¾\"-per-inch waist taper all come from published work and from other people's testing. Nothing in this repository has been worn by anybody. `docs/16-narrow-material.md` carries the same caveat about its webbing parameters and for the same reason: these are starting points for a first build, not settled numbers."
+    },
+    {
+      "title": "The belt tension a wearer actually applies is unmeasured",
+      "body": "That is why the occlusion figure is reported and not enforced. 46 N is the tension at which a 1\" belt on a 28\" waist reaches 16 kPa; whether an everyday cinch is 20 N or 50 N is the thing nobody here has put a gauge on. Hip belt tension had no significant effect on gait in the one study that varied it, so there is no performance reason to cinch hard — only bounce."
+    },
+    {
+      "title": "Keeper spacing is a judgement",
+      "body": "5½\" between centres on a 10\" panel, widened from 4½\" because a wider base resists the pack rocking outward when loaded. Nothing here has been worn, and this is still the number most likely to want moving after the first outing."
+    },
+    {
+      "title": "No interior pockets",
+      "body": "The back pocket takes a phone. Inside is still one 1.63 L cavity with the wallet and keys loose together. The cheapest fix inside this construction is the StadiumTote's discreet-pocket trick: a flat shell panel topstitched to the gusset interior, no new binding, no new seam type."
+    }
+  ],
+  "docs": [],
+  "embroidery": {
+    "panel": "front",
+    "design": null,
+    "field_mm": [
+      76,
+      76
+    ]
+  }
+}

@@ -109,7 +109,33 @@ designs/
   out/                    Generated, machine-ready files
   library/                Purchased and downloaded designs
 projects/      Per-project stitch-out logs
+patterns/      Sewing patterns for bags — a parallel tree, same idea as designs/
+  specs/                  One JSON per bag: finished envelope, materials, features
+  constructions/          One JSON per construction: assembly order, stitch schedule
+  techniques/             Reusable how-to notes, with diagrams
 ```
+
+## Two halves
+
+`designs/` is embroidery — artwork in, `.pes` out. **`patterns/` is sewing** —
+finished dimensions in, cut list out. They meet whenever a bag panel gets a
+logo, and the embroidery step in every bag's assembly order links straight into
+`docs/`.
+
+Patterns follow the same rule as designs: **declared, not remembered.** Nothing
+is hand-computed. Edit a spec and regenerate, or the pattern and its record
+diverge — and unlike a bad stitch file, a bad cut is material already spent.
+
+```powershell
+py tools\bag_pattern.py --all --check      # every cut list, and its checks
+py tools\bag_pattern.py --all --package    # build\patterns\*.json
+py tools\pattern_player.py --open          # one self-contained page: 3D preview,
+                                           # cut list, layout, assembly order
+py tools\tests\test_patterns.py            # the pattern invariants
+```
+
+Start at [`patterns/README.md`](patterns/README.md); the schema is in
+[`patterns/SCHEMA.md`](patterns/SCHEMA.md).
 
 ## Documentation
 
@@ -127,6 +153,8 @@ projects/      Per-project stitch-out logs
 12. [Design Generation Playbook](docs/12-design-generation-playbook.md) — **start here to make a design**: which mode to use, and the five gates that catch every failure this repo has shipped
 13. [Repository Layout](docs/13-repository-layout.md) — the four states every file is in, and why a design is declared rather than remembered
 14. [Designing for Dark Cloth](docs/14-designing-for-dark-cloth.md) — bare fabric is a colour in the design; what changes when it stops being white, and the ordering trap that validates clean
+15. [Composable SVG Architecture](docs/15-composable-svg-architecture.md) — the shared document model behind `svg_edit`, and the survey of what already exists
+16. [Narrow Material](docs/16-narrow-material.md) — straps, webbing and ribbon: the 1-inch frame this machine supports, floating what cannot be hooped, and why the hoop has to be declared
 
 ## Two things worth knowing up front
 

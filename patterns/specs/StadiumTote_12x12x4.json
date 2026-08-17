@@ -1,0 +1,123 @@
+{
+  "name": "StadiumTote_12x12x4",
+  "title": "Stadium Tote 12 × 12 × 4",
+  "construction": "box-bound",
+  "description": "Clear-window stadium tote, and the reference build — every figure here was hand-computed first, which is what validates the generator. Two clear vinyl panels as windows; the entire gusset ring in 12 oz denim, bound in nylon tape. A single unbroken webbing loop runs the whole circumference INSIDE the gusset and carries every load: the six D-rings tack through to it from outside, so nothing weight-bearing touches the PVC and the gusset exterior stays clean enough to embroider.",
+  "finished_in": {
+    "w": 11.875,
+    "h": 11.5,
+    "d": 4.125
+  },
+  "fits_within_in": {
+    "w": 12,
+    "h": 12,
+    "d": 6
+  },
+  "shell": "denim-12oz",
+  "windows": true,
+  "closure": {
+    "coil_in": 0.25,
+    "lap_in": 0.5
+  },
+  "binding": {
+    "material": "nylon-binding-tape"
+  },
+  "features": {
+    "d_rings": 6,
+    "handle_in": 12,
+    "placements": [
+      { "kind": "dring", "face": "left",   "u": 2.0625, "v": 1.0, "label": "1 — crossbody" },
+      { "kind": "dring", "face": "right",  "u": 2.0625, "v": 1.0, "label": "2 — crossbody" },
+      { "kind": "dring", "face": "top",    "u": 4.4375, "v": 2.0625, "label": "3 — backpack upper, on the overlap" },
+      { "kind": "dring", "face": "top",    "u": 7.4375, "v": 2.0625, "label": "4 — backpack upper, on the overlap" },
+      { "kind": "dring", "face": "bottom", "u": 1.4375, "v": 2.0625, "label": "5 — backpack lower" },
+      { "kind": "dring", "face": "bottom", "u": 10.4375, "v": 2.0625, "label": "6 — backpack lower" },
+      { "kind": "handle", "face": "top", "from": 2.4375, "to": 9.4375, "label": "12\" grab handle, 7\" span, ~3\" hand clearance" },
+      { "kind": "logo", "face": "right", "u": 0.5875, "v": 4.0, "w": 2.95, "h": 2.95, "label": "75 mm logo, right gusset" },
+      { "kind": "rib", "face": "back", "u": 4.5, "w": 0.75, "label": "¾\" divider rib, off-centre" },
+      { "kind": "pocket", "face": "back", "u": 0.0, "v": 5.0, "w": 11.875, "h": 6.5, "interior": true, "label": "divided pocket, caught in the panel's own binding" }
+    ]
+  },
+  "pieces": [
+    { "piece": "Back-panel pocket", "qty": 1, "cut_in": [11.75, 6.5], "material": "vinyl-20ga", "kind": "pocket", "note": "full panel width — its bottom and both sides are caught in the panel's binding, so it has no bottom seam of its own" },
+    { "piece": "Small-items pocket", "qty": 1, "cut_in": [3.0, 4.5], "material": "vinyl-20ga", "kind": "pocket", "note": "right gusset interior; 3\" not 3½\", because the gusset face is only 3¼\"" },
+    { "piece": "Discreet pocket panel", "qty": 1, "cut_in": [3.5, 11.0], "material": "denim-12oz", "kind": "pocket", "note": "left gusset interior; press ¼\" under all round, double-fold the top" },
+    { "piece": "Divider rib", "qty": 1, "cut_in": [1.25, 11.375], "material": "denim-12oz", "kind": "rib", "note": "press ¼\" under each long edge → ¾\" finished" },
+    { "piece": "Base wear strip", "qty": 1, "cut_in": [4.0, 11.75], "material": "cordura-1000d", "kind": "other", "note": "exterior of the bottom face; denim's abrasion resistance is nothing like Cordura's" }
+  ],
+  "materials": [
+    { "role": "base wear strip", "material": "cordura-1000d", "note": "recommended — the shell swap to denim cost most of the abrasion resistance" }
+  ],
+  "hardware": [
+    { "item": "#5 nylon coil zipper", "qty": "1 × 14\"", "note": "opening is 11\"; longer so it can be shortened to fit" },
+    { "item": "1\" D-rings", "qty": 6, "note": "each on a 4\" external tab, tacked through tab + gusset + internal webbing" },
+    { "item": "1\" tri-glide sliders", "qty": 3, "note": "one crossbody, two backpack" },
+    { "item": "1\" swivel snap hooks", "qty": "4–6", "note": "unclip and move between configurations" },
+    { "item": "Clear vinyl, 20 gauge", "qty": "36 × 12\"", "note": "20 ga holds shape on a 12\" panel; 16 ga sews easier and slumps more" },
+    { "item": "Base stiffener (HDPE / Coroplast / PETG)", "qty": "1 × 10¾ × 3\"", "note": "optional; sized to the interior, not the exterior" },
+    { "item": "Heavy polyester topstitch thread", "qty": "1 spool", "note": "top and bobbin" }
+  ],
+  "layout": {
+    "vinyl-20ga": 36
+  },
+  "notes": [
+    {
+      "kind": "warning",
+      "title": "Do not bind denim in denim",
+      "body": "A fraying binding has to be double-fold — its outer edge turned under — which puts four layers at every seam instead of two. Measured: denim double-fold gives a 7.3 mm mitred corner and will not drive; nylon tape or Cordura single-fold gives 3.3 mm. Nothing says the binding has to match the shell, and here it must not. Contrast binding on denim is also just a better-looking bag."
+    },
+    {
+      "kind": "warning",
+      "title": "Never hot-knife PVC",
+      "body": "Heating vinyl releases hydrogen chloride — corrosive and genuinely harmful, not merely unpleasant like melting nylon. Vinyl is rotary-cut, always. And do not reach for a leather needle: it is chisel-pointed and cuts a slit rather than piercing a round hole, and in vinyl that slit becomes a tear that propagates along the stitch line."
+    },
+    {
+      "kind": "warning",
+      "title": "Never backstitch on exposed vinyl",
+      "body": "It perforates. Leave 4\" tails, pull both to one side, square-knot and trim. Backstitch is fine inside a seam the binding will cover. And keep the stitch length long — 3.0–3.5 mm — because short stitches perforate vinyl into a tear-here line, which is the opposite of the usual shorten-it-for-strength instinct."
+    },
+    {
+      "kind": "note",
+      "title": "The panel is no longer square",
+      "body": "The vinyl came 11⅜\" across, so that dimension became the panel height and the 11¾\" width runs along the roll. The bag loses ⅜\" of height and nothing else — width, depth, the whole zipper panel, every D-ring position and the handle are unchanged, because none of them keys off the height. Compliance improves: ½\" of margin on height instead of ⅛\"."
+    },
+    {
+      "kind": "note",
+      "title": "Why one continuous loop, and why the coil is off-centre",
+      "body": "Six anchor points need a load path, not six stitch fields. One 47¼\" loop topstitched down the gusset centreline gives every ring somewhere to pull, and tension flows right round the ring instead of terminating in a stitch field. The off-centre coil is what makes it possible: with the coil on the centreline the webbing has to jog around it, and that jog forced two pieces and two joints — placed, as it happened, at the two top corners, which is exactly where rings 1 and 2 carry the whole bag in crossbody mode. Better still, the single remaining overlap lands under rings 3 and 4, so both backpack anchors sit on doubled webbing."
+    },
+    {
+      "kind": "note",
+      "title": "The vinyl is a window — it contains, it never carries",
+      "body": "Every carry load terminates in the denim-and-webbing chassis. The panels' only structural job is holding contents in, spread along 43¼\" of bound seam rather than concentrated at a point. That is also why the back-panel pocket has no bottom seam of its own: a pocket's contents sit on its bottom seam, and putting that seam in the middle of a vinyl panel is a loaded horizontal stitch line in 0.5 mm PVC."
+    },
+    {
+      "kind": "note",
+      "title": "The logo goes on the gusset, not on a panel",
+      "body": "What gets a bag refused, from the published rejection criteria: a large non-transparent logo obscuring the contents, tint or printing on the clear areas, or the bag not reading as clear at a glance. Putting the logo on the right gusset leaves both windows at 100% and removes the one rejection cause that names a specific feature. Roughly 83 × 254 mm of clear field there — design to about 75 × 75 mm and hoop it in the 4×4. Embroider before the webbing goes in: two layers of denim plus webbing will not hoop flat."
+    },
+    {
+      "kind": "note",
+      "title": "Backpack straps come off the top-back and bottom-back",
+      "body": "Anchored to the side gussets they would sit 11\" apart at the top — roughly shoulder width, so they slide straight off. Ergonomic guidance puts useful top spacing at about 70 mm (2¾\"): wider and they fall off, narrower and they pinch the neck. The 9\" bottom spread gives the outward angle that keeps them seated. Backpack and crossbody use different rings, so both stay rigged at once."
+    }
+  ],
+  "open_questions": [
+    {
+      "title": "The venue's own policy is the authority",
+      "body": "This is the standard construction for commercially sold approved totes and it is under the 12 × 6 × 12 limit on every axis. Concert policies at stadiums usually mirror the NFL rule but not always. Read the venue's published policy before cutting."
+    },
+    {
+      "title": "Not yet built",
+      "body": "Five revisions have each moved a number that only re-deriving the geometry caught. The last — the seam-allowance audit that took the ring from 48\" to 43¼\" and the panels from 12\" to 11¾\" — would have ruined a bag: 4\" of pucker, and panels over the policy limit at the flange. Log the build in `projects/` when it happens."
+    }
+  ],
+  "docs": [
+    { "title": "StadiumTote — the long-form build notes", "path": "patterns/StadiumTote_12x12x4.md", "kind": "pattern" }
+  ],
+  "embroidery": {
+    "panel": "gusset-right",
+    "design": null,
+    "field_mm": [75, 75]
+  }
+}
