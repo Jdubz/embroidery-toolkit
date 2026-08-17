@@ -191,6 +191,20 @@ def validate_spec(spec: dict, where: str) -> None:
             "on, as RRGGBB. It is what the preview is rendered against and what "
             "selects the fill density, and the design name is not a substitute.")
 
+    # Optional, and it defaults to the included 4x4 rather than being required —
+    # every design here so far is a 4x4 design. Declare it for anything stitched
+    # in a smaller frame: the file does not record the hoop and the machine does
+    # not detect it, so a spec is the only place the fact can live, and without
+    # it a design too big for its frame validates clean.
+    if spec.get("hoop") is not None:
+        from . import profile as _prof
+        if not isinstance(spec["hoop"], str) or _prof.hoop(spec["hoop"]) is None:
+            known = ", ".join(str(h.get("id")) for h in _prof.hoops())
+            raise ValueError(
+                f"{where}: unknown 'hoop' {spec['hoop']!r} — the machine profile "
+                f"knows {known}. Add the frame to reference/machine-profile.json "
+                f"if you own one it does not list.")
+
 
 def _in_dependency_order(specs: list[dict]) -> list[dict]:
     """Order specs so one reading another's prepare output builds after it.
@@ -386,10 +400,10 @@ def _stitch_out(spec: dict, quiet: bool) -> Path:
     return dst
 
 
-def measure(pes: Path, cloth: str | None = None) -> dict:
+def measure(pes: Path, cloth: str | None = None, hoop: str | None = None) -> dict:
     from . import analyze
     info = analyze.describe(pes)
-    findings = analyze.validate(info, cloth=cloth)
+    findings = analyze.validate(info, cloth=cloth, hoop=hoop)
     return {
         "width_mm": round(info.width_mm, 1), "height_mm": round(info.height_mm, 1),
         "stitches": info.real_stitches, "colours": info.thread_count,
@@ -454,7 +468,7 @@ def build_one(spec: dict, quiet: bool = False) -> dict:
         "inputs": [{"path": rel(p), "sha256": sha256(p)} for p in inputs if p.exists()],
         "output": {"path": rel(pes), "sha256": sha256(pes), "bytes": pes.stat().st_size},
         "toolchain": toolchain(),
-        "measured": measure(pes, spec.get("cloth")),
+        "measured": measure(pes, spec.get("cloth"), spec.get("hoop")),
     }
 
 

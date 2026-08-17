@@ -103,6 +103,14 @@ invisible on cream and a dark dot at every needle penetration on black. Stating
 the density separately in `options.Cloth` is only for what a colour cannot imply,
 such as `knits`.
 
+**`hoop` is optional and defaults to the included 4×4.** Declare it — `"hoop":
+"SA431"` — for anything stitched in a smaller frame, and `validate` checks the
+design against that frame's stitchable areas instead of the full field. Like
+`cloth`, it is a fact the file cannot carry: a `.pes` records no frame, and
+unlike most machines the SE700 does not detect one either. Without the
+declaration a design too big for its frame passes every check here and then
+drives the presser foot into the frame. See `16-narrow-material.md`.
+
 `build.tool` is one of two:
 
 | | |

@@ -377,6 +377,21 @@ out to hold the most useful calibration data in the repo:
 
 - The **SA434 4"×6.75" hoop attaches but does not enlarge the stitchable field.**
   It's still 100 × 100 mm. Don't suggest it as a way to stitch bigger designs.
+- **Narrow material has a frame, and the machine does not detect which frame is
+  on it.** The optional **SA431** stitches a **1-inch-tall field** — 60 × 20 mm,
+  plus 50 × 30 and 30 × 40 (Operation Manual p.68) — which is what makes straps,
+  webbing and ribbon workable here at all; a 25 mm strap in the 4×4 has nothing
+  to tension against. But the frame is **declared on the settings screen, not
+  sensed**, so with [Embroidery Frame Identification View] off the carriage will
+  drive a 100 mm path into a 60 mm frame. Specs therefore carry an optional
+  `hoop`, and `validate` reports `hoop-overflow`. **This is the one envelope
+  error no other gate here could see** — a 40 mm-tall design for the SA431 clears
+  the machine field by 60 mm, so `field-overflow`, `coverage`, `render` and
+  `proof` are all clean and the failure is the presser foot hitting the frame.
+  Check a hoop against `fields_mm` (what it stitches), never `window_mm` (how big
+  it is) — they differ on SA434 by 70 mm. Full procedure in
+  `docs/16-narrow-material.md`; parameters there are practitioner-sourced and
+  **not yet tested on fabric in this workshop**.
 - **DST carries no colour data.** Converting PES → DST → PES loses colours
   permanently.
 - **Do not oil this machine.** The manual explicitly prohibits it.
@@ -1112,7 +1127,7 @@ Things a reviewer should check, all of which were real defects at some point:
 
 ## Tests
 
-`tools/tests/test_toolkit.py` — 253 invariant checks, no framework needed:
+`tools/tests/test_toolkit.py` — 309 invariant checks, no framework needed:
 
 ```powershell
 .venv\Scripts\python.exe tools\tests\test_toolkit.py

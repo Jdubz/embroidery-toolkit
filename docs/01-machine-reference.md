@@ -111,15 +111,28 @@ the race is the only user-serviceable lubrication-adjacent task.
 
 ## Hoops
 
-| Part | Size | Notes |
+| Part | Stitchable field | Notes |
 |---|---|---|
 | **SA432** | 100 × 100 mm (4" × 4") | Medium — **included** |
-| SA431 | 20 × 60 mm (1" × 2.5") | Small — optional, good for names and monograms |
-| SA434 | 100 × 170 mm (4" × 6.75") | Large — the frame attaches, but **the stitchable field is still 100 × 100 mm** |
+| SA431 / EF61 | **60 × 20 mm**, 50 × 30, 30 × 40 | Small — optional. Three areas, and a design need only fit one. The 20 mm-tall one is a **1-inch field**: names, monograms, and the only sane way to do straps and ribbon here |
+| SA434 | 100 × 100 mm | Large — the *frame* is 100 × 170 mm (4" × 6.75"), but **the stitchable field is still 100 × 100 mm** |
 
-SA434 does not give you a bigger design. It is useful for holding a longer piece
-of fabric steady so you can reposition and stitch multiple 4×4 blocks without
-re-hooping. Do not buy it expecting 4×6.75 designs to work.
+The field is not the frame. SA434 does not give you a bigger design; it is useful
+for holding a longer piece of fabric steady so you can reposition and stitch
+multiple 4×4 blocks without re-hooping. Do not buy it expecting 4×6.75 designs to
+work.
+
+**The machine does not detect which frame is fitted** — you select it in
+*Settings → Embroidery settings*, and setting **[Embroidery Frame Identification
+View] to ON** then shades out patterns that do not fit it. That is a safety
+interlock as much as a convenience: the manual warns that too small a frame lets
+the presser foot strike it (p.64), and nothing but that setting prevents a 100 mm
+carriage path inside a 60 mm frame. It is also why a valid design can vanish from
+the pattern list — see `07-troubleshooting.md`.
+
+Designs declare their frame in `designs/specs/<Name>.json` as `"hoop"`, and
+`stitch validate` checks the fit. Details and the narrow-material procedure are in
+`16-narrow-material.md`.
 
 The bracket is the common Brother 4×4 SE/PE mount, shared with the SE400, SE425,
 SE600, SE625, SE630, PE535, PE550D, LB5000, and the Baby Lock Sofia 2 and Verve.

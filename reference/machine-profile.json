@@ -164,13 +164,31 @@
     "oiling": "Do NOT oil this machine. The manual explicitly prohibits user lubrication."
   },
   "hoops": {
-    "included": [{ "part": "SA432", "name": "Medium", "area_mm": [100, 100], "area_in": [4, 4] }],
-    "compatible_optional": [
-      { "part": "SA431", "name": "Small", "area_mm": [20, 60], "area_in": [1, 2.5] },
-      { "part": "SA434", "name": "Large / border", "area_mm": [100, 170], "area_in": [4, 6.75],
-        "caveat": "The frame attaches, but the machine still only stitches a 100 x 100 mm field. Useful for repositioning fabric, not for larger single designs." }
+    "$comment": "fields_mm is what tooling checks a design against: the STITCHABLE areas, [width, height] in mm, not the physical window. The two differ — SA434's window is 100 x 170 but its field is still 100 x 100 — and it is the field that decides whether a design can be stitched. A design declares its hoop in designs/specs/<Name>.json as 'hoop'; validate reads it. Multiple entries mean the machine offers a choice of areas for that frame and a design need only fit one.",
+    "default": "SA432",
+    "list": [
+      {
+        "id": "SA432", "name": "Medium", "included": true,
+        "window_mm": [100, 100], "window_in": [4, 4],
+        "fields_mm": [[100, 100]]
+      },
+      {
+        "id": "SA431", "name": "Small", "included": false,
+        "window_mm": [63.5, 25.4], "window_in": [2.5, 1.0],
+        "fields_mm": [[60, 20], [50, 30], [30, 40]],
+        "note": "The 1-inch-tall frame, and the reason narrow material is workable on this machine at all. The Operation Manual (p.68) lists three embroidering areas for it — 2 x 6 cm, 3 x 5 cm and 4 x 3 cm, quoted there as height x width — and shades out patterns that fit none of them. 20 mm of field under a 25.4 mm strap leaves the frame arms holding the edges flat, which is the support a 4x4 hoop cannot give a narrow strap.",
+        "alt_part": "EF61"
+      },
+      {
+        "id": "SA434", "name": "Large / border", "included": false,
+        "window_mm": [100, 170], "window_in": [4, 6.75],
+        "fields_mm": [[100, 100]],
+        "note": "The frame attaches, but the machine still only stitches a 100 x 100 mm field. Useful for repositioning fabric down a long piece, not for larger single designs."
+      }
     ],
-    "note": "Hoop mount is the common Brother 4x4 SE/PE bracket shared with SE400/SE425/SE600/SE625/SE630/PE535/PE550D/LB5000 and Baby Lock Sofia 2 / Verve."
+    "frame_is_declared_not_detected": "The machine does NOT sense which frame is mounted. You select it on the settings screen (Embroidery settings, item 1) and turn [Embroidery Frame Identification View] ON, after which patterns too big for it are shaded and unselectable. With the setting OFF and a small frame mounted, the carriage will drive a 100 mm path — and the manual's caution at p.64 is explicit: 'If you use a frame that is too small, the presser foot may strike the frame during embroidering and cause injury or may damage your machine.'",
+    "mount": "Hoop mount is the common Brother 4x4 SE/PE bracket shared with SE400/SE425/SE600/SE625/SE630/PE535/PE550D/LB5000 and Baby Lock Sofia 2 / Verve.",
+    "source": "SE700 Operation Manual pp. 15, 64, 68, 75"
   },
   "software_versions": {
     "wireless_update_requires_min_version": "1.60",

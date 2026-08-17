@@ -255,6 +255,67 @@ bad_name = analyze.DesignInfo(path=Path("my design!.pes"), width_mm=50, height_m
 check("bad filename detected", "filename-charset" in {f.code for f in analyze.validate(bad_name)})
 
 # --------------------------------------------------------------------------- #
+section("hoop fit")
+
+# The envelope error nothing else here could see. A design for the 20 mm-tall
+# SA431 has to clear the machine field by 60 mm, so field-overflow never fires;
+# and neither the .pes nor the machine records which frame is mounted, so the
+# only place the fact can live is the spec. Left unchecked it reaches the
+# machine, gets listed, and drives the presser foot into the frame.
+
+
+def _hoop_codes(w, h, hoop):
+    d = analyze.DesignInfo(path=Path("Strap.pes"), width_mm=w, height_mm=h,
+                           real_stitches=500, thread_count=1)
+    return {f.code for f in analyze.validate(d, hoop=hoop)}
+
+
+check("a design too big for its hoop is an ERROR",
+      "hoop-overflow" in _hoop_codes(80, 19, "SA431"), f"{_hoop_codes(80, 19, 'SA431')}")
+check("...and it is invisible without the hoop — the machine field is 100x100",
+      "field-overflow" not in _hoop_codes(80, 19, "SA431")
+      and not {f.code for f in analyze.validate(
+          analyze.DesignInfo(path=Path("Strap.pes"), width_mm=80, height_mm=19,
+                             real_stitches=500, thread_count=1))})
+check("a strap design that fits the SA431 passes",
+      not _hoop_codes(55, 18, "SA431"), f"{_hoop_codes(55, 18, 'SA431')}")
+# Three areas are offered for the small frame, not one. A 25 x 35 mm design
+# overruns both the 60 x 20 and the 50 x 30 field and fits the 30 x 40 one;
+# refusing it would send the user redrawing a design the machine would stitch.
+check("fitting any one of the hoop's areas is enough",
+      not _hoop_codes(25, 35, "SA431"), f"{_hoop_codes(25, 35, 'SA431')}")
+# The machine rotates a pattern in two touches, so a flat refusal on something
+# that fits turned is an answer the user has to second-guess.
+_turned = [f for f in analyze.validate(
+    analyze.DesignInfo(path=Path("Strap.pes"), width_mm=19, height_mm=55,
+                       real_stitches=500, thread_count=1), hoop="SA431")
+    if f.code == "hoop-overflow"]
+check("a design that only fits turned says so", "turned 90" in _turned[0].message,
+      _turned[0].message)
+check("clearance inside the hoop is warned on, like the field",
+      "hoop-tight-margin" in _hoop_codes(59, 19.5, "SA431"),
+      f"{_hoop_codes(59, 19.5, 'SA431')}")
+# SA434's window is 100 x 170 mm and its FIELD is still 100 x 100. Reading the
+# window would pass a 150 mm design the machine cannot stitch.
+check("SA434 is checked on its field, not its window",
+      "hoop-overflow" in _hoop_codes(95, 150, "SA434"), f"{_hoop_codes(95, 150, 'SA434')}")
+# A frame nobody has profiled must not silently become "no limit at all".
+check("an unknown hoop warns rather than passing quietly",
+      "hoop-unknown" in _hoop_codes(50, 50, "SA999"), f"{_hoop_codes(50, 50, 'SA999')}")
+check("the default 4x4 is unchanged by all this",
+      not _hoop_codes(90, 90, "SA432"), f"{_hoop_codes(90, 90, 'SA432')}")
+check("hoop ids match case-insensitively",
+      prof.hoop("sa431") is not None and prof.hoop("SA431")["id"] == "SA431")
+# Every hoop's field must be within the machine field, or the profile is
+# describing a frame that cannot exist on this machine.
+_mw, _mh = prof.max_field_mm()
+check("no hoop claims a field larger than the machine",
+      all(w <= _mw and h <= _mh for x in prof.hoops()
+          for w, h in prof.hoop_fields_mm(x["id"])),
+      str([(x["id"], prof.hoop_fields_mm(x["id"])) for x in prof.hoops()]))
+check("the profile's default hoop exists", prof.hoop(prof.default_hoop()) is not None)
+
+# --------------------------------------------------------------------------- #
 section("palette / recolor / flatten")
 
 near = palette.nearest("#FF0000", 3)
@@ -591,6 +652,21 @@ try:
 except ValueError as e:
     check("validate_spec requires the cloth colour",
           "cloth" in str(e) and "not a substitute" in str(e), str(e)[:120])
+
+# The hoop is optional — every design here so far is a 4x4 design — but a
+# mistyped one must not read as "no hoop declared" and quietly skip the check.
+_hspec = {"name": "T", "cloth": "FFFFFF",
+          "build": {"tool": "svg_to_pes", "input": "a.svg", "artwork_mm": 60}}
+BLD.validate_spec(_hspec, "T.json")
+check("a spec without a hoop is still valid", True)
+BLD.validate_spec({**_hspec, "hoop": "SA431"}, "T.json")
+check("a spec may declare a known hoop", True)
+try:
+    BLD.validate_spec({**_hspec, "hoop": "SA430"}, "T.json")
+    check("a mistyped hoop is rejected, not ignored", False, "no error raised")
+except ValueError as e:
+    check("a mistyped hoop is rejected, not ignored",
+          "SA430" in str(e) and "SA431" in str(e), str(e)[:140])
 
 # Thread the colour of the cloth is thread nobody sees: it costs stitches, time
 # and a rethread and shows nothing. It matters most on an inverted dark-cloth

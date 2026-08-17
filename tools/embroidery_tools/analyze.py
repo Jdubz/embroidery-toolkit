@@ -281,12 +281,16 @@ def describe(path: str | Path, pattern: pe.EmbPattern | None = None) -> DesignIn
 
 
 def validate(info: DesignInfo, machine: dict | None = None,
-             cloth: str | None = None) -> list[Finding]:
+             cloth: str | None = None, hoop: str | None = None) -> list[Finding]:
     """Return every reason this design might not stitch out on the machine.
 
     `cloth` is the fabric colour this design is stitched on, from its spec. Pass
     it and the thread colours are checked against it; omit it and that one check
     is skipped, because there is nothing in a .pes that records the fabric.
+
+    `hoop` is the frame it is stitched in, likewise from its spec, and likewise
+    unknowable from the file. Omit it and the design is only checked against the
+    machine's full 100 x 100 mm field.
     """
     machine = machine or prof.load()
     findings: list[Finding] = []
@@ -326,7 +330,7 @@ def validate(info: DesignInfo, machine: dict | None = None,
                 f"The machine will not list a design that does not fit.",
             )
         )
-    else:
+    elif not hoop:
         margin_w = max_w - info.width_mm
         margin_h = max_h - info.height_mm
         if min(margin_w, margin_h) < 2.0:
@@ -338,6 +342,70 @@ def validate(info: DesignInfo, machine: dict | None = None,
                     f"of the field. Hooping is rarely that accurate — leave 2 mm+.",
                 )
             )
+
+    # The hoop, when one is declared, is the binding constraint — always tighter
+    # than the machine field, so it supersedes the margin check above.
+    #
+    # It has to be declared because neither the file nor the machine knows it.
+    # Nothing in a .pes records which frame it is for, and the SE700 does not
+    # sense the frame either: you pick it on the settings screen. So a design
+    # built for the SA431's 20 mm-tall field but drawn 40 mm tall passes every
+    # other check here, gets listed on the machine, and then drives the presser
+    # foot into the frame — which the manual calls out as a damage and injury
+    # risk (p.64). This is the one envelope error the existing checks cannot see.
+    if hoop:
+        h = prof.hoop(hoop, machine)
+        if h is None:
+            known = ", ".join(str(x.get("id")) for x in prof.hoops(machine))
+            findings.append(
+                Finding(
+                    WARNING,
+                    "hoop-unknown",
+                    f"'{hoop}' is not a hoop in the machine profile ({known}). "
+                    f"Checked against the full field instead. Add it to "
+                    f"reference/machine-profile.json rather than dropping the "
+                    f"declaration.",
+                )
+            )
+        else:
+            fields = prof.hoop_fields_mm(hoop, machine)
+            fits = [(w, ht) for w, ht in fields
+                    if info.width_mm <= w and info.height_mm <= ht]
+            areas = " or ".join(f"{w:g} x {ht:g}" for w, ht in fields)
+            if not fits:
+                # A design that fits only turned is a real and common case — the
+                # machine rotates a pattern in two touches — so say so rather
+                # than reporting a flat refusal the user then has to second-guess.
+                turned = any(info.height_mm <= w and info.width_mm <= ht
+                             for w, ht in fields)
+                fix = (" It fits turned 90° — rotate it on the machine, or build "
+                       "it that way round." if turned else "")
+                findings.append(
+                    Finding(
+                        ERROR,
+                        "hoop-overflow",
+                        f"Design is {info.width_mm:.1f} x {info.height_mm:.1f} mm; "
+                        f"hoop {h.get('id')} ({h.get('name')}) stitches "
+                        f"{areas} mm.{fix}",
+                    )
+                )
+            else:
+                # Roomiest fit, judged on the tighter of the two axes — that is
+                # the one that runs out first.
+                w, ht = max(fits, key=lambda f: min(f[0] - info.width_mm,
+                                                    f[1] - info.height_mm))
+                margin = min(w - info.width_mm, ht - info.height_mm)
+                if margin < 2.0:
+                    findings.append(
+                        Finding(
+                            WARNING,
+                            "hoop-tight-margin",
+                            f"Only {margin:.1f} mm of clearance inside hoop "
+                            f"{h.get('id')} ({w:g} x {ht:g} mm). Floating narrow "
+                            f"material on stabilizer is rarely that accurate — "
+                            f"leave 2 mm+.",
+                        )
+                    )
 
     limit = prof.max_stitches(machine)
     if info.real_stitches > limit:
