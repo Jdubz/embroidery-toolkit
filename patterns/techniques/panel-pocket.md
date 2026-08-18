@@ -16,7 +16,7 @@ see [`zippers.md`](zippers.md). This note is about the panel.
 ## The idea
 
 ```svg
-<svg viewBox="0 0 640 320" role="img" aria-label="Section through a pocketed panel. An inner layer runs the full height and is bound top and bottom; an outer layer is cut in two with a zipper between the halves. The pocket is the cavity between the two layers and the compartment is sealed behind the inner layer.">
+<svg id="pocket-section" viewBox="0 0 640 320" role="img" aria-label="Section through a pocketed panel. An inner layer runs the full height and is bound top and bottom; an outer layer is cut in two with a zipper between the halves. The pocket is the cavity between the two layers and the compartment is sealed behind the inner layer.">
   <g font-family="var(--f-label)" font-size="11" letter-spacing="1.6" fill="var(--muted)">
     <text x="20" y="24">SECTION — CUT DOWN THROUGH THE PANEL</text>
     <text x="150" y="300" text-anchor="middle">OUTSIDE</text>
@@ -75,7 +75,7 @@ Three consequences, and they are the whole reason to build it this way:
 ## The three pieces, and the sum that has to work
 
 ```svg
-<svg viewBox="0 0 640 290" role="img" aria-label="The three pieces of a pocketed panel. The inner layer is the full panel height. The outer upper and outer lower each lap onto the zipper tape, and the upper less its lap, plus the coil, plus the lower less its lap, adds back up to the panel height.">
+<svg id="pocket-pieces" viewBox="0 0 640 290" role="img" aria-label="The three pieces of a pocketed panel. The inner layer is the full panel height. The outer upper and outer lower each lap onto the zipper tape, and the upper less its lap, plus the coil, plus the lower less its lap, adds back up to the panel height.">
   <g font-family="var(--f-label)" font-size="11" letter-spacing="1.6" fill="var(--muted)">
     <text x="20" y="22">INNER — ONE PIECE</text>
     <text x="330" y="22">OUTER — TWO, ONTO THE TAPE</text>
@@ -156,7 +156,7 @@ inner layer and the lower outer both get cut round the same template.
 ## Tacking anything to a pocketed panel
 
 ```svg
-<svg viewBox="0 0 640 260" role="img" aria-label="Where a tack may go on a pocketed panel. Above the zip the box-X passes through the outer piece and the inner layer, so load reaches a panel bound on four sides. Below the zip, on the lower outer piece, the only attachment upward is the zipper itself.">
+<svg id="pocket-tack" viewBox="0 0 640 260" role="img" aria-label="Where a tack may go on a pocketed panel. Above the zip the box-X passes through the outer piece and the inner layer, so load reaches a panel bound on four sides. Below the zip, on the lower outer piece, the only attachment upward is the zipper itself.">
   <g font-family="var(--f-label)" font-size="11" letter-spacing="1.6">
     <text x="20" y="22" fill="var(--stitch)">ABOVE THE ZIP — THROUGH BOTH LAYERS</text>
     <text x="350" y="22" fill="var(--cut)">BELOW IT — HANGING ON THE ZIP</text>

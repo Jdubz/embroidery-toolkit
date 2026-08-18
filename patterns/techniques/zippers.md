@@ -1,7 +1,14 @@
 # Zippers in bags
 
 A reusable technique note. Patterns reference this rather than re-explaining
-it; nothing here depends on any particular bag's dimensions.
+it; **nothing here depends on any particular bag's dimensions** — and that is
+the point, because the lengths are the part that goes stale.
+
+> **For the actual numbers, read the *Zipper schedule* table on the pattern
+> itself.** It is generated from the spec, so it lists every zipper on that bag
+> with its opening, the chain to cut, the stock length to buy, how many sliders,
+> and where each stop goes. A hand-written length in a technique note would be
+> wrong the first time the bag was resized.
 
 A bag zipper is not a garment zipper. It is almost always **continuous coil
 chain cut to length**, with the stops made by you rather than bought, and it is
@@ -26,6 +33,55 @@ teeth or metal.
 
 ---
 
+## Reverse coil — which is what every zipper in this family is
+
+**Standard coil** puts the spiral on the face you look at. **Reverse coil** is
+the same chain, the same size, made up the other way: the coil is on the
+*back*, and the outside shows flat tape with the slider riding on it.
+
+It is not a premium part and it costs nothing extra. It is a different make-up
+of the identical chain, and on a coated shell it is the right one.
+
+| | Standard coil | **Reverse coil** |
+|---|---|---|
+| Outside face shows | the spiral | **flat tape** |
+| Water | sits in the coil and wicks along it | **runs off the tape**; the interlock is under cover |
+| Grit | packs into an upward-facing spiral | falls out of a downward-facing one |
+| Look | reads as hardware | **reads as a seam** — which is the point on a hidden pocket |
+| Slider | rides on the coil | rides on the tape, so it sits flatter |
+
+**This is not a waterproof zipper.** A reverse coil is *water-shedding* — the
+interlock faces inward and the tape sheds — but it has no polyurethane film and
+it will not hold out driven rain. If it needs to be waterproof, that is a
+different, stiffer, far more expensive chain, and a storm flap over an ordinary
+reverse coil beats it for most bags.
+
+### The two ways it changes what you do
+
+**1. The pull ends up on the wrong side if you build it the obvious way.** The
+face that shows flat tape is the OUTSIDE, so the slider body and the pull have
+to be on that same side. Lay the chain coil-DOWN on the bench and lap the shell
+onto the tape from above; if you have laid it coil-up out of habit, the finished
+bag has its pull on the inside and there is no fixing it without unpicking both
+laps.
+
+> **Check before the first row:** close the zip, put it on the bench the way the
+> bag will hang, and look at it. If you can see the spiral, turn it over.
+
+**2. A reverse slider is not the same part as a standard one.** They are not
+interchangeable — a standard slider on reverse chain rides the wrong face, sits
+proud, and drags. Order sliders as reverse to match the chain, and check them
+against the chain before you build anything.
+
+### Where it earns its keep here
+
+On the hidden back pocket especially. Half of hiding a zip is the placket over
+it; the other half is that a reverse coil shows a flat tape line rather than a
+row of spiral, so the closed opening reads as **a seam rather than a zip**. The
+two together do more than either.
+
+---
+
 ## The lapped panel — no opening is cut
 
 The technique this construction uses everywhere. Two pieces of shell lap onto
@@ -33,7 +89,7 @@ the tape from each side and are topstitched down. The zipper *becomes* a strip
 of the panel rather than being let into one.
 
 ```svg
-<svg viewBox="0 0 640 260" role="img" aria-label="Section through a lapped zipper panel: two shell strips lapping onto the zipper tape from each side, the coil standing between them, and two rows of topstitching holding each lap.">
+<svg id="lapped-panel" viewBox="0 0 640 260" role="img" aria-label="Section through a lapped zipper panel: two shell strips lapping onto the zipper tape from each side, the coil standing between them, and two rows of topstitching holding each lap.">
   <g font-family="var(--f-label)" font-size="11" letter-spacing="1.6" fill="var(--muted)">
     <text x="20" y="24">SECTION — CUT ACROSS THE PANEL</text>
   </g>
@@ -104,6 +160,29 @@ scrap first — because the practice piece *is* the panel.
    the piece it replaces; the arithmetic is above, and getting it wrong is only
    discoverable when the ring no longer fits.
 
+### Sew the practice one first
+
+This note already says the hard part out loud — *the practice piece is the
+panel* — and then never tells you to make one. Make one.
+
+**Two strips of scrap and a foot of chain, built exactly as the real panel is
+built.** It costs ten minutes and it settles the four things that are only
+learnable by doing:
+
+1. **Where the zipper foot actually rides** relative to the coil on YOUR
+   machine, which no instruction can tell you.
+2. **Whether the tension is right through tape.** Tape is denser than the shell
+   and the top thread often needs easing off; you want to find that out on
+   scrap.
+3. **Which way up the reverse coil goes** — build the practice piece, then hold
+   it the way the bag hangs and look for the pull.
+4. **The lap arithmetic**, measured on a finished sample rather than trusted.
+   Measure the practice panel across: it must equal the two strips less two
+   laps, plus the coil.
+
+Keep it. It is also the piece you test a new stop's bar-tack on before you
+trust one on the bag.
+
 ---
 
 ## Shortening, and making a new stop
@@ -113,7 +192,7 @@ new stop lets the slider run straight off the end, and there is no putting it
 back on in a hurry.**
 
 ```svg
-<svg viewBox="0 0 640 210" role="img" aria-label="Shortening a zipper: a dense zigzag bar-tack worked across the coil at the new length, the trim line one inch beyond it, and a fabric cap folded over the cut end.">
+<svg id="shorten" viewBox="0 0 640 210" role="img" aria-label="Shortening a zipper: a dense zigzag bar-tack worked across the coil at the new length, the trim line one inch beyond it, and a fabric cap folded over the cut end.">
   <rect x="20" y="70" width="600" height="54" fill="var(--muted)" opacity=".35"/>
   <rect x="20" y="86" width="600" height="22" fill="var(--coil)"/>
   <g stroke="var(--shell)" stroke-width="1.6" opacity=".5">
@@ -168,7 +247,7 @@ wrapped in binding. **No metal stop can live there** — it is a lump under the
 binding at exactly the point the binding is already thickest.
 
 ```svg
-<svg viewBox="0 0 640 240" role="img" aria-label="A zipper whose end runs into a bound seam. The panel cut edge on the right, the stitch line inboard of it, a bar-tacked stop just inside the stitch line, and the binding wrapping the whole edge.">
+<svg id="bound-end" viewBox="0 0 640 240" role="img" aria-label="A zipper whose end runs into a bound seam. The panel cut edge on the right, the stitch line inboard of it, a bar-tacked stop just inside the stitch line, and the binding wrapping the whole edge.">
   <g font-family="var(--f-label)" font-size="11" letter-spacing="1.6" fill="var(--muted)">
     <text x="20" y="24">PLAN — LOOKING AT THE PANEL</text>
   </g>
@@ -233,7 +312,7 @@ handed — a belt bag's zip should open away from the centre of the body toward
 the dominant hand, and one slider gets that wrong for half of people.
 
 ```svg
-<svg viewBox="0 0 640 240" role="img" aria-label="Two sliders on one zipper. Correct: noses point outward and the tails meet, so the run is closed with the sliders together and opens from either side. Wrong: noses point inward, which leaves both ends permanently open.">
+<svg id="two-sliders" viewBox="0 0 640 240" role="img" aria-label="Two sliders on one zipper. Correct: noses point outward and the tails meet, so the run is closed with the sliders together and opens from either side. Wrong: noses point inward, which leaves both ends permanently open.">
   <g font-family="var(--f-label)" font-size="11" letter-spacing="1.6">
     <text x="20" y="22" fill="var(--stitch)">TAILS TOGETHER, NOSES OUTWARD — CLOSED</text>
   </g>
@@ -290,6 +369,25 @@ again. Coaxing a slider onto a damaged end is how you break the slider.
 
 ---
 
+## The order, and the two steps that cannot be undone
+
+Almost everything in bag making can be unpicked. Two things here cannot, and
+both are decisions made *early* that only become visible *late*.
+
+| | Do it | Because by then |
+|---|---|---|
+| **1** | Put **both sliders on the chain** | Once either end is stopped, and certainly once the panel is built round it, there is no adding one. A two-slider opening cannot be retro-fitted |
+| **2** | Check the **coil faces the right way** | Both laps are sewn; unpicking them means re-cutting the strips, because the needle holes stay |
+| **3** | Lap and topstitch both strips | — |
+| **4** | Bar-tack the new stops, **slider well clear** | Tack over the slider and it is sewn in permanently |
+| **5** | Trim 1″ beyond, cap the ends | — |
+| **6** | **Open the zip** before the last seam | A bound seam cannot be unpicked, and with the zip closed the bag will not open afterwards |
+
+Step 6 is the one that gets people, because it is the only step whose omission
+produces a finished, correct-looking, permanently-shut bag.
+
+---
+
 ## Machine setup
 
 | | |
@@ -314,6 +412,8 @@ again. Coaxing a slider onto a damaged end is how you break the slider.
 | Lap curls away from the tape | Only one row of topstitching | Second row, ⅛″ from the first |
 | Lump under the binding at a corner | A metal stop left inside the seam allowance | Bar-tack a new stop inboard of the stitch line and remove the metal one |
 | Sewn the slider in while bar-tacking | Slider was not moved clear | Unpick the tack, move the slider, re-tack. There is no other way out |
+| Pull is on the inside of the finished bag | Reverse chain laid coil-up | Nothing but unpicking both laps, and the holes stay. Check it on the practice piece |
+| Slider sits proud and drags | Standard slider on reverse chain | They are different parts. Replace the slider |
 | Needle strike on the coil | Sewing too close, or the foot rode over the chain | The stitch line belongs on the **tape**. Slow down and use the zipper foot's edge as the guide |
 
 ## Further reading
@@ -327,3 +427,4 @@ again. Coaxing a slider onto a damaged end is how you break the slider.
 
 *Used by:* `patterns/constructions/box-bound.json` — the zipper panel, the
 shortening step, any back-panel pocket, and the final closing seam.
+*Numbers by:* `BoxBag.zipper_schedule()` in `tools/bag_pattern.py`.

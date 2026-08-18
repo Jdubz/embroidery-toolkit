@@ -13,49 +13,193 @@
     "h": 12,
     "d": 6
   },
-  "shell": "denim-12oz",
+  "shell": "canvas-600d-pu",
   "windows": true,
   "closure": {
     "coil_in": 0.25,
     "lap_in": 0.5
   },
-  "binding": {
-    "material": "nylon-binding-tape"
-  },
   "features": {
     "d_rings": 6,
     "handle_in": 12,
     "placements": [
-      { "kind": "dring", "face": "left",   "u": 2.0625, "v": 1.0, "label": "1 — crossbody" },
-      { "kind": "dring", "face": "right",  "u": 2.0625, "v": 1.0, "label": "2 — crossbody" },
-      { "kind": "dring", "face": "top",    "u": 4.4375, "v": 2.0625, "label": "3 — backpack upper, on the overlap" },
-      { "kind": "dring", "face": "top",    "u": 7.4375, "v": 2.0625, "label": "4 — backpack upper, on the overlap" },
-      { "kind": "dring", "face": "bottom", "u": 1.4375, "v": 2.0625, "label": "5 — backpack lower" },
-      { "kind": "dring", "face": "bottom", "u": 10.4375, "v": 2.0625, "label": "6 — backpack lower" },
-      { "kind": "handle", "face": "top", "from": 2.4375, "to": 9.4375, "label": "12\" grab handle, 7\" span, ~3\" hand clearance" },
-      { "kind": "logo", "face": "right", "u": 0.5875, "v": 4.0, "w": 2.95, "h": 2.95, "label": "75 mm logo, right gusset" },
-      { "kind": "rib", "face": "back", "u": 4.5, "w": 0.75, "label": "¾\" divider rib, off-centre" },
-      { "kind": "pocket", "face": "back", "u": 0.0, "v": 5.0, "w": 11.875, "h": 6.5, "interior": true, "label": "divided pocket, caught in the panel's own binding" }
+      {
+        "kind": "dring",
+        "face": "left",
+        "u": 2.0625,
+        "v": 1.0,
+        "label": "1 — crossbody"
+      },
+      {
+        "kind": "dring",
+        "face": "right",
+        "u": 2.0625,
+        "v": 1.0,
+        "label": "2 — crossbody"
+      },
+      {
+        "kind": "dring",
+        "face": "top",
+        "u": 4.4375,
+        "v": 2.0625,
+        "label": "3 — backpack upper, on the overlap"
+      },
+      {
+        "kind": "dring",
+        "face": "top",
+        "u": 7.4375,
+        "v": 2.0625,
+        "label": "4 — backpack upper, on the overlap"
+      },
+      {
+        "kind": "dring",
+        "face": "bottom",
+        "u": 1.4375,
+        "v": 2.0625,
+        "label": "5 — backpack lower"
+      },
+      {
+        "kind": "dring",
+        "face": "bottom",
+        "u": 10.4375,
+        "v": 2.0625,
+        "label": "6 — backpack lower"
+      },
+      {
+        "kind": "handle",
+        "face": "top",
+        "from": 2.4375,
+        "to": 9.4375,
+        "label": "12\" grab handle, 7\" span, ~3\" hand clearance"
+      },
+      {
+        "kind": "logo",
+        "face": "right",
+        "u": 0.5875,
+        "v": 4.0,
+        "w": 2.95,
+        "h": 2.95,
+        "label": "75 mm logo, right gusset"
+      },
+      {
+        "kind": "rib",
+        "face": "back",
+        "u": 4.5,
+        "w": 0.75,
+        "label": "¾\" divider rib, off-centre"
+      },
+      {
+        "kind": "pocket",
+        "face": "back",
+        "u": 0.0,
+        "v": 5.0,
+        "w": 11.875,
+        "h": 6.5,
+        "interior": true,
+        "label": "divided pocket, caught in the panel's own binding"
+      }
     ]
   },
   "pieces": [
-    { "piece": "Back-panel pocket", "qty": 1, "cut_in": [11.75, 6.5], "material": "vinyl-20ga", "kind": "pocket", "note": "full panel width — its bottom and both sides are caught in the panel's binding, so it has no bottom seam of its own" },
-    { "piece": "Small-items pocket", "qty": 1, "cut_in": [3.0, 4.5], "material": "vinyl-20ga", "kind": "pocket", "note": "right gusset interior; 3\" not 3½\", because the gusset face is only 3¼\"" },
-    { "piece": "Discreet pocket panel", "qty": 1, "cut_in": [3.5, 11.0], "material": "denim-12oz", "kind": "pocket", "note": "left gusset interior; press ¼\" under all round, double-fold the top" },
-    { "piece": "Divider rib", "qty": 1, "cut_in": [1.25, 11.375], "material": "denim-12oz", "kind": "rib", "note": "press ¼\" under each long edge → ¾\" finished" },
-    { "piece": "Base wear strip", "qty": 1, "cut_in": [4.0, 11.75], "material": "cordura-1000d", "kind": "other", "note": "exterior of the bottom face; denim's abrasion resistance is nothing like Cordura's" }
+    {
+      "piece": "Back-panel pocket",
+      "qty": 1,
+      "cut_in": [
+        11.75,
+        6.5
+      ],
+      "material": "vinyl-20ga",
+      "kind": "pocket",
+      "note": "full panel width — its bottom and both sides are caught in the panel's binding, so it has no bottom seam of its own"
+    },
+    {
+      "piece": "Small-items pocket",
+      "qty": 1,
+      "cut_in": [
+        3.0,
+        4.5
+      ],
+      "material": "vinyl-20ga",
+      "kind": "pocket",
+      "note": "right gusset interior; 3\" not 3½\", because the gusset face is only 3¼\""
+    },
+    {
+      "piece": "Discreet pocket panel",
+      "qty": 1,
+      "cut_in": [
+        3.5,
+        11.0
+      ],
+      "material": "canvas-600d-pu",
+      "kind": "pocket",
+      "note": "left gusset interior; press ¼\" under all round, double-fold the top"
+    },
+    {
+      "piece": "Divider rib",
+      "qty": 1,
+      "cut_in": [
+        1.25,
+        11.375
+      ],
+      "material": "canvas-600d-pu",
+      "kind": "rib",
+      "note": "press ¼\" under each long edge → ¾\" finished"
+    },
+    {
+      "piece": "Base wear strip",
+      "qty": 1,
+      "cut_in": [
+        4.0,
+        11.75
+      ],
+      "material": "canvas-600d-pu",
+      "kind": "other",
+      "note": "exterior of the bottom face; denim's abrasion resistance is nothing like Cordura's"
+    }
   ],
   "materials": [
-    { "role": "base wear strip", "material": "cordura-1000d", "note": "recommended — the shell swap to denim cost most of the abrasion resistance" }
+    {
+      "role": "base wear strip",
+      "material": "canvas-600d-pu",
+      "note": "recommended — the shell swap to denim cost most of the abrasion resistance"
+    }
   ],
   "hardware": [
-    { "item": "#5 nylon coil zipper", "qty": "1 × 14\"", "note": "opening is 11\"; longer so it can be shortened to fit" },
-    { "item": "1\" D-rings", "qty": 6, "note": "each on a 4\" external tab, tacked through tab + gusset + internal webbing" },
-    { "item": "1\" tri-glide sliders", "qty": 3, "note": "one crossbody, two backpack" },
-    { "item": "1\" swivel snap hooks", "qty": "4–6", "note": "unclip and move between configurations" },
-    { "item": "Clear vinyl, 20 gauge", "qty": "36 × 12\"", "note": "20 ga holds shape on a 12\" panel; 16 ga sews easier and slumps more" },
-    { "item": "Base stiffener (HDPE / Coroplast / PETG)", "qty": "1 × 10¾ × 3\"", "note": "optional; sized to the interior, not the exterior" },
-    { "item": "Heavy polyester topstitch thread", "qty": "1 spool", "note": "top and bobbin" }
+    {
+      "item": "#5 nylon coil zipper",
+      "qty": "1 × 14\"",
+      "note": "opening is 11\"; longer so it can be shortened to fit"
+    },
+    {
+      "item": "1\" D-rings",
+      "qty": 6,
+      "note": "each on a 4\" external tab, tacked through tab + gusset + internal webbing"
+    },
+    {
+      "item": "1\" tri-glide sliders",
+      "qty": 3,
+      "note": "one crossbody, two backpack"
+    },
+    {
+      "item": "1\" swivel snap hooks",
+      "qty": "4–6",
+      "note": "unclip and move between configurations"
+    },
+    {
+      "item": "Clear vinyl, 20 gauge",
+      "qty": "36 × 12\"",
+      "note": "20 ga holds shape on a 12\" panel; 16 ga sews easier and slumps more"
+    },
+    {
+      "item": "Base stiffener (HDPE / Coroplast / PETG)",
+      "qty": "1 × 10¾ × 3\"",
+      "note": "optional; sized to the interior, not the exterior"
+    },
+    {
+      "item": "Heavy polyester topstitch thread",
+      "qty": "1 spool",
+      "note": "top and bobbin"
+    }
   ],
   "layout": {
     "vinyl-20ga": 36
@@ -113,11 +257,18 @@
     }
   ],
   "docs": [
-    { "title": "StadiumTote — the long-form build notes", "path": "patterns/StadiumTote_12x12x4.md", "kind": "pattern" }
+    {
+      "title": "StadiumTote — the long-form build notes",
+      "path": "patterns/StadiumTote_12x12x4.md",
+      "kind": "pattern"
+    }
   ],
   "embroidery": {
     "panel": "gusset-right",
     "design": null,
-    "field_mm": [75, 75]
+    "field_mm": [
+      75,
+      75
+    ]
   }
 }

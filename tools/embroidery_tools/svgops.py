@@ -79,7 +79,7 @@ def op(name: str, help: str):
     return wrap
 
 
-def _split_by_band(doc, region, band):
+def _split_by_band(doc, region, band, axis: int = 1):
     """Split a region's geometry into (inside the band, outside it), by COMPONENT.
 
     Filters have to address connected components, not elements. Artwork routinely
@@ -89,30 +89,86 @@ def _split_by_band(doc, region, band):
     missing feature, it is the difference between a selector language and a
     colour switch.
 
+    `axis` is 1 for a band measured DOWN from the top and 0 for one measured
+    ACROSS from the left. Both are positional and both report what they caught,
+    for the reason in this module's header: a hand-placed circle once clipped
+    the question mark out of `HOT PISS?` and said nothing.
+
     A partial match splits the element: the matching components move to a new
     one, the rest stay. Returns (matched, rest), either possibly empty.
     """
     lo, hi = band
     inside, outside = [], []
     for p in G.polys(region.geom):
-        (inside if lo <= doc.centroid_mm(p)[1] <= hi else outside).append(p)
+        (inside if lo <= doc.centroid_mm(p)[axis] <= hi else outside).append(p)
     return (unary_union(inside) if inside else None,
             unary_union(outside) if outside else None)
 
 
 # --------------------------------------------------------------------------- #
 
-@op("drop", "drop --colour X            stop stitching colour X; the cloth supplies it")
-def drop(doc, colour: str, **_):
+@op("drop", "drop --colour X [--band A:B] [--band-x A:B]   stop stitching colour X; the cloth supplies it")
+def drop(doc, colour: str, band=None, band_x=None, **_):
+    """Drop a colour, or only the components of it inside a centroid band.
+
+    `--band` is the same selector `recolour`, `move`, `scale` and `space-out`
+    already take, and it is component-level for the same reason: PissMuffy's 29
+    letters, both eyes, the brows and the mouth are ONE `<path>`, so an
+    element-level filter would take all of them or none. Without it, removing
+    the lettering from an asset that carries its lettering in the same element
+    as its face could only be done by hand-editing the original -- which is the
+    thing `art/originals/` exists never to need.
+
+    **Dropping SHRINKS the drawing, and bands are measured against the live
+    extent.** `recolour --band` can be given in any order because it moves
+    nothing; two `drop --band`s cannot. Take the LOWER band first: removing it
+    leaves the top edge where it was, so the upper band's numbers still hold.
+    Do it the other way round and the second band addresses geometry that has
+    already slid up underneath it -- which raises here rather than silently
+    matching the wrong components, because the miss is reported.
+    """
     a = G.norm(colour)
     regions = doc.select(colour=a)
     if not regions:
         raise SystemExit(f"drop: nothing is painted #{a}")
-    area = doc.mm2(unary_union([r.geom for r in regions]))
+    if band is not None and band_x is not None:
+        raise SystemExit("drop: give --band or --band-x, not both. Two "
+                         "positional filters in one op hide which one missed.")
+    axis, band = (0, band_x) if band_x is not None else (1, band)
+    if band is None:
+        area = doc.mm2(unary_union([r.geom for r in regions]))
+        for r in regions:
+            doc.clear_paint(r)
+        doc.rescan()
+        return f"dropped {len(regions)} region(s) of #{a}, {area:,.0f} mm2 now bare cloth"
+
+    lo, hi = band
+    gone, kept, n = [], [], 0
     for r in regions:
-        doc.clear_paint(r)
+        # _split_by_band returns unions, not lists -- count the COMPONENTS
+        # back out of them, because "dropped 9 component(s)" is the line that
+        # tells you the band caught the glyphs you meant and not the face.
+        inside, outside = _split_by_band(doc, r, band, axis)
+        if inside is None:
+            continue
+        n += len(G.polys(inside))
+        gone.append(inside)
+        if outside is not None:
+            doc.set_fill_geom(r, outside)
+            kept.extend(G.polys(outside))
+        else:
+            doc.clear_paint(r)
+    if not n:
+        raise SystemExit(
+            f"drop: no #{a} component has its centroid in "
+            f"{lo:g}:{hi:g} mm {'across from the left' if axis == 0 else 'down from the top'} "
+            "of the drawing -- run `report` and check the geometry first.")
+    area = doc.mm2(unary_union(gone))
     doc.rescan()
-    return f"dropped {len(regions)} region(s) of #{a}, {area:,.0f} mm2 now bare cloth"
+    return (f"dropped {n} component(s) of #{a} in "
+            f"{'x-band' if axis == 0 else 'band'} {lo:g}:{hi:g} mm, "
+            f"{area:,.0f} mm2 now bare cloth"
+            + (f"; {len(kept)} component(s) of #{a} left" if kept else ""))
 
 
 @op("subtract", "subtract --colour X --by Y   cut Y's area out of X's fills")

@@ -55,11 +55,11 @@ assembled is one edit that reaches every bag.
 
 ```json
 {
-  "n": 8,
-  "title": "One lap join, then the top run",
+  "n": 11,
+  "title": "Fit the ring and trim the gusset",
   "when": ["has_chassis"],
   "stitch": "straight, 3.0 mm, walking foot",
-  "body": "Fit the ring to the back panel and trim the gusset to length — target {ring}. Lap one gusset end onto the zipper panel by {lap} and topstitch."
+  "body": "Clip the ring round the back panel and trim the gusset to length — target {gusset_cut}, so that with a {lap} lap at each end onto the zipper panel the ring closes at {ring}."
 }
 ```
 
@@ -78,8 +78,13 @@ An unrecognised token is a **hard error**, never a passthrough. Same rule as
 survives into the output reads as literal text in a build instruction, and the
 person at the machine has no way to know a number went missing.
 
-Available tokens are every key of `geometry` — run
-`py tools/bag_pattern.py <spec> --tokens` to list them for a given bag.
+Available tokens are every key of `geometry`, plus the handful in `words` whose
+value is a **name rather than a figure** — `{divider_face}` is the only one so
+far. Those are kept out of `geometry` because every value there is a dimension
+the package renders twice, as a float for the drawing and a fraction for the
+human, and a face name is neither. They exist because a step that says "the
+panel's interior" on a bag with two doubled panels is not an instruction. Run
+`py tools/bag_pattern.py <spec> --tokens` to list both for a given bag.
 
 ### Conditions
 
@@ -101,6 +106,12 @@ false. Both may appear. Flags are a closed set, derived by `BoxBag`:
 | `has_back_pocket` / `has_front_pocket` | that face appears in `panel_pockets` |
 | `has_panel_pocket` | any face does |
 | `has_divider` | `divider` is declared |
+| `shell_melts` | the shell material's `MATERIALS` row says `melt_seal` — **independent of `frays`**, and conflating the two is how a step came to say "Cordura seals, so no edge needs a hem". Fraying decides whether an edge is turned under and whether the binding is double-fold; melt-sealing decides only how a piece is *cut*. A coated cotton neither ravels nor melts. |
+| `self_bound` | the binding material is the shell — so the bag buys no tape, and the bias square comes out of the same cloth |
+| `has_webbing` | anything on the bag is webbing: a chassis, D-ring tabs, a handle, or a belt this pattern cuts |
+| `supplies_carry` | a `wearer` is declared and it supplies **both** belt and strap — see below |
+| `has_bound_divider` | ...and its `attach` is `"binding"` rather than `"topstitch"`. They are different operations with different figures, and one step cannot describe both — it used to try, and described only the second while the schema still offered the first |
+| `has_stiffener` | `"stiffener": true` |
 | `has_pockets` | `pieces[]` holds something of `"kind": "pocket"` |
 
 `has_panel_pocket` is separate from `has_pockets` on purpose. A panel pocket is
@@ -125,10 +136,10 @@ from them.
 
 | Key | Example | Note |
 |---|---|---|
-| `name` | `"HipPack_10x6x3"` | must match the filename |
+| `name` | `"HipPack_10x7x4"` | must match the filename |
 | `construction` | `"box-bound"` | names the construction file |
 | `finished_in` | `{"w":10,"h":6,"d":3}` | the finished envelope |
-| `shell` | `"cordura-1000d"` | a key of `MATERIALS` in `bag_pattern.py` |
+| `shell` | `"canvas-600d-pu"` | a key of `MATERIALS` in `bag_pattern.py` |
 | `binding` | `{"material":"nylon-binding-tape"}` | optional; defaults to the shell |
 | `windows` | `false` | clear panels |
 | `chassis` | `{"webbing_in":0.75,"overlap_in":3.0}` | **explicit `null`** means carried by a belt |
@@ -136,6 +147,8 @@ from them.
 | `features` | `{"d_rings":2,"handle_in":8}` | counts and lengths |
 | `panel_pockets` | `{"back":{"zip_from_top_in":2.125}}` | optional, per face; see below |
 | `divider` | `{"face":"front","height_in":3.5}` | optional; see below |
+| `wearer.supplies` | `["belt","strap"]` | optional; what the wearer brings rather than what this pattern cuts — see below |
+| `stiffener` | `true` | optional; a loose base panel. It used to be an unconditional step, so every bag was told to cut one — including bags that have none, and including a rounded-bottom bag, where a rectangle cut to the interior cannot lie flat because the flat floor is `2 × corner_r` shorter than the face. It is now declared, and sized from `floor_w × floor_d`. |
 | `fits_within_in` | `{"w":12,"d":6,"h":12}` | optional envelope limit to check against |
 
 ### Belt keepers
@@ -168,13 +181,31 @@ takeoff into a derived one. With D-rings **and** a `crossbody_in`, a separate
 sling strap is derived and the belt only has to reach a waist; without rings,
 the belt has to do both jobs and the longer figure sizes it.
 
+`supplies` names what the wearer **brings**, not what the pattern makes:
+`"supplies": ["belt", "strap"]` stops both being derived and cut, drops them
+from the takeoff as webbing, and lists them instead as *yours* with the width
+and length they have to be. The BeltPouch says the same thing by having no
+`wearer` block at all — but that also throws away the fit range, the
+contact-pressure figures and the handedness, every one of which still describes
+a belt somebody else made. Declaring what is supplied keeps the reasoning and
+drops only the cutting. With both supplied, `supplies_carry` fires and the
+strap-making step is replaced by one that just threads the belt and clips the
+strap on.
+
+`belt_takeup_in` (default 4″) is what the buckle's folded fixed half and the
+tri-glide eat before the wearer sees any of it, exactly as `sling_takeup_in` is
+for two hook folds and a slider. The sling had always carried that term and the
+belt had not, so a belt derived as `waist + tail` advertised six inches of tail
+and delivered about two at the largest declared fit. Both now pay it.
+
 `taper_in_per_in` is how much girth the body gains per inch of drop from waist
 to hip — it is what makes a **flat strap the wrong shape**, and it bounds belt
 width from above. `handed` decides which end a single slider parks at.
 
 **Note what is deliberately not checked.** The belt is derived from the fit
 range, so "does the belt reach the largest fit" could only ever pass. The
-declared part is the *tail*, and that is what gets a check.
+declared parts are the *tail* and the *take-up*, and the tail is what gets a
+check.
 
 ### A divider lying flat against a panel
 
@@ -191,12 +222,17 @@ none.
 
 `attach` is `"binding"` (sides and bottom caught in the panel's binding, top
 edge bound) or `"topstitch"` (inset `inset_in` and topstitched down three
-sides, top edge left raw — Cordura is hot-knifed and does not fray). Out of the
+sides, top edge left raw — a shell that does not fray needs no hem there, and
+if it frays, that top edge is what the fold-under step means). Out of the
 binding it costs three straight runs and gives back a bound edge, a layer in
 the worst seam on the bag, and any argument with a rounded corner.
 
 `channels_in` are topstitch positions in face coordinates; *n* lines make
-*n + 1* channels. Checked: the divider leaves room to reach past it, every
+*n + 1* channels, and they are measured **across the divider**, not across the
+panel. A topstitched divider stops `inset_in` short of the binding on each
+side, so reading its outer channels off the panel's visible face — which the
+check and the report each did separately — overstated both of them by the
+inset. Checked: the divider leaves room to reach past it, every
 channel is at least 1″ wide, every line sits inside the binding — **and no line
 crosses an embroidery field declared on the same face**, because a channel line
 goes through the panel and shows on the outside, where the logo is. That one
@@ -360,6 +396,7 @@ geometry checks are unchanged. Packaging adds:
 
 | Check | Fails when |
 |---|---|
+| the cut pieces close the ring | `gusset_cut + zip_cut − 2 × lap ≠ ring`. **This replaced a check that could not fail.** The old one asserted `gusset_face + zip_face == ring`, which is a restatement of the line that *defines* `gusset_face` — so it passed happily while both pieces were cut long and every bag in the family assembled a ring `2 × lap` over. Exactly the shape the *comfort is reported, not enforced* section warns about, one layer down. |
 | construction resolves | the named construction file is missing |
 | tokens resolve | any step, title or stitch note contains a token `geometry` has no key for |
 | placements are on their face | a feature's rectangle leaves the face it names |

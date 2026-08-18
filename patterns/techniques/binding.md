@@ -44,7 +44,7 @@ yards of it.** The sandwich term is the one people guess wrong, and binding that
 is ⅛" short does not reveal itself until you are halfway round a bag.
 
 ```svg
-<svg viewBox="0 0 620 280" role="img" aria-label="Section through a bound seam. Two panels lie wrong sides together with their seam allowances pointing outward, forming a flange; the binding wraps that flange and one line of stitching catches binding, both panels and binding again.">
+<svg id="bound-seam" viewBox="0 0 620 280" role="img" aria-label="Section through a bound seam. Two panels lie wrong sides together with their seam allowances pointing outward, forming a flange; the binding wraps that flange and one line of stitching catches binding, both panels and binding again.">
   <g font-family="var(--f-label)" font-size="11" letter-spacing="1.6" fill="var(--muted)">
     <text x="20" y="24">SECTION THROUGH A BOUND SEAM</text>
   </g>
@@ -98,7 +98,7 @@ stitch line rather than the raw edge.
 
 | | When | Layers at the seam |
 |---|---|---|
-| **Single fold** — outer edge left raw | The binding material **does not fray**: hot-knifed nylon, Cordura, leather, vinyl, faux leather | 2 |
+| **Single fold** — outer edge left raw | The binding material **does not fray**: coated or laminated cloth, hot-knifed nylon, leather, vinyl, faux leather | 2 |
 | **Double fold** — outer edge turned under first | Anything that frays: canvas, denim, quilting cotton, waxed canvas | 4 |
 
 Double fold costs another ¾" of strip width and doubles the layers at every seam,
@@ -119,6 +119,21 @@ grain, mitre the corners, and keep the long uninterrupted strips.
 
 Round a corner and you have no choice: cut bias.
 
+**How much ease the bias has to absorb does not depend on the radius.** The
+outer fold travels `(π/2) × show` further than the stitch line round any
+quarter turn — 13/16″ at a ½″ show, the same at a 1″ radius as at a 3″ one.
+What the radius changes is the *arc it is spread over*, so a tight corner asks
+for the same inch in less room: 50% of the arc at 1″, 33% at 1½″, 25% at 2″.
+When a binding will not ease round a curve, **open the radius**; widening the
+strip does nothing.
+
+**A coated or laminated cloth has less bias give than a bare weave.** Bias
+stretch is the weave shearing, and a coating is a film across it that resists
+exactly that. It still eases — MYOG bags are bound in coated fabric routinely
+— but not as generously as cotton bias does, so treat the percentages above as
+the thing to keep low rather than as headroom. Cut a test strip and ease it
+round a scrap of the actual corner before committing to a radius.
+
 ---
 
 ## Preparing the strip
@@ -129,7 +144,8 @@ Round a corner and you have no choice: cut bias.
   over an inch instead of stacking it in one place.
 - **Never plan a join at a corner.** Corners are already the thickest point.
 - **Pre-fold or fold as you go.** A bias tape maker helps on light materials; on
-  Cordura and leather it is easier to fold with clips as you sew, because they
+  a coated or laminated cloth, and on leather, it is easier to fold with clips
+  as you sew, because they
   hold a crease anyway.
 
 ## The one-pass method
@@ -151,7 +167,7 @@ That only works because of one trick, and it is the thing most people get wrong:
 > the only fix is unpicking.
 
 ```svg
-<svg viewBox="0 0 620 300" role="img" aria-label="Why the binding is set deeper on the underside. Even binding: a stitch line placed by eye on the top face falls off the edge of the binding underneath. Offset binding: the same line lands well inside it.">
+<svg id="offset-binding" viewBox="0 0 620 300" role="img" aria-label="Why the binding is set deeper on the underside. Even binding: a stitch line placed by eye on the top face falls off the edge of the binding underneath. Offset binding: the same line lands well inside it.">
   <g font-family="var(--f-label)" font-size="11" letter-spacing="1.6">
     <text x="20" y="22" fill="var(--cut)">EVEN — THE LINE MISSES UNDERNEATH</text>
   </g>
@@ -210,7 +226,7 @@ both faces at once if you fold it correctly.
 5. **Foot down, resume.**
 
 ```svg
-<svg viewBox="0 0 640 210" role="img" aria-label="The four folds of a mitred corner: sew to the stitch-line intersection and stop, fold the binding straight back on itself so a 45 degree diagonal appears, fold it forward down the next edge, then resume sewing.">
+<svg id="mitre" viewBox="0 0 640 210" role="img" aria-label="The four folds of a mitred corner: sew to the stitch-line intersection and stop, fold the binding straight back on itself so a 45 degree diagonal appears, fold it forward down the next edge, then resume sewing.">
   <g font-family="var(--f-data)" font-size="12" fill="var(--muted)">
     <text x="72" y="196" text-anchor="middle">1 — stop at the</text>
     <text x="72" y="210" text-anchor="middle">stitch-line corner</text>
@@ -291,7 +307,7 @@ best:
 
 | Method | How | Verdict |
 |---|---|---|
-| **Overlap** | Trim the finishing end to lap the start by ½", tuck the raw end in | Fast, bulky. Fine on Cordura or webbing where nothing frays |
+| **Overlap** | Trim the finishing end to lap the start by ½", tuck the raw end in | Fast, bulky. Fine where nothing frays — a coated cloth or webbing |
 | **Fold-under** | Turn the finishing end under ¼" and lap it over the start | Tidy, one extra layer |
 | **45° join** | Leave both ends free at the start, cut both at 45°, seam them, then sew that section | Cleanest and flattest. Worth it on anything visible |
 

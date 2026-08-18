@@ -79,6 +79,11 @@
       "title": "Embroidering narrow material",
       "path": "docs/16-narrow-material.md",
       "kind": "embroidery"
+    },
+    {
+      "title": "Materials & consumables",
+      "path": "docs/05-materials-and-consumables.md",
+      "kind": "embroidery"
     }
   ],
   "assembly": [
@@ -90,6 +95,13 @@
       "see": [
         "patterns/techniques/binding.md",
         "patterns/techniques/webbing-hardware.md"
+      ],
+      "figures": [
+        {
+          "doc": "patterns/techniques/binding.md",
+          "id": "bound-seam",
+          "caption": "What you are testing: the whole stack in one line of stitching. If the machine will not drive this on scrap it will not drive it on the bag."
+        }
       ]
     },
     {
@@ -103,13 +115,39 @@
     {
       "n": 3,
       "title": "Cut, and leave the gusset long",
-      "body": "Rotary-cut anything that does not melt-seal; hot-knife webbing and synthetic binding tape. Clips only, never pins. Cut the gusset at {gusset_cut_long} rather than its finished {gusset_cut} and leave it long until the ring is fitted — the ring's true length depends on the allowance you actually achieve and on how hard the binding pulls, which is why good patterns give more than the calculation and let you trim. Where the pattern rounds a corner, cut the panels round a template rather than by eye — the two panels and the outer lower pieces all share that radius, and a corner that disagrees with its neighbour shows up as a pucker in the binding.",
+      "body": "Rotary-cut everything, against a metal straightedge. The shell is synthetic and does not ravel, so no edge needs turning under and a hot knife is OPTIONAL rather than required — it will seal this cloth, but on a coated face it can leave a hard bead, so test on a scrap first. The only raw edge left on the finished bag is the divider's top; a pass with a knife or a lighter tidies it and nothing more depends on it. Clips only, never pins — a pin hole in a coated shell is permanent and it is a hole in the waterproofing. If the cloth has a right side, cut EVERY piece with it facing the same way, binding strips included: a single-fold binding shows on both faces of the bag, so a strip cut face-down puts the wrong side outward and it will not match the strip next to it. Cut the gusset at {gusset_cut_long} rather than its finished {gusset_cut} and leave it long until the ring is fitted — the ring's true length depends on the allowance you actually achieve and on how hard the binding pulls, which is why good patterns give more than the calculation and let you trim. Any piece that carries embroidery is cut OVERSIZED and trimmed to size after the machine is done with it — see the next step. Where the pattern rounds a corner, cut the panels round a template rather than by eye — the two panels and the outer lower pieces all share that radius, and a corner that disagrees with its neighbour shows up as a pucker in the binding.",
       "see": [
         "patterns/techniques/webbing-hardware.md"
+      ],
+      "figures": [
+        {
+          "kind": "ring",
+          "caption": "Why the gusset is cut long: the ring's true length depends on the lap you actually achieve and on how hard the binding pulls. Cut long, fit, then trim."
+        }
+      ],
+      "when": [
+        "shell_melts"
       ]
     },
     {
       "n": 4,
+      "title": "Cut, and leave the gusset long",
+      "unless": [
+        "shell_melts"
+      ],
+      "body": "Rotary-cut anything that does not melt-seal; hot-knife webbing and synthetic binding tape. Clips only, never pins. Cut the gusset at {gusset_cut_long} rather than its finished {gusset_cut} and leave it long until the ring is fitted — the ring's true length depends on the allowance you actually achieve and on how hard the binding pulls, which is why good patterns give more than the calculation and let you trim. Where the pattern rounds a corner, cut the panels round a template rather than by eye — the two panels and the outer lower pieces all share that radius, and a corner that disagrees with its neighbour shows up as a pucker in the binding.",
+      "see": [
+        "patterns/techniques/webbing-hardware.md"
+      ],
+      "figures": [
+        {
+          "kind": "ring",
+          "caption": "Why the gusset is cut long: the ring's true length depends on the lap you actually achieve and on how hard the binding pulls. Cut long, fit, then trim."
+        }
+      ]
+    },
+    {
+      "n": 5,
       "title": "Fold under every raw edge that will show",
       "when": [
         "shell_frays"
@@ -117,17 +155,26 @@
       "body": "The shell frays, so the four edges that would otherwise be sealed each need ¼\" pressed under: the zip strip laps where they lie on the tape, any rib or pocket long edges, pocket tops, and the overlapping end of each gusset lap join. Add that ¼\" to the cut before you cut, not after. A narrow zigzag along each raw edge is faster and uglier, and fine on the ones that end up inside."
     },
     {
-      "n": 5,
+      "n": 6,
       "title": "Embroider now, flat, before anything is assembled",
-      "body": "Any panel that carries a logo has to be hooped, and it will not hoop flat once webbing or a pocket is behind it. Design to 96 mm or less — this machine's field is 100 × 100 mm. On dark shell fabric read `docs/14-designing-for-dark-cloth.md` in full and declare the cloth, or it comes off speckled; on a narrow strap read `docs/16-narrow-material.md`. Back it with cutaway.",
+      "body": "Any panel that carries a logo has to be stitched flat, before webbing or a pocket is behind it. Design to 96 mm or less — this machine's field is 100 × 100 mm.\n\nTHE PIECE IS USUALLY TOO SMALL TO HOOP: the frame's window is 100 mm and it needs fabric well past that on every side to clamp, so a 4⅛\" outer pocket piece or a 2⅞\" gusset cannot go in one at all. AND ON A COATED OR WATERPROOF SHELL IT MUST NOT BE HOOPED EVEN IF IT FITS — the ring compresses the coating and the mark can be permanent, and the standard cure for hoop burn is a low iron, which destroys the coating instead. Both problems have the same answer: embroider an OVERSIZED BLANK and cut the piece out of it afterwards, floating the blank on sticky-back tear-away that is hooped by itself — score the paper inside the ring, peel it, press the blank down, and BASTE it. Never pin: a pin hole in a coated cloth is permanent and it is outside the design where nothing will cover it. The Operation Manual describes the float on p.64.\n\nRead `docs/05-materials-and-consumables.md` before the first one — on a coated shell the needle is a 75/11 SHARP rather than the heavier needle the seams want, every hole is a hole in the waterproofing, and the design wants to be open rather than solid for the same reason. On dark shell fabric read `docs/14-designing-for-dark-cloth.md` in full and declare the cloth, or it comes off speckled. On a narrow strap read `docs/16-narrow-material.md`. Use a stabilizer you can baste rather than iron: a coated or waxed shell will not take a fusible, and heat is the one thing most waterproof finishes cannot survive.",
       "see": [
         "docs/12-design-generation-playbook.md",
         "docs/14-designing-for-dark-cloth.md",
-        "docs/16-narrow-material.md"
+        "docs/16-narrow-material.md",
+        "docs/05-materials-and-consumables.md"
+      ],
+      "figures": [
+        {
+          "kind": "face",
+          "face": "front",
+          "highlight": "logo",
+          "caption": "Every design placed on its own face, flat. Once the ring is closed none of this can be hooped."
+        }
       ]
     },
     {
-      "n": 6,
+      "n": 7,
       "title": "Chassis webbing onto the gusset INTERIOR",
       "when": [
         "has_chassis"
@@ -136,10 +183,16 @@
       "body": "Mark the centreline on the gusset's inside face. Lay the {loop} length of {web} webbing along it so {gusset_face} sits on the gusset with equal tails free at each end, and topstitch both long edges. Raise the upper tension for this pass — thick webbing pulls the top thread down and leaves loops underneath at normal tension. Nothing threads onto the webbing; rings live on external tabs and tack through to it.",
       "see": [
         "patterns/techniques/webbing-hardware.md"
+      ],
+      "figures": [
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "box-x"
+        }
       ]
     },
     {
-      "n": 7,
+      "n": 8,
       "title": "Pockets onto the gusset, over the webbing",
       "when": [
         "has_pockets"
@@ -151,46 +204,77 @@
       ]
     },
     {
-      "n": 8,
+      "n": 9,
       "title": "Build the zipper panel",
+      "when": [
+        "has_chassis"
+      ],
       "stitch": "straight, two rows, 3.0 mm, zipper foot, Microtex 90/14",
-      "body": "Lap the {strip_front} strip and the {strip_rear} strip {lap} onto the zipper tape and topstitch two rows on each. Basting tape holds the lap while you sew. Done right the coil ends up {coil_c} from the panel's cut edge — deliberately off-centre, so the face centreline stays clear for the webbing — and the finished panel measures {gusset_w} to match the gusset. Both strips are cut {zip_cut} long.",
+      "body": "Lap the {strip_front} strip and the {strip_rear} strip {lap} onto the zipper tape and topstitch two rows on each. Done right the coil ends up {coil_c} from the panel's cut edge — deliberately OFF-CENTRE, so the face centreline stays clear for the webbing. Basting tape holds the lap while you sew. The panel is cut {zip_cut} long — {zip_face} of opening plus {lap} at each end for the gusset to lap over, and it is the ONLY piece that carries that allowance. The finished panel measures {gusset_w} across, to match the gusset.",
       "see": [
         "patterns/techniques/zippers.md"
+      ],
+      "figures": [
+        {
+          "kind": "zip-panel",
+          "caption": "The panel this bag needs, at its own strip widths — and the finished width it has to match."
+        },
+        {
+          "doc": "patterns/techniques/zippers.md",
+          "id": "lapped-panel",
+          "caption": "The same join in section: nothing is cut open, the zipper BECOMES a strip of the panel."
+        }
       ]
     },
     {
-      "n": 9,
+      "n": 10,
+      "title": "Build the zipper panel",
+      "unless": [
+        "has_chassis"
+      ],
+      "stitch": "straight, two rows, 3.0 mm, zipper foot, Microtex 90/14",
+      "body": "Lap the {strip_front} strip and the {strip_rear} strip {lap} onto the zipper tape and topstitch two rows on each. The two strips are the same width here and the coil lands {coil_c} from the panel's cut edge, dead CENTRE — there is no chassis, so there is no webbing to keep the centreline clear for. That is what let this bag's belt width be decided on comfort rather than on clearance. Basting tape holds the lap while you sew. The panel is cut {zip_cut} long — {zip_face} of opening plus {lap} at each end for the gusset to lap over, and it is the ONLY piece that carries that allowance. The finished panel measures {gusset_w} across, to match the gusset.",
+      "see": [
+        "patterns/techniques/zippers.md"
+      ],
+      "figures": [
+        {
+          "kind": "zip-panel",
+          "caption": "The panel this bag needs, at its own strip widths — and the finished width it has to match."
+        },
+        {
+          "doc": "patterns/techniques/zippers.md",
+          "id": "lapped-panel",
+          "caption": "The same join in section: nothing is cut open, the zipper BECOMES a strip of the panel."
+        }
+      ]
+    },
+    {
+      "n": 11,
       "title": "Shorten the zipper and make a new stop",
       "stitch": "dense zigzag ~3 mm wide at 0.4 mm, 5–6 passes",
       "body": "Open it halfway, then bar-tack across the coil at the new length: this machine has no programmed bar-tack, so work a dense zigzag back and forth. Trim 1\" beyond it and cap each cut end with a scrap. A coil zipper cut without a new stop lets the slider run straight off the end, and there is no putting it back on.",
       "see": [
         "patterns/techniques/zippers.md"
-      ]
-    },
-    {
-      "n": 10,
-      "title": "Fit the ring, then the first lap join",
-      "stitch": "straight, two rows, 3.0 mm",
-      "body": "Fit the ring to the back panel and trim the gusset to length — target {gusset_face}, so the ring closes at {ring}. Lap one gusset end onto one end of the zipper panel by {lap} and topstitch."
-    },
-    {
-      "n": 11,
-      "title": "Close the chassis loop across the top face",
-      "when": [
-        "has_chassis"
       ],
-      "stitch": "straight 3.0 mm, then box-X twice round at 2.5–3.0 mm",
-      "body": "Lay both webbing tails along the zipper panel's interior centreline; they overlap each other by {overlap} at its centre. Topstitch them down, then box-X both ends of the overlap. The chassis is now one unbroken loop. Doing this before the second lap join is what keeps every webbing pass flat under the foot.",
-      "see": [
-        "patterns/techniques/webbing-hardware.md"
+      "figures": [
+        {
+          "doc": "patterns/techniques/zippers.md",
+          "id": "shorten",
+          "caption": "Tack first, trim 1\" beyond it, then cap. Flush leaves the tack at the raw edge with nothing behind it."
+        }
       ]
     },
     {
       "n": 12,
-      "title": "Second lap join",
-      "stitch": "straight, two rows, 3.0 mm",
-      "body": "Close the remaining gusset-to-zipper-panel lap, stitching through the webbing where it crosses so the join is reinforced. Both joins land at the top corners, which is also where the binding will mitre — hand-wheel them."
+      "title": "Fit the ring and trim the gusset",
+      "body": "Clip the ring round the back panel and trim the gusset to length — target {gusset_cut}, so that with a {lap} lap at each end onto the zipper panel the ring closes at {ring}. Two strips lapped by {lap} cover their combined length LESS {lap}, so only one of the pair may carry that allowance: the zipper panel does, and the gusset is trimmed to the bare figure. Cut long, fit, then trim — the ring's true length depends on the allowance you actually achieve and on how hard the binding pulls, which is why good patterns give more than the calculation and let you trim.",
+      "figures": [
+        {
+          "kind": "ring",
+          "caption": "Trim the gusset to the bare figure: only ONE of a lapped pair may carry the allowance, and the zipper panel is the one that does."
+        }
+      ]
     },
     {
       "n": 13,
@@ -199,13 +283,61 @@
         "has_ring_anchor"
       ],
       "stitch": "straight, both long edges, 3.0 mm, walking foot",
-      "body": "Each D-ring needs something behind it or the whole bag hangs off two stitch fields in one layer of shell. Lay a {ring_anchor_len} × {ring_anchor_w} strip across the gusset's INSIDE face at each ring position, running the gusset's full cut width so both of its ends finish flush with the panel edges — the panel bindings will catch them, and the load then spreads into a seam that is carrying the bag anyway. Topstitch both long edges. This is the chassis's argument over a shorter span, and it is why a bag can drop the chassis and still take a strap.",
+      "body": "Each D-ring needs something behind it or the whole bag hangs off two stitch fields in one layer of shell. Lay a {ring_anchor_len} × {ring_anchor_w} strip across the gusset's INSIDE face at each ring position, running the gusset's full cut width so both of its ends finish flush with the panel edges — the panel bindings will catch them, and the load then spreads into a seam that is carrying the bag anyway. Topstitch both long edges. Do it NOW, while the gusset is still a flat strip: it has just been trimmed, so the ring positions are fixed, and once the lap joins are closed you are sewing inside a {ring} loop. Same reason the chassis webbing goes on before the joins. This is the chassis's argument over a shorter span, and it is why a bag can drop the chassis and still take a strap.",
       "see": [
         "patterns/techniques/webbing-hardware.md"
+      ],
+      "figures": [
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "box-x"
+        }
       ]
     },
     {
       "n": 14,
+      "title": "First lap join",
+      "stitch": "straight, two rows, 3.0 mm",
+      "body": "Lap one gusset end onto one end of the zipper panel by {lap} and topstitch two rows.",
+      "figures": [
+        {
+          "kind": "ring",
+          "caption": "Join 1, marked. Both joins land at the top corners, which is also where the binding will mitre."
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "title": "Close the chassis loop across the top face",
+      "when": [
+        "has_chassis"
+      ],
+      "stitch": "straight 3.0 mm, then box-X twice round at 2.5–3.0 mm",
+      "body": "Lay both webbing tails along the zipper panel's interior centreline; they overlap each other by {overlap} at its centre. Topstitch them down, then box-X both ends of the overlap. The chassis is now one unbroken loop. Doing this before the second lap join is what keeps every webbing pass flat under the foot.",
+      "see": [
+        "patterns/techniques/webbing-hardware.md"
+      ],
+      "figures": [
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "box-x"
+        }
+      ]
+    },
+    {
+      "n": 16,
+      "title": "Second lap join",
+      "stitch": "straight, two rows, 3.0 mm",
+      "body": "Close the remaining gusset-to-zipper-panel lap, stitching through the webbing where it crosses so the join is reinforced. Both joins land at the top corners, which is also where the binding will mitre — hand-wheel them.",
+      "figures": [
+        {
+          "kind": "ring",
+          "caption": "Join 2 closes the ring. Stitch through the webbing where it crosses, so the join is reinforced."
+        }
+      ]
+    },
+    {
+      "n": 17,
       "title": "D-ring tabs, from the outside",
       "when": [
         "has_drings"
@@ -214,10 +346,23 @@
       "body": "Fold each 4\" tab through its ring and box-X it to the EXTERIOR of the gusset, driving the stitch through tab, gusset and whatever backs it — the internal chassis, or the anchor strip — all at once. The tack is the connection, not the tab. Roughly 1½\" × ¾\". This is the thickest stack on the bag: hand-wheel every one, and put a height-compensation scrap under the back of the foot so it does not tip.",
       "see": [
         "patterns/techniques/webbing-hardware.md"
+      ],
+      "figures": [
+        {
+          "kind": "face",
+          "face": "left",
+          "highlight": "dring",
+          "caption": "Where the rings land on this bag."
+        },
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "box-x",
+          "caption": "The tack itself, in the order it is sewn."
+        }
       ]
     },
     {
-      "n": 15,
+      "n": 18,
       "title": "Grab handle",
       "when": [
         "has_handle"
@@ -226,36 +371,131 @@
       "body": "Fold 1\" under at each end of the {handle} length and box-X both ends to the top face, through to the internal webbing where there is any. Keep both tacks clear of the chassis overlap. Check the handle arcs clear of the slider before committing the second tack — a handle that fouls the zipper is only discoverable at this point and only fixable by unpicking a box-X.",
       "see": [
         "patterns/techniques/webbing-hardware.md"
+      ],
+      "figures": [
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "box-x"
+        }
       ]
     },
     {
-      "n": 16,
-      "title": "Divider pocket onto the panel's interior",
+      "n": 19,
+      "title": "Divider pocket onto the {divider_face} panel's interior",
       "when": [
         "has_divider"
       ],
+      "unless": [
+        "has_bound_divider"
+      ],
       "stitch": "binding at 3.5 mm, channels straight at 3.0 mm",
-      "body": "Hot-knife the {divider_w} × {divider_h} divider all round — Cordura seals, so its top edge needs no binding and no hem. Lay it on the panel's interior {divider_inset} clear of the panel's edges on the left, right and bottom, and topstitch those three sides down. Keeping it OUT of the binding is worth three straight seams: it saves a bound edge, it takes a layer out of the thickest seam on the bag, and it means the divider never has to be cut round a rounded corner. Then topstitch the channel lines from the divider side, straight down through divider and panel. The pocket finishes {divider_depth} deep with {divider_clear} of open panel above it to reach past.",
+      "body": "Finish the {divider_w} × {divider_h} divider's TOP edge — a shell that melt-seals needs only a pass with a knife or a lighter, one that ravels needs binding or a hem. It is the pocket's mouth and the only edge that gets any treatment of its own. Lay it on the panel's interior {divider_inset} clear of the panel's edges on the left, right and bottom, and topstitch those three sides down. Then topstitch the channel lines from the divider side, straight down through divider and panel. The pocket finishes {divider_depth} deep with {divider_clear} of open panel above it to reach past.\n\n**Prefer the bound divider where the shell allows it.** Keeping this one out of the binding costs three straight topstitch runs to save one bound edge, and it puts the pocket's bottom seam in the middle of a panel rather than on a seam that was structural already. It earns its place when the binding is already at the machine's limit, or when the divider is genuinely smaller than the panel it sits on.",
       "see": [
         "patterns/techniques/binding.md"
+      ],
+      "figures": [
+        {
+          "kind": "face",
+          "face": "{divider_face}",
+          "highlight": "pocket",
+          "caption": "Topstitched: three straight runs of its own, inset clear of the binding."
+        }
       ]
     },
     {
-      "n": 17,
-      "title": "Build each pocketed panel — two layers, pocket between them",
+      "n": 20,
+      "title": "Divider pocket into the {divider_face} panel's binding",
       "when": [
-        "has_panel_pocket"
+        "has_divider",
+        "has_bound_divider"
+      ],
+      "stitch": "binding at 3.5 mm, channels straight at 3.0 mm",
+      "body": "Bind the {divider_w} × {divider_h} divider's TOP edge first and leave it free — it is the pocket's mouth and the only edge of it that gets a seam of its own. Then lay it on the INTERIOR of the {divider_face} panel with its sides and bottom flush to the panel's raw edges and clip: that panel's own binding catches all three, so the pocket's contents rest on a seam that was structural already rather than on a stitch line invented in the middle of a panel. Topstitch the channel lines from the divider side, through divider and panel. The pocket finishes {divider_depth} deep with {divider_clear} of open panel above it. Three layers now meet in that panel's bound seam, and the binding strip is sized from it.",
+      "see": [
+        "patterns/techniques/binding.md"
+      ],
+      "figures": [
+        {
+          "kind": "face",
+          "face": "{divider_face}",
+          "highlight": "pocket",
+          "caption": "Bound: cut to the panel's own size, so its sides and bottom are caught in a seam that was being sewn anyway. Only its top edge is a new seam."
+        }
+      ]
+    },
+    {
+      "n": 21,
+      "title": "Pocketed panel, zip ACROSS — two layers, pocket between them",
+      "when": [
+        "has_top_zip"
       ],
       "stitch": "straight, two rows, 3.0 mm, zipper foot, Microtex 90/14",
-      "body": "A panel that carries a pocket is not one piece and it is not two. The INNER layer is a full {panel_w} × {panel_h} panel — the compartment's wall, bound on all four edges like any panel, and the reason the pocket is a sealed space rather than a second way into the bag. The OUTER layer is the one the zip is cut into: lap the {bp_upper} upper and the {bp_lower} lower onto the pocket zipper's tape by {bp_lap} each and topstitch two rows, exactly as you did the gusset's zipper panel. The reassembled outer measures {panel_h}, matching the inner. Lay outer over inner, wrong sides together, and from here treat the pair as one panel: the pocket is the cavity between them and the zip is its only mouth. Every pocketed panel on this bag uses the same two outer pieces at the same zip height, so cut them as pairs and build them together. Shorten each zipper and bar-tack a new stop just inside the seam line at both ends — the ends themselves get bound over.",
+      "body": "A panel that carries a pocket is not one piece and it is not two. The OUTER layer is the one the zip is cut into: lap the {top_upper} upper and the {top_lower} lower onto the pocket zipper's tape by {lap} each and topstitch two rows, exactly as you did the gusset's zipper panel. The reassembled outer measures {panel_h}, matching the inner, and both pieces are {panel_w} wide. The INNER layer is a full {panel_w} × {panel_h} panel — the compartment's wall, bound on all four edges like any panel, and the reason the pocket is a sealed space rather than a second way into the bag. Lay outer over inner, wrong sides together, and from here treat the pair as one panel: the pocket is the cavity between them and the zip is its only mouth. Shorten the zipper and bar-tack a new stop just inside the seam line at both ends — the ends themselves get bound over.\n\nThe zip sits {top_zip} down from the cut edge and {top_reach} of cavity hangs below it. That band above it is the only material anything tacked to this panel can live in — see the keeper step.",
       "see": [
         "patterns/techniques/panel-pocket.md",
         "patterns/techniques/zippers.md",
         "patterns/techniques/binding.md"
+      ],
+      "figures": [
+        {
+          "kind": "pocket-pieces",
+          "axis": "top"
+        },
+        {
+          "doc": "patterns/techniques/panel-pocket.md",
+          "id": "pocket-section",
+          "caption": "In section: the inner layer is the compartment wall, and the pocket is the cavity in front of it."
+        }
       ]
     },
     {
-      "n": 18,
+      "n": 22,
+      "title": "Pocketed panel, zip DOWN — two layers, pocket between them",
+      "when": [
+        "has_side_zip"
+      ],
+      "stitch": "straight, two rows, 3.0 mm, zipper foot, Microtex 90/14",
+      "body": "Same sandwich, turned. The OUTER layer splits into a NEAR piece {side_near} wide and a FAR piece {side_far} wide, both {side_across} tall, lapped onto the zipper tape by {lap} each and topstitched two rows. The reassembled outer measures {panel_w}. The INNER layer is a full {panel_w} × {panel_h} panel — the compartment's wall, bound on all four edges like any panel, and the reason the pocket is a sealed space rather than a second way into the bag. Lay outer over inner, wrong sides together, and from here treat the pair as one panel: the pocket is the cavity between them and the zip is its only mouth. Shorten the zipper and bar-tack a new stop just inside the seam line at both ends — the ends themselves get bound over.\n\n**Turning the zip changes two things beyond how obvious it is.** Neither outer piece hangs from the coil when it is open — each is still caught in the binding along its own outer edge, where a horizontal split leaves the lower piece hanging from the zipper alone. And the keepers stop competing with the pocket for the same panel: they sit on the far piece instead of in a band above the zip, so belt width and pocket depth are no longer the same {side_across}. The cavity reaches {side_reach} beyond the opening.\n\nThe zip is {side_zip} in from the panel's cut edge, and it does not have to run the whole way: here it starts {side_starts} down from the top and runs {side_run}. Above that stop the two outer pieces lap onto EACH OTHER instead of onto tape — same lap, same two rows, one continuous seam line — so only the zipper is short. Bar-tack a stop at the top of the run. Both outer pieces reach the panel's bottom edge, so BOTH are cut round the corner template — not just one, as when the zip runs across.",
+      "see": [
+        "patterns/techniques/panel-pocket.md",
+        "patterns/techniques/zippers.md",
+        "patterns/techniques/binding.md"
+      ],
+      "figures": [
+        {
+          "kind": "pocket-pieces",
+          "axis": "side"
+        },
+        {
+          "doc": "patterns/techniques/panel-pocket.md",
+          "id": "pocket-section",
+          "caption": "The same sandwich, turned. Neither outer piece hangs from the coil — each is still caught in the binding along its own outside edge."
+        }
+      ]
+    },
+    {
+      "n": 23,
+      "title": "Placket over the pocket zip",
+      "when": [
+        "has_placket"
+      ],
+      "stitch": "caught in the lap's two rows, 3.0 mm, zipper foot",
+      "body": "The flap that hides the zip. Lay the {side_placket_long} × {side_placket} placket over the NEAR piece with its edge level, so {lap} of it is caught in the two rows that lap that piece onto the tape and {side_placket_show} hangs free across the coil. It is caught in a seam you are already sewing: no new seam, one more cut piece, and one more layer in that lap — panel + placket + tape.\n\nIts free edge is left RAW. The shell does not ravel, and a hem there would double the one thing the placket has to stay: limp enough to lie flat over a coil. Do not press it — a coated shell will not take heat.\n\nIt earns its place twice. It keeps the opening from reading as a line across the panel, which is the whole point on the face that goes against the body. And on a waterproof shell it is a rain cover over the most perforated line on the bag: two rows of topstitching through zipper tape, in a coating that does not close behind a needle.",
+      "see": [
+        "patterns/techniques/panel-pocket.md",
+        "patterns/techniques/zippers.md"
+      ],
+      "figures": [
+        {
+          "kind": "face",
+          "face": "back",
+          "highlight": "placket",
+          "caption": "The flap, over the coil, on the face that goes against the body."
+        }
+      ]
+    },
+    {
+      "n": 24,
       "title": "Belt keepers, through both layers of the back panel",
       "when": [
         "has_belt_loop",
@@ -266,10 +506,23 @@
       "see": [
         "patterns/techniques/webbing-hardware.md",
         "patterns/techniques/panel-pocket.md"
+      ],
+      "figures": [
+        {
+          "kind": "face",
+          "face": "back",
+          "highlight": "belt-loop",
+          "caption": "Both tacks sit above the zip, so neither crosses the pocket."
+        },
+        {
+          "doc": "patterns/techniques/panel-pocket.md",
+          "id": "pocket-tack",
+          "caption": "Why above: there the box-X reaches the inner layer, which is bound on four sides. Below the zip the only attachment upward is the zipper."
+        }
       ]
     },
     {
-      "n": 19,
+      "n": 25,
       "title": "Belt keepers, and the anchor behind them",
       "when": [
         "has_belt_anchor"
@@ -281,10 +534,16 @@
       ],
       "unless": [
         "has_back_pocket"
+      ],
+      "figures": [
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "keeper-section"
+        }
       ]
     },
     {
-      "n": 20,
+      "n": 26,
       "title": "Belt keeper onto the back panel",
       "when": [
         "has_belt_loop"
@@ -297,10 +556,16 @@
       "body": "Fold the {keeper_w} × {keeper_len} keeper and box-X both ends to the back panel BEFORE it goes into the gusset ring, so the binding catches nothing but the panel edge. Size it to the belt you own: a keeper cut for a 1½\" belt will not go over a 2\" one, and one cut for 2\" flaps on a 1½\".",
       "see": [
         "patterns/techniques/webbing-hardware.md"
+      ],
+      "figures": [
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "keeper-section"
+        }
       ]
     },
     {
-      "n": 21,
+      "n": 27,
       "title": "Build the back panel — applied pockets and ribs",
       "when": [
         "has_pockets"
@@ -309,39 +574,98 @@
       "body": "Bind any pocket's top edge, then lay the pocket on the panel's interior with its bottom and side edges flush to the panel edges and clip. A full-width pocket has no bottom seam of its own — its contents rest on the panel's own binding, which is structural already, instead of on a loaded stitch line in the middle of the panel. Lay any rib on the exterior and topstitch both long edges: those two lines go through rib, panel and pocket at once and make the divider.",
       "see": [
         "patterns/techniques/binding.md"
+      ],
+      "figures": [
+        {
+          "kind": "face",
+          "face": "back"
+        }
       ]
     },
     {
-      "n": 22,
+      "n": 28,
       "title": "Back panel on, and bound",
-      "stitch": "straight, 3.5 mm, ⅛\" in from the binding's inner edge",
-      "body": "Clip the gusset ring around the back panel, raw edges out, matching the gusset seams to the top corners. The gusset's allowance has to splay wherever the outline turns, and it splays two different ways. At each SQUARE corner cut ONE clip to the stitch line. Round each CURVE it has to splay continuously — a flat strip's raw edge must reach a quarter further than its own stitch line there — so relieve it with shallow snips a seam allowance apart, not one deep cut. Then bind the full perimeter in one line, mitring each square corner and easing the bias round each curve. Set the underside of the binding 1/16\" deeper than the top: you cannot see the back while you sew, and without that offset a line that looks perfect on top wanders off the binding underneath. Put every binding join mid-edge — never at a corner and never in a curve.",
+      "stitch": "straight, 3.5 mm, {sa} from the panels' raw edges",
+      "body": "Clip the gusset ring around the back panel, raw edges out, matching the gusset seams to the top corners. The gusset's allowance has to splay wherever the outline turns, and it splays two different ways. At each SQUARE corner cut ONE clip to the stitch line. Round each CURVE it has to splay continuously — a flat strip's raw edge must reach a quarter further than its own stitch line there — so relieve it with shallow snips a seam allowance apart, not one deep cut. Then bind the full perimeter in one line, mitring each square corner and easing the bias round each curve. **Sew at {sa} from the RAW EDGES, not at a distance from the binding's own edge.** Every figure in this pattern is measured from the stitch line, and the binding laps over it: it shows {show} on the face while the stitch line is {flange} in from the finished edge, so its inner edge sits {turn} PAST the stitching. Guiding on that edge at ⅛\" — which this step used to say — lands the needle at 5/16\", and a run that drifts to 5/16\" is exactly the failure step 1 tells you to measure for: the ring comes out short of the panels it has to wrap. Set an edge guide off the raw edge.\n\nSet the underside of the binding {turn} deeper than the top: you cannot see the back while you sew, and without that offset a line that looks perfect on top wanders off the binding underneath. Put every binding join mid-edge — never at a corner and never in a curve.",
       "see": [
         "patterns/techniques/binding.md"
+      ],
+      "figures": [
+        {
+          "kind": "seam",
+          "caption": "The seam you are about to sew, in section — and why the panel is cut smaller than the bag it makes."
+        },
+        {
+          "doc": "patterns/techniques/binding.md",
+          "id": "mitre",
+          "caption": "At each square corner. Sew to the intersection and STOP."
+        }
       ]
     },
     {
-      "n": 23,
+      "n": 29,
       "title": "Front panel — open the zipper FIRST",
-      "stitch": "straight, 3.5 mm, ⅛\" in from the binding's inner edge",
+      "stitch": "straight, 3.5 mm, {sa} from the panels' raw edges",
       "body": "Same again, clipping the corners the same way. With the zipper closed you will not get the bag open afterwards, and a bound seam cannot be unpicked — the holes stay. This is the last chance to check the interior is finished.",
       "see": [
         "patterns/techniques/binding.md",
         "patterns/techniques/zippers.md"
+      ],
+      "figures": [
+        {
+          "kind": "face",
+          "face": "front",
+          "caption": "The last look inside."
+        },
+        {
+          "doc": "patterns/techniques/binding.md",
+          "id": "offset-binding",
+          "caption": "Set the binding deeper underneath: a line placed by eye on the top face falls off the edge of the binding below it."
+        }
       ]
     },
     {
-      "n": 24,
+      "n": 30,
       "title": "Straps, belt and hardware",
+      "unless": [
+        "supplies_carry"
+      ],
       "body": "Webbing through the tri-glides and hooks; box-X each fold, twice round. Everything that clips off is made now, off the bag, where it is flat under the foot. A shoulder pad costs nothing structurally and interface-pressure research is unambiguous that a wider strap is markedly more comfortable.",
       "see": [
         "patterns/techniques/webbing-hardware.md"
+      ],
+      "figures": [
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "tri-glide"
+        }
       ]
     },
     {
-      "n": 25,
+      "n": 31,
+      "title": "Thread your belt, clip your strap",
+      "when": [
+        "supplies_carry"
+      ],
+      "body": "Nothing left to sew. The belt is yours: slide it through both keepers and check it runs without binding — if the tunnel is tight, unpick ONE tack, refit the keeper round the actual belt and re-tack, then trim. The strap is yours too and clips to the two D-rings with its own hooks. Unclip it and the bag is a belt bag again; both stay rigged at once.",
+      "see": [
+        "patterns/techniques/webbing-hardware.md"
+      ],
+      "figures": [
+        {
+          "kind": "face",
+          "face": "back",
+          "highlight": "belt-loop"
+        }
+      ]
+    },
+    {
+      "n": 32,
       "title": "Base stiffener, loose",
-      "body": "Cut it to the INTERIOR, {face_w} × {face_d}, not the exterior, and drop it in. Not sewn — it should come out when the bag is washed."
+      "body": "Cut it to the INTERIOR, {face_w} × {face_d}, not the exterior, and drop it in. Not sewn — it should come out when the bag is washed.",
+      "when": [
+        "has_stiffener"
+      ]
     }
   ],
   "stitch_schedule": [
@@ -428,10 +752,10 @@
     },
     {
       "operation": "Binding, every bound seam",
-      "stitch": "straight, ⅛\" in from the binding's inner edge",
+      "stitch": "straight, {sa} from the panels' raw edges",
       "length_mm": 3.5,
       "foot": "walking",
-      "needle": "jeans 100/16"
+      "needle": "{needle}"
     },
     {
       "operation": "Strap box-X at hardware",

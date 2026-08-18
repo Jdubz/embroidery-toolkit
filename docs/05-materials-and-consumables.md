@@ -6,6 +6,7 @@
 |---|---|
 | **Embroidery** | **75/11** home sewing machine needle |
 | Knits / stretch (embroidery) | 75/11 **ball point** |
+| **Coated / waterproof woven (embroidery)** | **75/11 sharp — never a ball point** |
 | Lightweight sewing | 65/9 – 75/11 |
 | Medium sewing | 75/11 – 90/14 |
 | Heavyweight (denim, canvas) | 90/14 – 100/16 |
@@ -98,6 +99,7 @@ fabric, carries that load.
 | **Tear-away** | Torn off after stitching | Stable wovens — denim, canvas, quilting cotton, towels (with topping) |
 | **Wash-away / water-soluble** | Dissolves completely | Freestanding lace, cutwork, anywhere the back must be clean |
 | **Water-soluble topping** | Sits **on top** of the fabric | Towels, fleece, corduroy, velvet, piqué — anything with pile or loft |
+| **Seal-the-back** (Sulky Stitch 'n Seal and equivalents) | Iron-on, applied **after** stitching | Coated and waterproof fabrics — it reseals the needle holes |
 
 Two rules cover most decisions:
 
@@ -114,13 +116,63 @@ directions without stressing the stitches.
 score and peel the release paper, and press the item onto it. This is how you
 embroider things that cannot be hooped — collars, pockets, socks, baby clothes.
 
+## Coated and waterproof fabrics are their own case
+
+PU- or PVC-coated wovens — waterproof canvas, 600D and 1000D pack cloth, oilcloth,
+laminated cotton, waxed canvas — break three of the rules above at once, and the
+usual remedies for each are the exact things the coating cannot survive.
+
+**Every needle hole is permanent, and it is a hole in the waterproofing.** A bare
+weave partly closes behind a needle; a coating does not. Three consequences:
+
+- **Use the smallest needle that will drive the stack, and keep it sharp.** 75/11
+  sharp, not a ball point — a ball point shoves the coating aside instead of
+  cutting it. The "use a ball point on polyester" advice everywhere online is
+  aimed at *knit* polyester and is wrong for a tight coated woven. A blunt needle
+  makes a bigger hole, so here changing it is a waterproofing decision rather
+  than a cosmetic one.
+- **Design open, not solid.** Fewer penetrations is less perforation. A dense
+  fill on a coating perforates it along a line, which is how coated fabric tears.
+- **Reseal afterwards if it has to shed weather.** That is what the seal-the-back
+  stabilizers in the table above are for — they go on the back after stitching.
+  They are **iron-on**, which collides with the next rule; test on a scrap of the
+  actual cloth first, and fall back to a brushed-on liquid seam sealer if the
+  coating lifts.
+
+**Do not hoop the fabric, and do not iron it.** A hoop ring compresses a coating
+and the mark can be permanent — and the standard fix for hoop burn, pressing it
+out with a low iron, destroys the coating instead. So:
+
+- **Float it.** Hoop sticky-back tear-away alone, score and peel, press the piece
+  onto it. This is the same technique as for anything too small to hoop, and the
+  Operation Manual (p.64) describes it.
+- **Baste it down. Never pin it.** A pin hole costs exactly what a stitch hole
+  costs, and it is outside the design where nothing will ever cover it.
+- **Embroider an oversized blank and cut the piece out afterwards**, so the hoop
+  never touches the piece at all.
+- Test the adhesive too — pulling sticky stabilizer off a coating can lift or
+  gloss it.
+
+**No topping.** There is no nap for stitches to sink into, and a topping is one
+more thing to pick out of holes you cannot close.
+
+**"Slow the machine down" is the other advice you will find, and this machine
+cannot.** Embroidery speed is fixed at 400 spm with no setting — see
+[`01-machine-reference.md`](01-machine-reference.md). Do not go looking for it.
+
+*None of this has been stitched out in this workshop yet.* It is
+practitioner-and-vendor sourced, the same standing as the parameters in
+[`16-narrow-material.md`](16-narrow-material.md).
+
 ## Hooping
 
 The fabric should be **taut like a drum but not stretched**. Stretching it and
 stitching means the design distorts when it relaxes. Tighten the hoop screw with
 the fabric *in* it, don't force fabric into an already-tight hoop.
 
-- Hoop the stabilizer and fabric **together**, as one sandwich.
+- Hoop the stabilizer and fabric **together**, as one sandwich — *except* on a
+  coated or waterproof cloth, where the hoop must never touch the piece at all.
+  See the section above.
 - Never iron over stitched embroidery directly — press from the back, on a towel.
 - Check nothing (sleeve, other side of the garment) is trapped underneath before
   you start. The machine will happily sew a shirt shut.
@@ -137,6 +189,8 @@ Beyond what's in the box:
 - Medium **tear-away** stabilizer
 - Water-soluble **topping** — a roll
 - Temporary spray adhesive (505 or similar)
+- **Sticky-back tear-away** — the one that makes unhoopable things embroiderable
+- **Seal-the-back stabilizer**, if anything you make has to stay waterproof
 - Small sharp curved scissors for trimming jumps
 - Optional but transformative: a **magnetic hoop** for the 4×4 mount. Faster to
   load, kinder to fabric, no hoop burn.

@@ -8,7 +8,7 @@ every raw edge. Change the finished envelope and every cut size follows.
 |---|---|---|
 | [`StadiumTote_12x12x4`](StadiumTote_12x12x4.md) | 11⅞ × 4⅛ × 11½ | Crossbody, backpack or hand |
 | `SlingPack_13x7x4` | 13 × 4 × 7 | Crossbody sling |
-| `HipPack_10x6x3` | 10 × 3 × 6 | Waist belt |
+| `HipPack_10x7x4` | 10 × 3 × 6 | A waist belt and a shoulder strap you already own |
 | `BeltPouch_4x6` | 4½ × 2 × 6½ | A belt you already own |
 
 Dimensions are **declared**, in `patterns/specs/<Name>.json`. Cut lists are
@@ -38,24 +38,58 @@ Then it immediately failed two of the three new sizes, which is the point.
 ## The geometry, once
 
 ```
-face   = overall − 2 × flange      the visible panel between flanges
-cut    = face + 2 × SA             what you actually cut
-flange = SA + turn                 SA ⅜", turn 1/16" for the binding itself
-ring   = 2 × (face_w + face_h)     the STITCH-LINE perimeter, not the raw one
+face    = overall − 2 × flange     the STITCH-LINE box — not what you can see
+cut     = face + 2 × SA            what you actually cut
+flange  = SA + turn                finished edge to the stitch line
+ring    = 2 × (face_w + face_h)    the stitch-line perimeter, not the raw one
+visible = overall − 2 × show       the cloth between the bindings — size artwork to THIS
 ```
 
 A ring cut to the raw-edge perimeter is 8 × SA too long — **3 inches on a 12-inch
 bag**, eased into a seam that cannot take it. That is the mistake this whole file
 exists to make impossible.
 
+**`face` is not the visible cloth, and this file used to say it was.** The
+binding shows `show` on each face, and its inner edge therefore lands one `turn`
+PAST the stitch line — it has to lap over the stitching, or the single line
+holding the seam sits on the binding's own edge. So the cloth you can see is
+`overall − 2 × show`, an eighth of an inch smaller each way than `face`. The two
+were confused because the defaults make them numerically equal *by accident*:
+`flange = SA + turn` equals `show − turn` only while `SA = show − 2 × turn`, which
+⅜, ½ and 1/16 happen to satisfy. Change the seam allowance and they separate.
+
+It mattered: the gusset was quoted as showing 2⅛" when it shows 2", and a name
+sized to that was 51.6 mm wide on 50.8 mm of cloth. **Size artwork to
+`visible_*`, and read `face` only as the stitch line.**
+
+**And sew the binding at SA from the RAW EDGES.** Guiding on the binding's inner
+edge at ⅛" — which the stitch schedule said for a long time — puts the needle at
+5/16", which is precisely the drift step 1 tells you to measure for.
+
 Full explanation of the bound seam itself: **[`techniques/binding.md`](techniques/binding.md)**.
 
-## Two things the generator caught that I would not have
+## Three things the generator caught that I would not have
 
 **The hip pack could not fit 1" webbing beside its zipper.** At 3" of depth the
 gusset face is 2⅛", and a 1" chassis loop centred on it leaves the coil only ⅛"
-of shell outboard — the slider would rub the binding. Dropped to **¾" webbing**,
-which is what small packs use anyway.
+of shell outboard — the slider would rub the binding. It went to ¾" webbing
+first, and then the whole chassis came out: the pack is carried by a belt
+through keepers, so its load path is belt → keepers → back panel → bound seam
+and never touches the gusset. The coil re-centred, both zip strips came out
+equal, and the belt's width stopped being a clearance problem and became a
+comfort one — which is the only reason it could be argued up to 1" on the
+pressure figures. **That bag has no webbing on it at all now**, and the
+zipper-panel step is written twice for exactly that reason.
+
+**Both pieces of the ring were being cut long, so it closed an inch over.**
+Two strips lapped by L cover their combined length *less* L, so only one of the
+pair may carry lap allowance. Both did. The zipper panel keeps it — `zip_face`
+is the opening and has to survive being lapped over at each end — and the
+gusset is trimmed to the bare ring figure. The check that should have caught
+this asserted `gusset_face + zip_face == ring`, which is a restatement of the
+line that *defines* `gusset_face`; it could never fail, and it sat there
+passing while all four bags cut a ring that would not close. **A check has to
+be able to fail.** It now tests what gets cut against what gets lapped away.
 
 **The belt pouch could not fit a chassis at all.** At 2" of depth the coil and the
 webbing physically overlap — the check reported a **negative** gap. The fix was
@@ -83,6 +117,21 @@ from Cordura to 12 oz denim and the generator caught it immediately:
 |---|---|---|---|
 | Denim, double fold | 4 | 4.3 mm | **7.3 mm — fails** |
 | Nylon tape, single fold | 2 | 2.3 mm | 3.3 mm ✓ |
+
+**Whether a shell ravels is what decides if it can bind itself**, and on a
+doubled-panel bag that is the difference between buildable and not. The hip
+pack in 600D PU-coated polyester binds in its own cloth at a 3.2 mm mitre; the
+same bag in an uncoated 12 oz duck of almost the same thickness is forced to
+double-fold and lands at **7.7 mm, past the 6 mm a domestic machine stops at**.
+One material, one fabric line, no tape — but only because the coating locks
+the weave.
+
+**`frays` and `melt_seal` are separate columns for the same reason.** Fraying
+decides whether an edge is turned under and whether the binding doubles.
+Melt-sealing decides only how a piece is *cut*. Cordura is both, which is how
+"Cordura seals, so no edge of it needs a hem" got written into a construction
+step as a single fact — and that step was then wrong in both directions for a
+coated cotton, which neither ravels nor melts.
 
 **The binding does not have to match the shell, and with a fraying shell it must
 not.** Known materials are in `MATERIALS` in `tools/bag_pattern.py`; add a row
@@ -118,7 +167,7 @@ They are properties of the materials and the machine, not of the size.
 
 ## Belt loop — the pouch's one extra piece
 
-A Cordura loop on the back panel, cut **2 × (belt width) + 1½"**, so a 2" belt
+A loop in the shell fabric on the back panel, cut **2 × (belt width) + 1½"**, so a 2" belt
 takes a 2 × 5½" piece. Fold, and box-X both ends to the back panel **before** it
 goes into the gusset ring, so the binding catches nothing but the panel edge.
 
@@ -153,157 +202,7 @@ The player carries all four bags, the 3D preview, the cut list, the nesting
 layout, the assembly order and the technique notes — see
 [`SCHEMA.md`](SCHEMA.md) for how a pattern is declared and what gets derived.
 
-<!-- The block below is kept ONLY as the historical record of what was
-     published before the frac() fix. It is not current and must not be
-     regenerated into. -->
-<details>
-<summary>The figures as they were published, before the separator fix</summary>
-
-```
-BeltPouch_4x6
-=============
-  finished overall   4½" W x 2" D x 6½" H
-  face (between flanges)  3⅝" x 5⅝"   depth 1⅛"
-  seam allowance ⅜"   flange 7/16"   binding shows ½"
-
-  PANELS (cordura-1000d)
-    front, back        2 @  4⅜" wide x 6⅜" tall
-
-  GUSSET RING (cordura-1000d)   ring at the stitch line = 18½"
-    gusset             1 @  1⅞" x 15⅞"   (cut long: 18⅞")
-    zip strip, front   1 @  15/16" x 4⅝"
-    zip strip, rear    1 @  15/16" x 4⅝"
-    coil sits 15/16" from the panel's cut edge
-
-  BINDING (cordura-1000d)
-    material           cordura-1000d  (single fold, 2 layers/seam)
-    strip width        1⅛"   (2 x show + 1.00 mm sandwich + turn)
-    length needed      43"  -> buy 51½"
-
-  WEBBING
-    no chassis         carried by the belt, not by straps
-    belt loop (cordura-1000d)  1 @  2" x 5½"   (fits a 2" belt)
-
-  CHECKS
-    ok    ring closes                                  gusset 14⅞" + zip 3⅝" = 18½"
-    ok    zipper panel width matches the gusset        1⅞" vs 1⅞"
-    ok    faces are positive                           3⅝" x 5⅝" x 1⅛"
-    ok    plain bound seam is drivable                 2.0 mm (warn above 5)
-    ok    mitred corner is drivable                    3.0 mm -- hand-wheel anything over 5
-    ok    coil clears the binding flange               7/16" of visible shell outboard
-
-HipPack_10x6x3
-==============
-  finished overall   10" W x 3" D x 6" H
-  face (between flanges)  9⅛" x 5⅛"   depth 2⅛"
-  seam allowance ⅜"   flange 7/16"   binding shows ½"
-
-  PANELS (cordura-1000d)
-    front, back        2 @  9⅞" wide x 5⅞" tall
-
-  GUSSET RING (cordura-1000d)   ring at the stitch line = 28½"
-    gusset             1 @  2⅞" x 20⅜"   (cut long: 23⅜")
-    zip strip, front   1 @  1⅛" x 10⅛"
-    zip strip, rear    1 @  2½" x 10⅛"
-    coil sits ¾" from the panel's cut edge
-
-  BINDING (cordura-1000d)
-    material           cordura-1000d  (single fold, 2 layers/seam)
-    strip width        1⅛"   (2 x show + 1.00 mm sandwich + turn)
-    length needed      63"  -> buy 75½"
-
-  WEBBING
-    chassis loop       1 @  31½"   (28½" ring + 3" overlap)
-    D-ring tabs        2 @  4"
-    grab handle        1 @  8"
-
-  CHECKS
-    ok    ring closes                                  gusset 19⅜" + zip 9⅛" = 28½"
-    ok    zipper panel width matches the gusset        2⅞" vs 2⅞"
-    ok    faces are positive                           9⅛" x 5⅛" x 2⅛"
-    ok    plain bound seam is drivable                 2.0 mm (warn above 5)
-    ok    mitred corner is drivable                    3.0 mm -- hand-wheel anything over 5
-    ok    coil clears the binding flange               ¼" of visible shell outboard
-    ok    coil clears the webbing                      gap 3/16" (want 1/8" or more)
-    ok    chassis overlap lands on the top face        3" of overlap
-    ok    overlap is at least 3x the webbing width     3" vs 2¼"
-
-SlingPack_13x7x4
-================
-  finished overall   13" W x 4" D x 7" H
-  face (between flanges)  12⅛" x 6⅛"   depth 3⅛"
-  seam allowance ⅜"   flange 7/16"   binding shows ½"
-
-  PANELS (cordura-1000d)
-    front, back        2 @  12⅞" wide x 6⅞" tall
-
-  GUSSET RING (cordura-1000d)   ring at the stitch line = 36½"
-    gusset             1 @  3⅞" x 25⅜"   (cut long: 28⅜")
-    zip strip, front   1 @  1¼" x 13⅛"
-    zip strip, rear    1 @  3⅜" x 13⅛"
-    coil sits ⅞" from the panel's cut edge
-
-  BINDING (cordura-1000d)
-    material           cordura-1000d  (single fold, 2 layers/seam)
-    strip width        1⅛"   (2 x show + 1.00 mm sandwich + turn)
-    length needed      79"  -> buy 94¾"
-
-  WEBBING
-    chassis loop       1 @  40½"   (36½" ring + 4" overlap)
-    D-ring tabs        4 @  4"
-    grab handle        1 @  10"
-
-  CHECKS
-    ok    ring closes                                  gusset 24⅜" + zip 12⅛" = 36½"
-    ok    zipper panel width matches the gusset        3⅞" vs 3⅞"
-    ok    faces are positive                           12⅛" x 6⅛" x 3⅛"
-    ok    plain bound seam is drivable                 2.0 mm (warn above 5)
-    ok    mitred corner is drivable                    3.0 mm -- hand-wheel anything over 5
-    ok    coil clears the binding flange               ⅜" of visible shell outboard
-    ok    coil clears the webbing                      gap 7/16" (want 1/8" or more)
-    ok    chassis overlap lands on the top face        4" of overlap
-    ok    overlap is at least 3x the webbing width     4" vs 3"
-
-StadiumTote_12x12x4
-===================
-  finished overall   11⅞" W x 4⅛" D x 11½" H
-  face (between flanges)  11" x 10⅝"   depth 3¼"
-  seam allowance ⅜"   flange 7/16"   binding shows ½"
-
-  PANELS (vinyl-20ga)
-    front, back        2 @  11¾" wide x 11⅜" tall
-
-  GUSSET RING (denim-12oz)   ring at the stitch line = 43¼"
-    gusset             1 @  4" x 33¼"   (cut long: 36¼")
-    zip strip, front   1 @  1⅜" x 12"
-    zip strip, rear    1 @  3⅜" x 12"
-    coil sits 1" from the panel's cut edge
-
-  BINDING (denim-12oz)
-    material           nylon-binding-tape  (single fold, 2 layers/seam)
-    strip width        1⅛"   (2 x show + 1.26 mm sandwich + turn)
-    length needed      92½"  -> buy 111"
-
-  WEBBING
-    chassis loop       1 @  47¼"   (43¼" ring + 4" overlap)
-    D-ring tabs        6 @  4"
-    grab handle        1 @  12"
-
-  CHECKS
-    ok    ring closes                                  gusset 32¼" + zip 11" = 43¼"
-    ok    zipper panel width matches the gusset        4" vs 4"
-    ok    faces are positive                           11" x 10⅝" x 3¼"
-    ok    plain bound seam is drivable                 2.3 mm (warn above 5)
-    ok    mitred corner is drivable                    3.3 mm -- hand-wheel anything over 5
-    ok    shell frays: raw edges need folding          zip laps, rib edges, pocket tops, gusset joins
-    ok    coil clears the binding flange               ½" of visible shell outboard
-    ok    coil clears the webbing                      gap ⅜" (want 1/8" or more)
-    ok    chassis overlap lands on the top face        4" of overlap
-    ok    overlap is at least 3x the webbing width     4" vs 3"
-    ok    within the declared limit 12x6x12            11⅞" x 4⅛" x 11½"
-```
-
-</details>
+**The cut lists are not in this file and must not be pasted back into it.** A block of them lived here as a "historical record" and it outlived its usefulness in three separate ways at once: every hip-pack figure in it predated that bag's redesign, every gusset figure predated the lap-allowance fix above, and it printed `PANELS (cordura-1000d)` and `BINDING (cordura-1000d)` in a block that reads exactly like a cut list — so opening it in the player next to a bag now cut entirely from 600D canvas said the material was Cordura. It was a copy nothing checked, which is the thing this file already says causes the one defect this family has shipped. Deleted. Run the generator.
 
 ---
 

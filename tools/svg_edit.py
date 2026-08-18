@@ -100,9 +100,10 @@ def parse_op(text: str) -> tuple[str, dict]:
               "factor", "gap", "line_gap", "dx", "dy", "min_width", "min_keep"):
         if k in kw:
             kw[k] = float(kw[k])
-    if "band" in kw and isinstance(kw["band"], str):
-        lo, _, hi = kw["band"].partition(":")
-        kw["band"] = (float(lo), float(hi))
+    for b in ("band", "band_x"):
+        if b in kw and isinstance(kw[b], str):
+            lo, _, hi = kw[b].partition(":")
+            kw[b] = (float(lo), float(hi))
     return name, kw
 
 

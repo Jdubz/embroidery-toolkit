@@ -8,7 +8,7 @@
     "h": 7,
     "d": 4
   },
-  "shell": "cordura-1000d",
+  "shell": "canvas-600d-pu",
   "windows": false,
   "closure": {
     "coil_in": 0.25,
@@ -18,12 +18,50 @@
     "d_rings": 4,
     "handle_in": 10,
     "placements": [
-      { "kind": "dring", "face": "left",   "u": 2.0, "v": 1.0, "label": "1 — sling upper, left" },
-      { "kind": "dring", "face": "right",  "u": 2.0, "v": 1.0, "label": "2 — sling upper, right" },
-      { "kind": "dring", "face": "bottom", "u": 2.5, "v": 2.0, "label": "3 — sling lower / stabiliser" },
-      { "kind": "dring", "face": "bottom", "u": 10.5, "v": 2.0, "label": "4 — sling lower / stabiliser" },
-      { "kind": "handle", "face": "top", "from": 3.75, "to": 9.25, "label": "10\" grab handle, bracketing the chassis overlap" },
-      { "kind": "logo", "face": "front", "u": 4.61, "v": 1.61, "w": 3.78, "h": 3.78, "label": "96 mm embroidery field" }
+      {
+        "kind": "dring",
+        "face": "left",
+        "u": 2.0,
+        "v": 1.0,
+        "label": "1 — sling upper, left"
+      },
+      {
+        "kind": "dring",
+        "face": "right",
+        "u": 2.0,
+        "v": 1.0,
+        "label": "2 — sling upper, right"
+      },
+      {
+        "kind": "dring",
+        "face": "bottom",
+        "u": 2.5,
+        "v": 2.0,
+        "label": "3 — sling lower / stabiliser"
+      },
+      {
+        "kind": "dring",
+        "face": "bottom",
+        "u": 10.5,
+        "v": 2.0,
+        "label": "4 — sling lower / stabiliser"
+      },
+      {
+        "kind": "handle",
+        "face": "top",
+        "from": 3.75,
+        "to": 9.25,
+        "label": "10\" grab handle, bracketing the chassis overlap"
+      },
+      {
+        "kind": "logo",
+        "face": "front",
+        "u": 4.61,
+        "v": 1.61,
+        "w": 3.78,
+        "h": 3.78,
+        "label": "96 mm embroidery field"
+      }
     ]
   },
   "chassis": {
@@ -31,12 +69,36 @@
     "overlap_in": 4.0
   },
   "hardware": [
-    { "item": "#5 nylon coil zipper", "qty": "1 × 14\"", "note": "opening is 12⅛\"; shorten with a new bar-tacked stop" },
-    { "item": "1\" D-rings", "qty": 4, "note": "each on a 4\" external tab, tacked through to the chassis" },
-    { "item": "1\" tri-glide slider", "qty": 1, "note": "sling adjustment" },
-    { "item": "1\" swivel snap hooks", "qty": 2, "note": "so the sling comes off" },
-    { "item": "1\" nylon webbing, sling strap", "qty": "56\"", "note": "adjustable ~30–52\". DECLARED, not derived" },
-    { "item": "Heavy polyester topstitch thread", "qty": "1 spool", "note": "top and bobbin" }
+    {
+      "item": "#5 nylon coil zipper",
+      "qty": "1 × 14\"",
+      "note": "opening is 12⅛\"; shorten with a new bar-tacked stop"
+    },
+    {
+      "item": "1\" D-rings",
+      "qty": 4,
+      "note": "each on a 4\" external tab, tacked through to the chassis"
+    },
+    {
+      "item": "1\" tri-glide slider",
+      "qty": 1,
+      "note": "sling adjustment"
+    },
+    {
+      "item": "1\" swivel snap hooks",
+      "qty": 2,
+      "note": "so the sling comes off"
+    },
+    {
+      "item": "1\" nylon webbing, sling strap",
+      "qty": "56\"",
+      "note": "adjustable ~30–52\". DECLARED, not derived"
+    },
+    {
+      "item": "Heavy polyester topstitch thread",
+      "qty": "1 spool",
+      "note": "top and bobbin"
+    }
   ],
   "notes": [
     {
@@ -77,6 +139,9 @@
   "embroidery": {
     "panel": "front",
     "design": null,
-    "field_mm": [96, 96]
+    "field_mm": [
+      96,
+      96
+    ]
   }
 }

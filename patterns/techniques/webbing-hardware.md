@@ -19,7 +19,7 @@ unzips along the row. The X spreads load into four directions instead of one,
 so no single line of stitching sees the whole force.
 
 ```svg
-<svg viewBox="0 0 560 250" role="img" aria-label="A box-X stitching path, numbered in the order it is sewn, showing the one edge that gets retraced.">
+<svg id="box-x" viewBox="0 0 560 250" role="img" aria-label="A box-X stitching path, numbered in the order it is sewn, showing the one edge that gets retraced.">
   <g fill="none" stroke="var(--web)" stroke-width="34" stroke-linecap="butt" opacity=".35">
     <path d="M60,125 H500"/>
   </g>
@@ -84,7 +84,7 @@ the small of the back, and the buckle moves off the hip bone. A sewn-on belt can
 do none of that.
 
 ```svg
-<svg viewBox="0 0 620 280" role="img" aria-label="Section through a belt keeper, cut across the belt. The panel and anchor strip on the right, the belt in the tunnel, and the keeper arching over it, tacked above and below.">
+<svg id="keeper-section" viewBox="0 0 620 280" role="img" aria-label="Section through a belt keeper, cut across the belt. The panel and anchor strip on the right, the belt in the tunnel, and the keeper arching over it, tacked above and below.">
   <g font-family="var(--f-label)" font-size="11" letter-spacing="1.6" fill="var(--muted)">
     <text x="150" y="26" text-anchor="middle">OUTSIDE — AGAINST THE BODY</text>
     <text x="520" y="26" text-anchor="middle">INSIDE THE BAG</text>
@@ -131,8 +131,12 @@ do none of that.
 
 ### Assembling one
 
-1. **Hot-knife the strip to length**, both long edges and both ends. Cordura and
-   nylon seal; nothing frays, so no long edge needs turning.
+1. **Cut the strip to length**, both long edges and both ends. A coated or
+   synthetic shell does not fray, so no long edge needs turning — rotary-cut
+   it, and seal the ends with a hot knife or a lighter only if you have one and
+   the cloth melts. A shell that *does* fray needs ¼″ turned under along each
+   long edge, which is a fifth layer under the tack: check it against the
+   thickness table before cutting.
 2. **Fold ⅜″ under at each end.** This is the only fold. It hides the cut ends,
    and it is the layer the box-X bites into — a tack through a single thickness
    at the very end of a strip pulls straight off it.
@@ -173,7 +177,7 @@ pinching itself, which means **there is a wrong way that looks right and slips
 under load.**
 
 ```svg
-<svg viewBox="0 0 620 250" role="img" aria-label="Tri-glide threading. On the left, webbing passed straight through, which slips. On the right, webbing over the top bar, under the middle bar and back over the top bar, which locks.">
+<svg id="tri-glide" viewBox="0 0 620 250" role="img" aria-label="Tri-glide threading. On the left, webbing passed straight through, which slips. On the right, webbing over the top bar, under the middle bar and back over the top bar, which locks.">
   <g font-family="var(--f-label)" font-size="12" letter-spacing="1.6">
     <text x="150" y="26" text-anchor="middle" fill="var(--cut)">SLIPS</text>
     <text x="470" y="26" text-anchor="middle" fill="var(--stitch)">HOLDS</text>

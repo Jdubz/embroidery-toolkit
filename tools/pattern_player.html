@@ -106,6 +106,9 @@
   .ft-rib{background:var(--shell-dim); box-shadow:0 0 0 1px rgba(0,0,0,.25)}
   .ft-pocket{background:rgba(255,255,255,.14); border-top:2px solid var(--binding)}
   .ft-patch{border:2px solid var(--metal); opacity:.7}
+  /* A flap that hangs over a zip: drawn as the strip it is, with the free
+     edge dashed because that edge is not sewn to anything. */
+  .ft-placket{background:rgba(255,255,255,.10); border:1.5px dashed var(--binding)}
   .ft-belt-loop{background:var(--shell-lit); border:1.5px solid var(--shell-dim)}
   .hpart{position:absolute; background:var(--web); border-radius:1px}
   .box.xray .face{opacity:.42}
@@ -228,6 +231,11 @@
   .md .dgm{margin:22px 0 0; padding:16px; background:var(--sheet);
            border:1px solid var(--rule)}
   .md .dgm svg{display:block; width:100%; height:auto; max-width:640px; margin:0 auto}
+  .stepfig{margin:14px 0 4px; padding:12px; background:var(--sheet);
+           border:1px solid var(--rule)}
+  .stepfig svg{display:block; width:100%; height:auto; margin:0 auto}
+  .stepfig figcaption{margin-top:9px; font-family:var(--f-data); font-size:11px;
+                      color:var(--muted); line-height:1.5}
   .seebtn{display:inline-flex; align-items:center; gap:7px; margin-top:10px;
           background:none; border:1px solid var(--stitch); border-radius:2px;
           color:var(--stitch); font-family:var(--f-label); text-transform:uppercase;
@@ -617,6 +625,308 @@ function tableOf(head, rows){
   });
   t.appendChild(tb); wrap.appendChild(t); return wrap;
 }
+/* ---- step figures ------------------------------------------------------
+   A step's figure is DECLARED, never drawn per bag. Two forms:
+
+     {doc, id}            embed a technique diagram by its svg id. Those are
+                          deliberately dimensionless -- one drawing serves
+                          every bag, and it lives in exactly one file.
+     {kind, ...}          generate from THIS bag's geometry. Anything with a
+                          number in it has to be generated: a hand-drawn
+                          "2 5/16 strip" is wrong the first time the bag is
+                          resized, and nothing would catch it.
+------------------------------------------------------------------------ */
+const SVGNS = "http://www.w3.org/2000/svg";
+function svgEl(tag, at, txt){
+  const n = document.createElementNS(SVGNS, tag);
+  for (const k in at) if (at[k] !== undefined && at[k] !== null) n.setAttribute(k, at[k]);
+  if (txt != null) n.textContent = txt;
+  return n;
+}
+function fig(vb, label){
+  const s = svgEl("svg", {viewBox: vb, role: "img", "aria-label": label});
+  s.add = (tag, at, txt) => { const n = svgEl(tag, at, txt); s.appendChild(n); return n; };
+  return s;
+}
+/* A dimension line with its figure, used everywhere below. */
+function dim1(s, x1, y, x2, txt, col){
+  col = col || "var(--muted)";
+  s.add("path", {d:`M${x1},${y} H${x2}`, stroke:col, "stroke-width":1});
+  s.add("path", {d:`M${x1},${y-4} v8 M${x2},${y-4} v8`, stroke:col, "stroke-width":1});
+  s.add("text", {x:(x1+x2)/2, y:y-7, "text-anchor":"middle",
+                 "font-family":"var(--f-data)", "font-size":11, fill:col}, txt);
+}
+function vdim(s, x, y1, y2, txt, col){
+  col = col || "var(--muted)";
+  s.add("path", {d:`M${x},${y1} V${y2}`, stroke:col, "stroke-width":1});
+  s.add("path", {d:`M${x-4},${y1} h8 M${x-4},${y2} h8`, stroke:col, "stroke-width":1});
+  s.add("text", {x:x+6, y:(y1+y2)/2+4, "font-family":"var(--f-data)",
+                 "font-size":11, fill:col}, txt);
+}
+function caption(s, x, y, txt, col){
+  s.add("text", {x, y, "font-family":"var(--f-label)", "font-size":10.5,
+                 "letter-spacing":1.5, fill:col || "var(--muted)"}, txt);
+}
+
+/* --- the gusset ring, flat then closed ------------------------------- */
+function figRing(p, spec){
+  const g = p.geometry, G = k => g[k].in;
+  const zc = G("zip_cut"), gc = G("gusset_cut"), lap = G("lap"), ring = G("ring");
+  const W = 660, PAD = 26, S = (W - 2*PAD) / (zc + gc);
+  const y = 92, hh = 34;
+  const s = fig(`0 0 ${W} 210`,
+    `The gusset ring laid flat: a ${g.zip_cut.text} zipper panel and a `
+    + `${g.gusset_cut.text} gusset, lapped ${g.lap.text} at each end, closing `
+    + `to a ${g.ring.text} ring.`);
+  caption(s, PAD, 24, "THE RING, OPENED OUT FLAT");
+  const zx = PAD, gx = PAD + zc*S;
+  /* zipper panel */
+  s.add("rect", {x:zx, y, width:zc*S, height:hh, fill:"var(--shell)", opacity:.9});
+  s.add("rect", {x:zx, y:y+hh/2-4, width:zc*S, height:8, fill:"var(--coil)"});
+  s.add("text", {x:zx + zc*S/2, y:y+hh+18, "text-anchor":"middle",
+                 "font-family":"var(--f-data)", "font-size":12,
+                 fill:"var(--ink)"}, "zipper panel");
+  /* gusset */
+  s.add("rect", {x:gx, y, width:gc*S, height:hh, fill:"var(--shell-lit)", opacity:.9});
+  s.add("text", {x:gx + gc*S/2, y:y+hh+18, "text-anchor":"middle",
+                 "font-family":"var(--f-data)", "font-size":12,
+                 fill:"var(--ink)"}, "gusset — cut long, trimmed to fit");
+  /* the two laps: one at the join in the middle, one where it closes round */
+  [[gx - lap*S, "join 1"], [PAD + (zc+gc)*S - lap*S, "join 2 — closes the ring"]]
+    .forEach(([lx, lbl], i) => {
+      s.add("rect", {x:lx, y:y-6, width:lap*S, height:hh+12,
+                     fill:"var(--cut)", opacity:.22});
+      s.add("path", {d:`M${lx},${y-6} v${hh+12} M${lx+lap*S},${y-6} v${hh+12}`,
+                     stroke:"var(--cut)", "stroke-width":1.4});
+      s.add("text", {x:lx + lap*S/2, y:y-14, "text-anchor":"middle",
+                     "font-family":"var(--f-data)", "font-size":11,
+                     fill:"var(--cut)"}, lbl);
+    });
+  dim1(s, zx, y+hh+46, zx+zc*S, g.zip_cut.text, "var(--stitch)");
+  dim1(s, gx, y+hh+46, gx+gc*S, g.gusset_cut.text, "var(--stitch)");
+  dim1(s, zx, y+hh+76, PAD+(zc+gc)*S, `laps ${g.lap.text} × 2 → ring closes at ${g.ring.text}`, "var(--good)");
+  s.add("text", {x:PAD, y:200, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--muted)"},
+        `two strips lapped by ${g.lap.text} cover their combined length LESS ${g.lap.text}, `
+        + `so only ONE of the pair carries that allowance — the zipper panel does`);
+  return s;
+}
+
+/* --- the zipper panel, across its width ------------------------------ */
+function figZipPanel(p){
+  const g = p.geometry, G = k => g[k].in;
+  const sf = G("strip_front"), sr = G("strip_rear"), coil = G("coil"),
+        lap = G("lap"), gw = G("gusset_w"), cc = G("coil_c");
+  const W = 660, PAD = 40, S = (W - 2*PAD) / (sf + sr);
+  const y = 96, hh = 30;
+  const s = fig(`0 0 ${W} 250`,
+    `Section across the zipper panel: a ${g.strip_front.text} strip and a `
+    + `${g.strip_rear.text} strip each lapping ${g.lap.text} onto the tape, `
+    + `the coil ${g.coil_c.text} from the cut edge, finishing ${g.gusset_w.text} wide.`);
+  caption(s, PAD, 24, "SECTION ACROSS THE ZIPPER PANEL");
+  /* tape under everything */
+  const tx = PAD + (sf - lap)*S, tw = (2*lap + coil)*S;
+  s.add("rect", {x:tx, y:y+hh-6, width:tw, height:10, fill:"var(--muted)", opacity:.45});
+  s.add("text", {x:tx+tw/2, y:y+hh+26, "text-anchor":"middle",
+                 "font-family":"var(--f-data)", "font-size":11, fill:"var(--muted)"}, "tape");
+  /* strips */
+  s.add("rect", {x:PAD, y, width:sf*S, height:hh, fill:"var(--shell)"});
+  s.add("rect", {x:PAD + (sf+coil)*S, y, width:sr*S, height:hh, fill:"var(--shell)"});
+  /* coil */
+  s.add("rect", {x:PAD + sf*S, y:y-8, width:coil*S, height:hh+8, fill:"var(--coil)"});
+  s.add("text", {x:PAD + sf*S + coil*S/2, y:y-14, "text-anchor":"middle",
+                 "font-family":"var(--f-data)", "font-size":11, fill:"var(--ink)"}, "coil");
+  /* two rows of topstitching on each lap */
+  [[PAD + (sf-lap)*S, PAD + sf*S], [PAD + (sf+coil)*S, PAD + (sf+coil+lap)*S]]
+    .forEach(([a, b]) => {
+      const q = (b-a)/3;
+      [a+q, a+2*q].forEach(x => s.add("circle", {cx:x, cy:y+hh/2, r:3.6, fill:"var(--stitch)"}));
+      s.add("rect", {x:a, y:y-4, width:b-a, height:hh+8, fill:"var(--cut)", opacity:.14});
+    });
+  s.add("text", {x:PAD, y:y+hh+50, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--stitch)"}, `two rows on each lap — ${g.lap.text} of lap, shaded`);
+  dim1(s, PAD, 74, PAD + sf*S, g.strip_front.text, "var(--stitch)");
+  dim1(s, PAD + (sf+coil)*S, 74, PAD + (sf+sr+coil)*S, g.strip_rear.text, "var(--stitch)");
+  dim1(s, PAD, y+hh+88, PAD + sf*S + coil*S/2, `${g.coil_c.text} to the coil centre`, "var(--coil)");
+  dim1(s, PAD, y+hh+118, PAD + (sf+sr)*S - 2*lap*S + coil*S,
+       `finished ${g.gusset_w.text}, to match the gusset`, "var(--good)");
+  return s;
+}
+
+/* --- a face, in plan, with its features ------------------------------- */
+const FEAT_FILL = {zip:"var(--coil)", placket:"var(--web)", pocket:"var(--shell-lit)",
+                   "belt-loop":"var(--web)", dring:"var(--metal)", logo:"var(--stitch)",
+                   rib:"var(--web)", webbing:"var(--web)"};
+function figFace(p, spec){
+  const name = spec.face, m = p.model3d, f = m.faces[name];
+  if (!f) return null;
+  const fw = f.w.in, fh = f.h.in, fl = m.flange.in, show = m.binding_show.in,
+        R = (m.corner_radius || {in:0}).in;
+  const W = 660, PAD = 54, S = Math.min((W - 2*PAD) / fw, 300 / fh);
+  const w = fw*S, h = fh*S, X = (W - w)/2, Y = 46;
+  const hi = spec.highlight;
+  const s = fig(`0 0 ${W} ${h + 116}`,
+    `The ${name} face in plan, ${f.w.text} by ${f.h.text}`
+    + (hi ? `, with the ${hi} highlighted` : "") + ".");
+  caption(s, PAD, 22, `${name.toUpperCase()} FACE — LOOKING AT IT`);
+  /* the panel, with the bottom corners rounded if this bag has them */
+  const r = Math.min(R*S, w/2, h/2);
+  const d = r > 0.5
+    ? `M${X},${Y} h${w} v${h-r} a${r},${r} 0 0 1 ${-r},${r} h${-(w-2*r)} a${r},${r} 0 0 1 ${-r},${-r} Z`
+    : `M${X},${Y} h${w} v${h} h${-w} Z`;
+  s.add("path", {d, fill:"var(--shell)", "fill-opacity":.55,
+                 stroke:"var(--cut)", "stroke-width":1.4});
+  /* the binding band round the outside, and the stitch line inside it */
+  s.add("path", {d, fill:"none", stroke:"var(--binding)",
+                 "stroke-width":Math.max(show*S, 3), opacity:.55});
+  s.add("rect", {x:X+fl*S, y:Y+fl*S, width:w-2*fl*S, height:h-2*fl*S, fill:"none",
+                 stroke:"var(--stitch)", "stroke-width":1, "stroke-dasharray":"6 4"});
+  /* features that live on this face */
+  (m.features || []).filter(ft => ft.face === name).forEach(ft => {
+    const on = !hi || ft.kind === hi;
+    const o = on ? 1 : .18;
+    /* A feature declares only the axes it is ACTUALLY placed on. A divider rib
+       gives u and w and no v/h at all, because it is a line running the full
+       height -- read that as undefined and the whole figure renders as NaN and
+       disappears silently. Absent along an axis means "the whole of it". */
+    const fu = ft.u == null ? 0 : ft.u, fv = ft.v == null ? 0 : ft.v;
+    const fwIn = ft.w == null ? fw - fu : ft.w;
+    const fhIn = ft.h == null ? fh - fv : ft.h;
+    const fx = X + fu*S, fy = Y + fv*S;
+    if (ft.kind === "dring"){
+      s.add("circle", {cx:fx, cy:fy, r:7, fill:"none", stroke:FEAT_FILL.dring,
+                       "stroke-width":3.4, opacity:o});
+    } else {
+      const fwp = Math.max(fwIn*S, 3), fhp = Math.max(fhIn*S, 3);
+      s.add("rect", {x:fx, y:fy, width:fwp, height:fhp,
+                     fill:FEAT_FILL[ft.kind] || "var(--muted)",
+                     "fill-opacity": ft.kind === "logo" ? .22 : .8,
+                     stroke:FEAT_FILL[ft.kind] || "var(--muted)",
+                     "stroke-width": on ? 1.6 : 1,
+                     "stroke-dasharray": ft.kind === "logo" ? "5 3" : null,
+                     opacity:o});
+    }
+    if (on){
+      const ly = fy + (ft.kind === "dring" ? -13 : -6);
+      s.add("text", {x:fx, y:ly, "font-family":"var(--f-data)", "font-size":10.5,
+                     fill:"var(--ink)"}, (ft.label || ft.kind).split("—")[0].trim());
+    }
+  });
+  dim1(s, X, Y+h+34, X+w, `${f.w.text} overall`, "var(--cut)");
+  dim1(s, X+fl*S, Y+h+62, X+w-fl*S,
+       `${p.geometry["face_" + (name === "left" || name === "right" ? "d" : "w")].text} stitch line`,
+       "var(--stitch)");
+  vdim(s, X-24, Y, Y+h, f.h.text, "var(--cut)");
+  return s;
+}
+
+/* --- the three pieces of a pocketed panel, with real widths ----------- */
+function figPocketPieces(p, spec){
+  const g = p.geometry, ax = spec.axis === "side" ? "side" : "top";
+  /* The two pieces are called upper/lower when the panel splits ACROSS and
+     near/far when it splits DOWN, in the geometry as well as in the prose.
+     Reading "upper" off a side split returns undefined, the figure throws,
+     buildFigure swallows it, and the step simply shows no drawing. */
+  const A = ax === "top" ? ["top_upper", "top_lower"] : ["side_near", "side_far"];
+  const K = k => g[(ax === "top" ? "top_" : "side_") + k];
+  if (!K("zip") || !g[A[0]] || !g[A[1]]) return null;
+  const up = g[A[0]].in, lo = g[A[1]].in, coil = g.coil.in,
+        lap = g.lap.in, span = K("across").in;
+  const W = 660, PAD = 40, S = (W - 2*PAD) / (up + lo);
+  const s = fig(`0 0 ${W} 250`,
+    `The outer layer of the pocketed panel, split into ${g[A[0]].text} and `
+    + `${g[A[1]].text}, each lapping ${g.lap.text} onto the tape and adding `
+    + `back to ${K("across").text}.`);
+  caption(s, PAD, 22, ax === "top" ? "OUTER LAYER — SPLIT ACROSS" : "OUTER LAYER — SPLIT DOWN");
+  const y = 60, hh = 34;
+  s.add("rect", {x:PAD, y, width:up*S, height:hh, fill:"var(--shell)"});
+  s.add("rect", {x:PAD + (up+coil)*S, y, width:lo*S, height:hh, fill:"var(--shell)"});
+  s.add("rect", {x:PAD + up*S, y:y-6, width:coil*S, height:hh+6, fill:"var(--coil)"});
+  [[PAD+(up-lap)*S, up*S ? PAD+up*S : 0], [PAD+(up+coil)*S, PAD+(up+coil+lap)*S]]
+    .forEach(([a,b]) => s.add("rect", {x:a, y:y-4, width:b-a, height:hh+8,
+                                       fill:"var(--cut)", opacity:.18}));
+  dim1(s, PAD, y-16, PAD+up*S, g[A[0]].text, "var(--stitch)");
+  dim1(s, PAD+(up+coil)*S, y-16, PAD+(up+lo+coil)*S, g[A[1]].text, "var(--stitch)");
+  /* the identity, drawn */
+  const iy = y + hh + 44;
+  s.add("rect", {x:PAD, y:iy, width:(up+lo+coil-2*lap)*S, height:20,
+                 fill:"var(--good)", opacity:.2, stroke:"var(--good)"});
+  s.add("text", {x:PAD+6, y:iy+15, "font-family":"var(--f-data)", "font-size":11.5,
+                 fill:"var(--good)"},
+        `(${g[A[0]].text} − ${g.lap.text}) + ${g.coil.text} + (${g[A[1]].text} − `
+        + `${g.lap.text}) = ${K("across").text}, the panel it replaces`);
+  s.add("text", {x:PAD, y:iy+52, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--muted)"},
+        "the INNER layer is the full panel, uncut — the pocket is the cavity between them");
+  s.add("text", {x:PAD, y:iy+72, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--muted)"}, "nothing is cut open, and no load crosses the zip");
+  return s;
+}
+
+/* --- a bound seam in section, with THIS bag's stack -------------------- */
+function figSeam(p){
+  const g = p.geometry;
+  const W = 620, s = fig(`0 0 ${W} 250`,
+    `Section through a bound seam on this bag: two panels wrong sides together, `
+    + `allowances out, the binding wrapping the flange.`);
+  caption(s, 30, 22, "BOUND SEAM — SECTION");
+  const y = 110, t = 13, X = 60, L = 300;
+  s.add("rect", {x:X, y:y-t, width:L, height:t, fill:"var(--shell)"});
+  s.add("rect", {x:X, y:y,   width:L, height:t, fill:"var(--shell-lit)"});
+  s.add("text", {x:X+8, y:y-t-8, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--ink)"}, "panel");
+  s.add("text", {x:X+8, y:y+t+18, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--ink)"}, "gusset");
+  /* the flange sticking out to the right, and the binding wrapping it */
+  const F = 150, fx = X + L;
+  s.add("rect", {x:fx, y:y-t, width:F, height:2*t, fill:"var(--shell-dim)"});
+  s.add("path", {d:`M${fx+F+22},${y-t-12} v${2*t+24} `
+                 + `a12,12 0 0 0 -12,12 h${-(F+30)} v-10 h${F+18} `
+                 + `a2,2 0 0 0 2,-2 v${-(2*t+24)} z`,
+                 fill:"none"});
+  s.add("path", {d:`M${fx-30},${y-t-13} h${F+34} a13,13 0 0 1 0,${2*t+26} h${-(F+34)}`,
+                 fill:"none", stroke:"var(--binding)", "stroke-width":9, opacity:.9});
+  s.add("text", {x:fx+F/2, y:y+t+44, "text-anchor":"middle",
+                 "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--binding)"}, "binding wraps the flange");
+  /* one stitch line through everything */
+  s.add("circle", {cx:fx-16, cy:y, r:5, fill:"var(--stitch)"});
+  s.add("text", {x:fx-16, y:y-t-26, "text-anchor":"middle",
+                 "font-family":"var(--f-data)", "font-size":11, fill:"var(--stitch)"},
+        "one line catches all five");
+  dim1(s, fx, y+t+70, fx+F, `flange ${g.flange.text} = ${g.sa.text} + ${g.turn.text}`, "var(--cut)");
+  dim1(s, fx-30, y+t+100, fx+F+13, `binding shows ${g.show.text} on each face`, "var(--binding)");
+  s.add("text", {x:30, y:236, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--muted)"},
+        `${p.peak_mm ? "" : ""}the allowance points OUT, so it is part of the finished bag — `
+        + `panel cut ${g.panel_w.text}, bag ${g.w.text}`);
+  return s;
+}
+
+/* --- dispatcher -------------------------------------------------------- */
+const FIG_KINDS = {ring:figRing, "zip-panel":figZipPanel, face:figFace,
+                   "pocket-pieces":figPocketPieces, seam:figSeam};
+function buildFigure(spec, p){
+  try {
+    if (spec.doc){
+      /* Pull the drawing out of the technique note that owns it. One copy,
+         one file -- embedding a duplicate here is how two drawings of the
+         same thing end up disagreeing. */
+      const src = LIB.docs[spec.doc];
+      if (!src) return null;
+      const i = src.indexOf(`<svg id="${spec.id}"`);
+      if (i < 0) return null;
+      const j = src.indexOf("</svg>", i);
+      if (j < 0) return null;
+      const holder = document.createElement("div");
+      holder.innerHTML = src.slice(i, j + 6);
+      return holder.firstElementChild;
+    }
+    const fn = FIG_KINDS[spec.kind];
+    return fn ? fn(p, spec) : null;
+  } catch (e){ return null; }
+}
+
 function cards(items, kind, docs){
   const box = el("div", "cards");
   items.forEach(n => {
@@ -629,6 +939,16 @@ function cards(items, kind, docs){
     b.appendChild(el("h3", null, n.title));
     if (n.body) b.appendChild(el("p", null, n.body));
     if (n.stitch) b.appendChild(el("div", "stitchnote", "▸ " + n.stitch));
+    /* Figures come before the technique links: a drawing of what this step
+       means is worth more than a button offering one. */
+    (n.figures || []).forEach(spec => {
+      const g = buildFigure(spec, LIB.patterns[current]);
+      if (!g) return;
+      const f = el("figure", "stepfig");
+      f.appendChild(g);
+      if (spec.caption) f.appendChild(el("figcaption", null, spec.caption));
+      b.appendChild(f);
+    });
     /* A step that needs a method rather than a number links to the technique
        note that teaches it, instead of re-explaining it badly in eighty words. */
     (n.see || []).forEach(path => {
@@ -701,8 +1021,11 @@ function panelFor(name, p){
     d.appendChild(el("p", null, p.summary));
     d.appendChild(tableOf(["Measure", "Figure"], [
       ["Finished overall", {t:`${p.finished.w.text} W × ${p.finished.d.text} D × ${p.finished.h.text} H`, cls:"d"}],
+      [" …the bound rib eats", {t:`${p.geometry.flange.text} off every edge (${p.geometry.sa.text} allowance + ${p.geometry.turn.text} binding turn), and it points OUTWARD`, cls:"d"}],
+      [" …leaving a stitch-line box", {t:`${p.geometry.face_w.text} × ${p.geometry.face_d.text} × ${p.geometry.face_h.text}`, cls:"d"}],
+      [" …and visible cloth", {t:`${p.geometry.visible_w.text} × ${p.geometry.visible_h.text} between the bindings — size artwork to this`, cls:"d"}],
       ["Interior", {t:`${p.interior.w.text} × ${p.interior.h.text} × ${p.interior.d.text} — ${p.interior.litres} L`, cls:"d"}],
-      ["Panel cut", {t:`${p.geometry.panel_w.text} × ${p.geometry.panel_h.text}`, cls:"d"}],
+      ["Panel cut", {t:`${p.geometry.panel_w.text} × ${p.geometry.panel_h.text} — the finished size LESS two ${p.geometry.turn.text} turns, not plus two allowances`, cls:"d"}],
       ["Gusset cut width", {t:p.geometry.gusset_w.text, cls:"d"}],
       ["Ring at the stitch line", {t:p.geometry.ring.text, cls:"d"}],
       ["Seam allowance / flange", {t:`${p.geometry.sa.text} / ${p.geometry.flange.text}`, cls:"d"}],
@@ -729,6 +1052,19 @@ function panelFor(name, p){
       + "wearer cinches the belt, and nobody here has measured that. What can be "
       + "stated without inventing a number is the tension at which a belt of this "
       + "width reaches it."));
+    if ((p.zipper_schedule || []).length){
+      d.appendChild(el("h2", null, "Zipper schedule"));
+      d.appendChild(el("p", null,
+        "Every zipper on this bag, in the order it has to be built. "
+        + "The technique note explains HOW to lap one; only this table knows how "
+        + "long THIS one is, and all three lengths move whenever the bag is "
+        + "resized. Chain is the span plus 1″ — half an inch of tape past each "
+        + "new stop, so the stop has cloth behind it and the cut end can be capped."));
+      d.appendChild(tableOf(["Zip", "Opening", "Cut chain", "Buy", "Sliders", "Stops", "How it goes in"],
+        p.zipper_schedule.map(r => [r.zip, {t:r.span, cls:"d"}, {t:r.chain, cls:"d"},
+                                    {t:r.buy, cls:"d"}, {t:String(r.sliders), cls:"d"},
+                                    {t:r.stops, cls:"sub"}, {t:r.note, cls:"sub"}])));
+    }
     if ((p.assembly_load || []).length){
       d.appendChild(el("h2", null, "What it costs to sew"));
       d.appendChild(el("p", null,
@@ -882,7 +1218,12 @@ function renderHelp(p){
   });
   $("#prov").innerHTML = "";
   $("#prov").appendChild(el("span", null, "Schema " + p.schema_version));
-  $("#prov").appendChild(el("span", null, "Built " + p.provenance.generated_at.slice(0, 10)));
+  /* Date AND time. The stamp is the only way to tell a stale page from a fresh
+     one -- this file is opened straight off disk, so a browser will happily
+     serve yesterday's copy -- and a date alone cannot separate two builds on
+     the same day, which is every build during a working session. */
+  $("#prov").appendChild(el("span", null, "Built "
+    + p.provenance.generated_at.slice(0, 16).replace("T", " ") + " UTC"));
   $("#prov").appendChild(el("span", null, p.provenance.spec.path));
 }
 

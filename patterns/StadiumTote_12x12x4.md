@@ -1,8 +1,8 @@
-# StadiumTote 12×12×4 — clear vinyl windows, Cordura shell, modular straps
+# StadiumTote 12×12×4 — clear vinyl windows, canvas shell, modular straps
 
 A zip-top tote for venues enforcing an NFL-standard clear bag policy. **Two clear
 vinyl panels as windows; the entire gusset ring — sides, bottom and zipper panel
-— in 12 oz denim, bound in a synthetic tape.** A single unbroken webbing loop runs the bag's whole
+— in 600D PU-coated polyester canvas, bound in its own cloth.** A single unbroken webbing loop runs the bag's whole
 circumference **inside** the gusset and carries every load: the six D-rings tack
 through to it from outside, so nothing weight-bearing touches the PVC and the
 gusset exterior stays clean enough to embroider. Removable straps give crossbody, backpack or hand-carry,
@@ -10,8 +10,10 @@ and three internal pockets keep small items off the bottom.
 
 No leather, no serger.
 
-**The shell frays and the binding does not** — that split is deliberate, and it is
-what keeps this buildable. See *Materials* below before cutting.
+**The shell does not fray, so it binds itself** — which is what keeps this
+buildable at two layers a seam instead of four. See *Materials* below before
+cutting; the reasoning matters more than the conclusion, because it inverts if
+you ever swap the cloth.
 
 Built on a **Singer Heavy Duty 4423** with a walking or Teflon foot.
 
@@ -85,67 +87,56 @@ venue's own published policy is the authority — check it before cutting.
 
 ---
 
-## Materials — the shell frays, the binding must not
+## Materials — the shell does not fray, and that decides everything
 
-The original shell was Cordura 1000D, which is stiff, and unpleasant to
-embroider. **12 oz denim** fixes both: it is a first-rate embroidery substrate —
-stable, hoops flat, no coating to gum a needle — and a jeans 100/16 is literally
-made for it. The bag keeps its body from the 20 ga vinyl panels, so a softer
-shell costs nothing structurally.
+The shell is **600D PU-coated polyester canvas**, the same cloth as every other
+bag in this family. It went through two earlier answers and the history is worth
+keeping, because each one was rejected for a measurable reason.
 
-But denim **frays**, and the original design leaned on "nothing frays" in more
-places than is obvious.
+**Cordura 1000D** was first: stiff, and unpleasant to embroider.
 
-### Do not bind denim in denim
-
-A fraying binding has to be **double fold** — its outer edge turned under — which
-puts four layers at every seam instead of two:
+**12 oz denim** was second, and it is a first-rate embroidery substrate —
+stable, hoops flat, no coating to gum a needle. But it **frays**, and this design
+leaned on "nothing frays" in more places than was obvious. A fraying binding has
+to be **double fold**, its outer edge turned under, which puts four layers at
+every seam instead of two:
 
 | Binding | Layers/seam | Plain seam | **Mitred corner** |
 |---|---|---|---|
-| Denim, double fold | 4 | 4.3 mm | **7.3 mm — will not drive** |
-| Nylon tape or Cordura, single fold | 2 | 2.3 mm | **3.3 mm** ✓ |
+| Denim, bound in itself | 4 | 4.3 mm | **7.3 mm — will not drive** |
+| Denim, bound in nylon tape | 2 | 2.3 mm | 3.3 mm ✓ |
+| **600D canvas, bound in itself** | **2** | **1.86 mm** | **2.76 mm** ✓ |
 
-**Nothing says the binding has to match the shell**, and here it must not. Use
-**1" pre-folded nylon binding tape**, or the leftover Cordura — you bought ½ yard
-and the shell used about 13" of it, so the binding is already in the drawer. The
-strip width stays **1⅛"** and the whole thickness budget survives.
+So denim needed a second material bought purely to work around the first one's
+fraying. The canvas does not: the coating locks the weave, a cut edge does not
+ravel, and the binding comes off the same roll as the shell. **One cloth, one
+purchase, and the thinnest seams the bag has ever had.**
 
-Contrast binding on denim is also just a better-looking bag.
+`tools/tests/test_patterns.py` keeps the denim case alive on a variant, in both
+directions — a fraying shell bound in itself still fails at 7.3 mm, and binding
+it in tape still fixes it. The rule did not stop being true; this bag stopped
+being denim.
 
 ### Not waxed canvas
 
-Waxed canvas was the other candidate and it is the wrong one here. **Every needle
-that goes through it leaves a permanent mark** — this design already has one
-material where every hole is forever, and a second doubles the surface where a
-mistake cannot be undone. It also scrapes wax onto the feed dogs and needle, and
-it is the *worse* embroidery substrate, which is the problem you set out to fix.
+Waxed canvas was a candidate and it is the wrong one here. **Every needle that
+goes through it leaves a permanent mark** — this design already has one material
+where every hole is forever, and a second doubles the surface where a mistake
+cannot be undone. It also scrapes wax onto the feed dogs and needle, and it is
+the *worse* embroidery substrate.
 
-Plain 12 oz duck or a PU-coated poly canvas both work if you prefer canvas to
-denim; treat them exactly as denim below.
+### What the coating changes
 
-### What changes, and what does not
-
-| Changes | Stays |
+| | |
 |---|---|
-| **Pre-wash and dry the shell.** Cotton shrinks; Cordura did not. Skip this and the bag distorts the first time it gets wet | Every dimension in the cut list |
-| **Hot knife is out for the shell.** Cotton does not melt-seal — rotary-cut it. The knife is still needed for webbing | Binding strip 1⅛", single fold |
-| **Raw edges need folding** where they used to be sealed | Needle: jeans 100/16 — unchanged |
-| **Abrasion drops sharply.** Cordura is the benchmark; denim is not. Add the base wear strip | The stitch schedule, entirely |
-| **Water resistance is gone.** Bound seams were never waterproof, so this is smaller than it sounds | The chassis, hardware, geometry |
+| **No pre-wash.** Polyester does not shrink, and there is nothing to soften. The step is gated on `shell_frays` and this bag no longer gets it | |
+| **No folding raw edges under.** Nothing ravels, so the four edges that used to need ¼" pressed under go back to their plain cut sizes — the zip strips are 1⅜/3⅜ again, not 1⅝/3⅝ | |
+| **Rotary-cut, and do not iron.** The cloth melt-seals, so a hot knife *works*, but on a coated face it can leave a hard bead — test on a scrap. Heat is what the waterproofing cannot survive, so there is no pressing anywhere in this build | |
+| **A smaller needle.** 600D is half the yarn of a 1000D and every hole is permanent in the coating, so the schedule calls a **Microtex 90/14** throughout rather than a jeans 100/16 | |
+| **Abrasion drops.** 600D is roughly half a 1000D. The base wear strip is still recommended, and it is canvas now rather than Cordura | |
 
-### The four edges that were hot-knifed
-
-Each gains ¼" of cut and gets pressed under:
-
-- **Zipper strip laps** — the edge that lies on the tape. Strips go 1⅜/3⅜ → **1⅝/3⅝**.
-- **Divider rib** long edges — ¾" → cut **1¼"**, press to ¾".
-- **Hidden pocket** — ¼" under all round, top edge double-folded so the opening
-  does not stretch. 3 × 10 → cut **3½ × 11**.
-- **Gusset lap joins** — press ¼" under on the overlapping end before topstitching.
-
-If you would rather not fold, a **narrow zigzag along each raw edge** is faster
-and uglier, and fine on the two that end up inside.
+Full coated-substrate handling — hooping, stabilizer, sealing needle holes — is
+in [`docs/05-materials-and-consumables.md`](../docs/05-materials-and-consumables.md).
 
 ---
 
@@ -164,53 +155,56 @@ another 11¾", and the small pocket nests in the offcut above it.
 The back-panel pocket is cut to the **panel's full width**, because its bottom and
 both sides are caught in the panel's binding rather than being seamed.
 
-## Cut list — 12 oz denim (rotary cutter)
+## Cut list — 600D canvas (rotary cutter)
 
 | Piece | Qty | Cut size | Purpose |
 |---|---|---|---|
-| Gusset | 1 | **4" × 37"** — *cut long, trim to fit* | Sides and bottom |
-| Zipper strip, front | 1 | **1⅝" × 12"** | Narrow side of the coil — ¼" folds under at the lap |
-| Zipper strip, rear | 1 | **3⅝" × 12"** | Wide side — ¼" folds under at the lap |
-| Binding strip | — | 1⅛" wide, ~125" total | **Not denim** — see Materials |
-| Divider rib | 1 | **1¼" × 11⅜"** | Press ¼" under each long edge → ¾" finished |
-| Hidden pocket panel | 1 | **3½" × 11"** | Press ¼" under all round; double-fold the top |
-| Base wear strip *(recommended)* | 1 | **4" × 11¾"** Cordura | Exterior of the bottom face |
+| Gusset | 1 | **4" × 35¼"** — *cut long, trim to 32¼"* | Sides and bottom |
+| Zipper strip, front | 1 | **1⅜" × 12"** | Narrow side of the coil |
+| Zipper strip, rear | 1 | **3⅜" × 12"** | Wide side |
+| Binding strip | 2 | **1⅛" × 55½"** | Same cloth — the shell does not ravel |
+| Divider rib | 1 | **1¼" × 11⅜"** | Topstitched both long edges → ¾" finished |
+| Discreet pocket panel | 1 | **3½" × 11"** | Edges left raw; nothing ravels |
+| Base wear strip *(recommended)* | 1 | **4" × 11¾"** | Exterior of the bottom face |
 
-**The gusset is cut long on purpose.** Its finished length is 32¼" — two side
-faces of 10⅝" and a bottom of 11" — plus ½" of lap at each end, so 33¼" in theory. In practice the ring's true
-length depends on the seam allowance you actually achieve and on how tightly the
-binding pulls, which is why good patterns give more than the calculation and let
-you trim. **Fit the ring to the back panel and trim before you close it.**
+**The gusset is cut long on purpose.** Its finished length is **32¼"** — two
+side faces of 10⅝" and a bottom of 11" — and that is also what you trim it
+*to*. It gets **no** lap allowance, because the zipper panel already carries it:
+two strips lapped by ½" cover their combined length *less* ½", so adding ½" at
+each end of both pieces makes the ring close a full inch over. *(This file said
+"plus ½" of lap at each end, so 33¼" in theory" for five revisions, and the
+generator did the same arithmetic. The check that was supposed to catch it could
+not — see `BoxBound_family.md`.)* In practice the ring's true length depends on
+the seam allowance you actually achieve and on how tightly the binding pulls,
+which is why good patterns give more than the calculation and let you trim.
+**Fit the ring to the back panel and trim before you close it.**
 
-**Zipper panel:** 11" of face plus ½" lap at each end = 12" long.
+**Zipper panel:** 11" of face plus ½" lap at each end = **12"** long — the only
+piece carrying that allowance.
+
+**Ring check:** gusset 32¼" + zipper panel 12" − two ½" laps = **43¼"**. ✓
 
 **The coil is deliberately off-centre**, sitting **1" from the panel's cut edge —
-½" of visible Cordura outboard of it.** That clears the face's centreline so the
+½" of visible canvas outboard of it.** That clears the face's centreline so the
 webbing can run straight down it. Each strip laps ½" onto the tape, so
 (1⅜ − ½) + ¼ coil + (3⅜ − ½) = **4"**, matching the gusset. ✓ The gap between the
 coil and the webbing is ⅜".
 
-**Ring check:** gusset 32¼" + zipper panel 11" = **43¼"** = the panel face
+That last figure is the *exposed* zip run, and 43¼" is the panel face
 perimeter, 2 × (11 + 10⅝). ✓
 
-### Cordura cutting layout
+### Canvas cutting layout
 
-```
- +--------------------------------------------------------+  ^
- |                    gusset  4 x 37                      |  |
- +--------------------------------------------------------+  |
- |            binding strip  1⅛ x 60                      |  |
- +--------------------------------------------------------+  |
- |            binding strip  1⅛ x 60                      |  13"
- +--------------------------------------------------------+  |
- |            binding strip  1⅛ x 60                      |  |
- +----------------+----------------+------+---------------+  |
- | zip rear 3⅜ x 12 | zip front 1⅜ x 12 | rib | hidden 3 x 10 |  |
- +----------------+----------------+------+---------------+  v
- <----------------------- 60" ------------------------->
-```
+The generator nests it and the player draws it; the figure to buy against is
+**11½" of 58"-wide canvas**, which includes the binding. The binding is on the
+straight grain here — this bag has square corners, so it needs no bias — and it
+is the same cloth as everything else, so it nests with the rest rather than
+being bought by the yard as tape.
 
-**60" × 13" — ⅓ yard of 60" Cordura.** Buy ½ yard for margin.
+*Do not hand-copy the nest into this file.* A block of cut lists lived in
+`BoxBound_family.md` for exactly that reason and was deleted: it went stale in
+three independent ways and still read like a cut list. Run
+`py tools/bag_pattern.py --all --package` and read the player.
 
 ## Cut list — nylon webbing (hot knife)
 
@@ -275,7 +269,7 @@ joint sitting at a load concentration. Ring positions are materially unchanged.*
 | **5–6** | Bottom face | **9" apart**, centred on 11" — 1" from each end | **Backpack lower** |
 
 **The vinyl is a window. It contains; it never carries.** Every carry load
-terminates in the Cordura-and-webbing chassis, and the panels' only structural
+terminates in the canvas-and-webbing chassis, and the panels' only structural
 job is holding contents in, spread along 44" of bound seam rather than
 concentrated at a point.
 
@@ -297,7 +291,7 @@ Backpack and crossbody use different rings, so **both stay rigged at once**.
 |---|---|---|---|
 | **Back panel, divided** | 11¾" × 6½" vinyl | Back panel interior, full width | Phone, tickets, wallet |
 | **Small items, divided** | 3" × 4½" vinyl | Right gusset interior | Chapstick and lighter |
-| **Discreet** | 3" × 10" Cordura | Left gusset interior | Cash, ID, keys |
+| **Discreet** | 3" × 10" canvas | Left gusset interior | Cash, ID, keys |
 
 *Both gusset pockets are 3" wide, not 3½" — the gusset's face between flanges is
 only 3¼".*
@@ -310,12 +304,12 @@ tear-initiation line the chassis exists to eliminate, only longer.
 
 So it has none. **The pocket is cut to full panel width and its bottom and both
 sides are caught in the panel's binding**, which is already structural and already
-Cordura-backed. Contents rest on a seam that was carrying the bag anyway, and the
+canvas-backed. Contents rest on a seam that was carrying the bag anyway, and the
 only new stitching in the vinyl field is the divider.
 
 ### The divider reads as structure
 
-A **¾" × 11¾" Cordura rib on the *outside* of the back panel**, running its full
+A **¾" × 11¾" canvas rib on the *outside* of the back panel**, running its full
 height with both ends caught in the binding, topstitched down both long edges.
 Those two lines pass through the pocket beneath, so one component makes the
 divider, reinforces its stitch line, and looks like a reinforcement strap.
@@ -325,8 +319,8 @@ gives two useful sizes: **3¾"** — a phone — and **6½"** for flat items.
 
 ### The discreet pocket
 
-Cordura on Cordura, black on black, with nothing that reads as an opening. A
-3" × 10" panel on the left gusset interior, top edge free and hot-knifed, sitting
+Canvas on canvas, black on black, with nothing that reads as an opening. A
+3" × 10" panel on the left gusset interior, top edge free and left raw, sitting
 1½" below the zipper-panel join. Topstitch both long edges full height and across
 the bottom, then **one horizontal line 5" below the top**. Above that line is the
 pocket; below it the panel is sewn flat and dead.
@@ -335,12 +329,12 @@ From inside it is a doubled black panel with topstitching round it and one line
 across — a reinforced gusset. From outside the side seams sit close to the binding
 where they disappear, and the horizontal line reads as a bartack row.
 
-*Contents in a Cordura pocket are not visible, unlike everything else in this bag.
+*Contents in a canvas pocket are not visible, unlike everything else in this bag.
 The policy already allows a small non-clear bag up to 4.5" × 6.5" carried
 alongside, which gets the same privacy with none of the ambiguity — a compartment
 built to escape notice can read badly at a gate whatever is in it.*
 
-### Both gusset pockets mount on Cordura, not on the panels
+### Both gusset pockets mount on the canvas gusset, not on the panels
 
 A loaded pocket is a weight-bearing attachment; on a vinyl panel it would be a
 stitch line under load in 0.5 mm PVC.
@@ -370,7 +364,7 @@ single top haul handle is what the structure permits, and it is what bags with a
 zipper gusset use anyway.
 
 It is webbing, so it lies flat when not in use — including against your back in
-backpack mode. If the bag rides heavy, fold a 4" scrap of Cordura round the grip
+backpack mode. If the bag rides heavy, fold a 4" scrap of canvas round the grip
 zone or double the webbing there.
 
 *This replaces the clip-on 14" handle that used to be in the strap kit, and frees
@@ -388,7 +382,7 @@ Build the crossbody first.
 
 **Make a shoulder pad.** Interface-pressure research is unambiguous that wider
 straps are markedly more comfortable — best results at 8 cm — and 1" webbing is
-narrow for a single strap carrying the whole bag. A slip-on pad, or a Cordura
+narrow for a single strap carrying the whole bag. A slip-on pad, or a canvas
 sleeve over closed-cell foam, costs nothing structurally.
 
 **Webbing to buy:** bag 83½" + crossbody 56" = 139½", so **4 yards** covers the bag
@@ -398,11 +392,10 @@ and its primary strap; **6 yards** covers every configuration.
 
 | | |
 |---|---|
-| Shell | **12 oz denim**, pre-washed and dried. Or 12 oz duck / PU-coated poly canvas. **Not waxed canvas.** |
-| Binding | **1" nylon binding tape**, or leftover Cordura — anything that does not fray |
+| Shell | **600D PU-coated polyester canvas.** No pre-wash — it does not shrink. **Not waxed canvas**, and not a fraying cotton unless you also buy tape to bind it in. |
+| Binding | **The shell.** It does not ravel, so it binds itself at single fold: 1⅛" strips off the same roll, no second material. |
 | Clear vinyl | **20 gauge** (0.020") — holds shape on a 12" panel. 16 ga sews easier and slumps more. 36" × 12". |
-| Denim | **½ yd of 58–60"** covers the shell with margin. |
-| Cordura *(optional)* | Scraps for the base wear strip. |
+| Canvas | **11½" of 58"-wide** covers the shell, the binding and the base strip. Buy ½ yd for margin. |
 | Webbing | 1" nylon, 4–6 yd per above. |
 | Zipper | **#5 nylon coil, 14"** — longer than the opening so it can be shortened to fit. |
 | Hardware | **6 × 1" D-rings** · 3 × 1" tri-glide sliders · 4–6 × 1" swivel snap hooks. |
@@ -416,8 +409,8 @@ and its primary strap; **6 yards** covers every configuration.
 | Material | Tool |
 |---|---|
 | Clear vinyl | **Rotary cutter** and ruler |
-| Denim shell | **Rotary cutter** — cotton does not melt-seal |
-| Webbing, binding tape | **Hot knife** — still synthetic, still seals |
+| Canvas shell and binding | **Rotary cutter.** It *will* melt-seal, but a hot knife on a coated face can leave a hard bead — test on a scrap, and nothing here needs a sealed edge anyway |
+| Webbing | **Hot knife**, or a lighter. Nylon ravels the moment it is cut and this is the one thing that genuinely needs sealing |
 
 > **Never hot-knife PVC.** Heating vinyl releases hydrogen chloride — corrosive
 > and genuinely harmful, not merely unpleasant like melting nylon. Vinyl is
@@ -436,7 +429,7 @@ be an even 1⅛" wide.
 
 | Seam | Needle |
 |---|---|
-| Everything — binding, sling, webbing, gusset | **Jeans/denim 100/16** |
+| Everything — binding, sling, webbing, gusset | **Microtex 90/14 sharp.** 600D is half the yarn of a 1000D and the worst stack here is 4.35 mm, so a heavier needle buys no penetration and makes a bigger hole — which, in a coating, is permanent |
 | Zipper topstitching | Microtex/sharp 90/14 |
 
 **Do not reach for a leather needle** for the vinyl. It is chisel-pointed and cuts
@@ -448,31 +441,40 @@ that propagates along the stitch line.
 
 ## Thickness budget
 
-Cordura 1000D 0.5 mm · 20 ga vinyl 0.51 mm · 1" nylon webbing 1.3 mm.
+600D canvas 0.45 mm · 20 ga vinyl 0.51 mm · 1" nylon webbing 1.3 mm.
+
+**Do not hand-copy this table.** `tools/bag_pattern.py` derives every row from
+the material table and `stitch info` prints it; the figures below are here to
+argue a point and were re-read from the generator on the canvas build. An
+earlier version of this section quoted 4.4 mm for the D-ring tack — correct when
+the gusset was Cordura, and 0.25 mm stale the moment the shell changed.
 
 | Location | Stack | Thickness |
 |---|---|---|
-| Gusset-to-zipper lap join | 2 Cordura | ~1.0 mm |
-| Zipper topstitch | Cordura strip + tape | ~1.1 mm |
-| Divider rib topstitch | rib + panel + pocket | ~1.5 mm |
-| Sling topstitch | webbing + gusset | ~1.8 mm |
-| Webbing box-X at a D-ring | webbing + gusset | ~1.8 mm |
-| Plain bound seam | vinyl + denim + 2 binding | ~2.3 mm |
-| Binding through the back pocket | 2 vinyl + gusset + 2 binding | ~2.5 mm |
-| Mitred corner, clipped gusset | binding doubles | ~3.3 mm |
-| Chassis overlap, and rings 3–4 on it | 2 webbing + gusset | ~3.1 mm |
-| **D-ring tab box-X** | doubled tab + gusset + internal webbing | **~4.4 mm** |
-| Grab handle box-X | doubled end + gusset + internal webbing | ~4.4 mm |
-| **Strap box-X at the slider** | 3 × webbing | **~3.9 mm** |
+| Gusset-to-zipper lap join | 2 × canvas | 0.9 mm |
+| Zipper topstitch | canvas + tape | 1.05 mm |
+| **Plain bound seam** | vinyl + canvas + 2 binding | **1.86 mm** |
+| Mitred corner | binding doubles | 2.76 mm |
+| **Mitred corner over a gusset lap join** | the mitre + the lapped zip strip | **3.21 mm** |
+| Chassis topstitch | webbing + canvas | 1.75 mm |
+| Chassis overlap box-X | 2 × webbing + canvas | 3.05 mm |
+| **D-ring tab box-X** | doubled tab + canvas + internal webbing | **4.35 mm** |
+| Grab handle box-X | doubled end + canvas + internal webbing | 4.35 mm |
 
-**Peak on the bag is 4.4 mm**, at the eight external tacks — six rings and the two
-handle ends. Hand-wheel those; everything else drives normally. That is the price
-of hiding the webbing: an external tab plus the internal anchor is two more layers
-than a ring threaded onto exposed webbing.
+**Peak on the bag is 4.35 mm**, at the eight external tacks — six rings and the
+two handle ends. Hand-wheel those; everything else drives normally. That is the
+price of hiding the webbing: an external tab plus the internal anchor is two more
+layers than a ring threaded onto exposed webbing.
 
-*If the machine baulks, make the tabs from doubled **Cordura** rather than webbing
-— 1.0 mm instead of 2.6 — which brings the tack to **2.8 mm**. Webbing is the
-stronger choice for rings 1 and 2, which carry the whole bag; Cordura is ample for
+Two things the canvas bought: the bound seam went **2.26 → 1.86 mm** and the
+mitre **3.26 → 2.76**, because a shell that does not ravel binds itself at two
+layers instead of needing four. And the thickest *seam* is no longer the plain
+mitre — it is the mitre sitting on a gusset lap join, which all four of them do,
+and which nothing in this file used to mention.
+
+*If the machine baulks, make the tabs from doubled **canvas** rather than webbing
+— 0.9 mm instead of 2.6 — which brings the tack to 2.65 mm. Webbing is the
+stronger choice for rings 1 and 2, which carry the whole bag; canvas is ample for
 3–6.*
 
 ---
@@ -512,16 +514,16 @@ the tabs; nothing else changes.
 
 | Operation | Stitch | Length | Foot | Needle |
 |---|---|---|---|---|
-| Chassis webbing to gusset | straight, both long edges | 3.0 | walking | jeans 100/16 |
-| Pockets to gusset | straight | 3.5 | walking / Teflon | jeans 100/16 |
+| Chassis webbing to gusset | straight, both long edges | 3.0 | walking | Microtex 90/14 |
+| Pockets to gusset | straight | 3.5 | walking / Teflon | Microtex 90/14 |
 | Zipper strips to tape | straight, **2 rows** | 3.0 | **zipper** | **Microtex 90/14** |
-| New zipper stop | **dense zigzag** ~3 mm wide | **0.4** | zigzag | jeans 100/16 |
-| Gusset lap joins | straight, 2 rows | 3.0 | walking | jeans 100/16 |
-| Chassis overlap | **box-X, twice round** | 2.5–3.0 | walking | jeans 100/16 |
-| D-ring tabs, handle ends | **box-X, twice round** | 2.5–3.0 | walking | jeans 100/16 |
-| Divider rib | straight, both long edges | 3.5 | walking | jeans 100/16 |
-| Binding | straight, ⅛" in from the binding's inner edge | 3.5 | walking | jeans 100/16 |
-| Strap box-X at hardware | **box-X, twice round** | 2.5–3.0 | walking | jeans 100/16 |
+| New zipper stop | **dense zigzag** ~3 mm wide | **0.4** | zigzag | Microtex 90/14 |
+| Gusset lap joins | straight, 2 rows | 3.0 | walking | Microtex 90/14 |
+| Chassis overlap | **box-X, twice round** | 2.5–3.0 | walking | Microtex 90/14 |
+| D-ring tabs, handle ends | **box-X, twice round** | 2.5–3.0 | walking | Microtex 90/14 |
+| Divider rib | straight, both long edges | 3.5 | walking | Microtex 90/14 |
+| Binding | straight, **⅜" from the panels' raw edges** | 3.5 | walking | Microtex 90/14 |
+| Strap box-X at hardware | **box-X, twice round** | 2.5–3.0 | walking | Microtex 90/14 |
 
 **Raise the upper tension** for the webbing passes; thick webbing pulls the top
 thread down and leaves loops underneath at normal tension. Drop it back for
@@ -531,7 +533,7 @@ binding and pockets.
 
 | Where | How |
 |---|---|
-| Cordura, webbing | Backstitch 3–4 stitches. Normal. |
+| Canvas, webbing | Backstitch 3–4 stitches. Normal. |
 | **Exposed vinyl** | **Never backstitch** — it perforates. Leave 4" tails, pull both to one side, square-knot, trim. |
 | Vinyl inside a seam the binding will cover | Backstitch is fine; it will be hidden and the binding carries the edge. |
 
@@ -551,7 +553,7 @@ on black nobody will see the difference.
 | **Zipper foot** | For the two rows onto the zipper tape. Not optional — a standard foot cannot get close enough to the coil. |
 | **Double-sided basting tape** | The answer to "you cannot pin vinyl". A vinyl-rated basting tape (Seamstick and similar) holds panels and pockets exactly in place while you sew. |
 | **Clips** | Everywhere else. Every pin hole in vinyl is permanent. |
-| **Height compensation** | A folded scrap of Cordura under the back of the foot to step onto the 4.4 mm tacks level. Without it the foot tips and the first stitches bunch. |
+| **Height compensation** | A folded scrap of canvas under the back of the foot to step onto the 4.35 mm tacks level. Without it the foot tips and the first stitches bunch. |
 | **Edge guide** | Or a strip of tape on the throat plate at ⅛". Binding looks amateur when the stitch line wanders. |
 
 *Basting tape makes the needle sticky.* Wipe it with alcohol, or push the needle
@@ -566,15 +568,19 @@ flat sewing first, so nothing has to be reached into.
 
 **0 — Test first.** On scrap, sew a **bound seam** and measure the allowance you
 actually achieve — every dimension keys off 3/8". Then sew a **box-X through the
-worst stack**: doubled webbing + Cordura + webbing, 4.4 mm. If the machine cannot
-drive it, switch the tabs to doubled Cordura before you cut anything.
+worst stack**: doubled webbing + canvas + webbing, 4.35 mm. If the machine cannot
+drive it, switch the tabs to doubled canvas before you cut anything.
 
-**1 — Pre-wash the shell.** Wash and dry the denim before anything else. Cotton
-shrinks and this bag has no ease anywhere to absorb it.
+**1 — No pre-wash, and no pressing at any point.** Polyester does not shrink,
+so there is nothing to pre-shrink; and the coating is the waterproofing, so heat
+is the one thing it cannot survive. If a step below says press, it is a leftover
+from the denim build — clip it instead.
 
-**2 — Cut.** Vinyl and denim with a rotary cutter, webbing and binding with the
-hot knife. Clips only, never pins. Cut the gusset **long** and leave it long.
-Press ¼" under on the four edges listed in *Materials* as you go.
+**2 — Cut.** Vinyl and canvas with a rotary cutter, webbing with the
+hot knife. Clips only, never pins — a pin hole in a coated shell is permanent
+and it is a hole in the waterproofing. Cut the gusset **long** and leave it long.
+Nothing needs pressing under: the cloth does not ravel, which is why the zip
+strips are 1⅜/3⅜ and not the 1⅝/3⅝ the denim build cut.
 
 **3 — Embroider the gusset.** Flat, before anything is assembled. Right side
 section — see below.
@@ -590,7 +596,7 @@ small-items pocket's top edge, set it 2" below where the zipper panel will join,
 **straight topstitch at 3.5 mm** on the other three edges and add the vertical
 divider. Hold it with **basting tape**, not clips — a pocket that shifts a
 sixteenth shows. On the **left**: lay
-the 3" × 10" Cordura panel with its top edge free, 1½" below the join, topstitch
+the 3" × 10" canvas panel with its top edge free, 1½" below the join, topstitch
 both long edges and the bottom, then one horizontal line 5" below the top edge.
 The pockets sit over the webbing and their own stitching helps hold it flat.
 
@@ -603,10 +609,11 @@ face centreline clear for the webbing. Basting tape holds the lap while you sew.
 **bar-tack substitute — dense zigzag, ~3 mm wide, 0.4 mm long, 5–6 passes back and
 forth across the coil**. Then trim 1" beyond it. A coil zipper cut
 without a new stop lets the slider run straight off the end. Cap each cut end with
-a scrap of Cordura.
+a scrap of canvas.
 
 **8 — One lap join, then the top run.** Fit the ring to the back panel and **trim
-the gusset to length** — target **43¼"**. Lap *one* gusset end onto one end of the
+the gusset to length** — target **32¼"**, so the ring closes at **43¼"**. Lap
+*one* gusset end onto one end of the
 zipper panel by ½" and topstitch. Now lay both webbing tails along the zipper
 panel's interior centreline: they **overlap each other by 4¼" at its centre**.
 Straight topstitch them down at 3.0 mm, then **box-X both ends of the overlap,
@@ -629,7 +636,7 @@ committing its second tack.
 
 **11 — Build the back panel.** Bind the pocket's top edge, then lay the pocket on
 the panel's **interior** with its bottom and side edges flush to the panel edges,
-and clip. Lay the Cordura rib on the **exterior**, 4½" from one side, running the
+and clip. Lay the canvas rib on the **exterior**, 4½" from one side, running the
 full height. **Straight topstitch both long edges of the rib at 3.5 mm** — those two lines go
 through rib, panel and pocket at once, and make the divider. Basting tape holds
 the pocket flush while you clip the rest.
@@ -658,7 +665,7 @@ modes live there rather than being repeated in every pattern.
 
 What this bag needs from it:
 
-- **1⅛" strip, single fold** — Cordura is hot-knifed so its outer edge stays raw.
+- **1⅛" strip, single fold** — the canvas does not ravel, so its outer edge stays raw.
 - **Straight grain, mitred corners.** No curves in this design, so no bias.
 - **Set the underside 1/16" deeper than the top**, then one straight line at
   3.5 mm, ⅛" in from the binding's inner edge, catches both faces.
@@ -678,7 +685,7 @@ What this bag needs from it:
 
 ## The gusset is an embroidery job
 
-The logo lives on the Cordura gusset, so it can be **embroidered directly into the
+The logo lives on the canvas gusset, so it can be **embroidered directly into the
 panel** before assembly — no patch, no applied edge, nothing to peel.
 
 **Put it on the RIGHT side section.** The discreet pocket's two side seams run the
@@ -686,14 +693,14 @@ full height of the left gusset and show on its exterior; embroidering across the
 is awkward and would draw attention to the thing meant to look like plain
 reinforcement.
 
-Because the chassis runs **inside**, the gusset exterior is clean Cordura apart
+Because the chassis runs **inside**, the gusset exterior is clean canvas apart
 from six 1" box-X patches at the rings — and the right side section carries
 **exactly one**, an inch below the top corner. That leaves roughly **83 × 254 mm**
 of clear field. Design to about **75 × 75 mm** and hoop it in the **SA432 4×4**.
 
-*Embroider before the webbing goes in.* Two layers of Cordura plus webbing is
+*Embroider before the webbing goes in.* Two layers of canvas plus webbing is
 1.8 mm — inside the machine's 2 mm limit, but a lumpy substrate that will not
-hoop flat. Black Cordura is dark cloth, so
+hoop flat. Black canvas is dark cloth, so
 `docs/14-designing-for-dark-cloth.md` applies in full: declare
 `"cloth": "1A1A1A"` and take `fill_density_mm_dark`, or it comes off speckled.
 Back it with cutaway. A long narrow treatment along the strip instead is what the
@@ -703,7 +710,7 @@ Back it with cutaway. A long narrow treatment along the strip instead is what th
 
 - [ ] Venue's own bag policy read, not just the NFL one
 - [ ] Hot knife duty cycle suits a 45-second continuous cut
-- [ ] **Shell pre-washed and dried**
+- [ ] **Test bound seam sewn on scrap, and the achieved allowance measured** — every dimension keys off ⅜"
 - [ ] Binding is **not** the shell material — nothing that frays
 - [ ] Vinyl measured: **11⅜" across and at least 36" long**, and the piece is square
 - [ ] A **test bound seam** sewn on scrap, and the achieved seam allowance measured
@@ -731,13 +738,20 @@ geometry would have caught:
 | Vinyl gusset → Cordura | zip strip 1¾" → 2⅜" | Cordura needs no binding, so the lap changed back |
 | Chassis | ring tabs → webbing | "caught in the binding seam" still loaded the vinyl |
 | **Seam allowance audit** | **ring 48" → 44", panels 12" → 11¾"** | **a bound seam still needs a seam allowance** |
+| Cordura → 12 oz denim | binding → nylon tape | denim frays, and a fraying shell bound in itself is 7.3 mm at the mitre |
+| **Denim → 600D canvas** | **binding back to the shell; seam 2.26 → 1.86 mm** | **a coated shell does not ravel, so it binds itself and the tape is not bought at all** |
+| **Lap allowance** | **gusset 33¼" → 32¼"** | **both pieces carried it, so the ring closed an inch over — and the check meant to catch that could not fail** |
 
-The last is the one that would have ruined a bag: a 48" ring onto a 44" perimeter
-is 4" of pucker, and 12" panels put the bag over the policy limit at the flange.
+Two of those would have ruined a bag: a 48" ring onto a 44" perimeter is 4" of
+pucker, and the lap double-count is another inch of the same thing on a seam that
+cannot be eased.
 
-A hand-computed cut list is where seam-allowance and perimeter mistakes live, and
-unlike a bad stitch file, a bad cut is material already spent. The declared form —
-`patterns/specs/StadiumTote_12x12x4.json` with a generator for the cut list,
-takeoff, layout and preview — is overdue.
+**The declared form now exists.** `patterns/specs/StadiumTote_12x12x4.json`
+carries the object, `patterns/constructions/box-bound.json` the procedure, and
+`tools/bag_pattern.py` derives the cut list, takeoff, layout, thickness budget
+and 3D preview from them. Everything in this file that states a *figure* is a
+copy of something the generator computes, and a copy is checked by nothing —
+which is exactly how the denim thickness table survived a material change. Read
+the player; treat this file as the reasoning.
 
 Log the build in `projects/` when it happens.
