@@ -416,6 +416,34 @@ produces a finished, correct-looking, permanently-shut bag.
 | Slider sits proud and drags | Standard slider on reverse chain | They are different parts. Replace the slider |
 | Needle strike on the coil | Sewing too close, or the foot rode over the chain | The stitch line belongs on the **tape**. Slow down and use the zipper foot's edge as the guide |
 
+## Watch it done
+
+Found and link-checked 2026-08-18. **Marked by what each one actually is** —
+a page that says "video" in its URL is not proof of one, and two of these I
+could confirm only as far as the title.
+
+| | What it shows |
+|---|---|
+| **[Tricks for Installing Zipper Sliders on Small Coil Zippers](https://www.youtube.com/watch?v=qzFljmO7hPU)** *(video)* | Getting a slider onto cut chain — the operation with no undo, and the one worth watching before you try it |
+| **[How to Install Sliders on Coil Zipper](https://www.youtube.com/watch?v=w8HVH5knTUs)** — Dutchware *(video)* | The same thing from a gear-maker rather than a garment sewist. Chain by the yard, sliders separate — how this family buys zippers |
+| **[Inserting a slider onto a continuous zip](https://www.youtube.com/watch?v=24_71RzEqTE)** *(video, title only verified)* | Third angle on the same operation |
+| **[Sailrite — How to Install Zipper Sliders on Coil Zippers](https://www.sailrite.com/how-to-install-zipper-slider)** | Sailrite is the closest thing to this repo's domain: canvas, marine, heavy thread. Page is script-rendered so I could not confirm the embedded video |
+| **[How to Shorten 5 Zipper Types & Make Stoppers](https://threadsmonthly.com/shorten-zips/)** *(article + video)* | The bar-tacked stop. Covers coil specifically, which most tutorials skip |
+| **[Melly Sews — How to Shorten a Zipper](https://mellysews.com/how-to-shorten-a-zipper/)** *(article + video)* | Same operation, clearer photographs |
+
+**On reverse coil, read rather than watch.** The good sources are written, and
+the distinction is one sentence with a diagram rather than a manual skill:
+[YKK on concealed vs reverse-use coil](https://ykkamericas.com/what-is-the-difference-between-concealed-and-reverse-use-coil-zippers/),
+and [Ripstop by the Roll's zipper overview](https://ripstopbytheroll.com/blogs/the-grid-online-blog/zippers-an-overview).
+
+*One correction they make to this note:* several sources say **the chain is the
+same for standard and reverse use, and the SLIDER is what creates the reverse
+look.** That is consistent with what this file says about sliders being
+different parts, but it means "buy reverse coil chain" is loose language — what
+you are really buying is the reverse slider. Worth knowing when ordering.
+
+---
+
 ## Further reading
 
 - [Zippers: an overview — coil, moulded, sizes and tape](https://ripstopbytheroll.zendesk.com/hc/en-us/articles/360031232032-Zippers-An-Overview)

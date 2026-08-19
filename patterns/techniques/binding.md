@@ -340,6 +340,26 @@ a strap, ring or handle is going to land on top of it.
   starting point; the strip width in particular depends on materials you have and
   I do not.
 
+## Watch it done
+
+Found and link-checked 2026-08-18.
+
+| | What it shows |
+|---|---|
+| **[Sailrite — How to Sew Binding Around Corners](https://www.sailrite.com/how-to-bind-around-corners)** | Folding the binding to form the mitre, on canvas rather than quilting cotton. The closest match to what this family does |
+| **[Sailrite — How to Work Binding Around Corners or Curves](https://www.sailrite.com/How-to-Work-Binding-Around-Corners-or-Curves-Video)** | Adds the CURVE case, which the rounded panels here need and which most binding tutorials never cover |
+| **[Melly Sews — How to Sew Mitered Corners, two ways](https://mellysews.com/how-to-sew-mitered-corners/)** *(article + video)* | Slower and better photographed than the Sailrite pages |
+| **[Mitered Corners — Binding](https://www.youtube.com/watch?v=H2IhhakrSkE)** *(video)* | Quilt binding, but the fold is identical |
+| **[ULTIMATE Continuous Bias Binding Tutorial](https://www.youtube.com/watch?v=j4NHseVkF30)** *(video)* | Cutting a long bias strip from one square with two seams — which is exactly how the bias strips in this pattern's cut list are meant to be produced |
+
+**Two things to translate as you watch.** Nearly every binding tutorial online
+is *double fold* on quilting cotton; this family is **single fold** on a shell
+that does not ravel, so it is two layers a seam where they show four. And they
+guide off the binding's own folded edge, which is the specific mistake called
+out above — **guide off the raw edges instead.**
+
+---
+
 ## Further reading
 
 - [Bias binding basics — cutting, making, attaching](https://sew4home.com/bias-binding-tutorial-figuring-yardage-cutting-making-attaching/)

@@ -246,6 +246,23 @@ stops it flapping.
 | Webbing end will not go through a buckle | Hot knife too hot — the end beaded | Trim it back and re-cut cooler; pinch the hot end flat with pliers while it sets |
 | Bag rocks outward when loaded | Keepers too close together | Widen the span. It is the base, not the tack, that resists rotation |
 
+## Watch it done
+
+Found and link-checked 2026-08-18.
+
+| | What it shows |
+|---|---|
+| **[Stitchback — The Box X Stitch](https://www.stitchbackgear.com/articles/2019/12/19/the-box-x-stitch)** *(photo walkthrough)* | The best of these, and it is stills rather than video. DIY trail gear, so the assumptions match this repo's: when to use box-X versus a bar tack, and why one edge gets retraced |
+| **[Sailrite — How to Properly Sew a Box X Stitch](https://www.sailrite.com/How-to-Sew-a-Box-X-Stitch)** | The marine version, on webbing under real load |
+| **[Sailrite — How to Sew Webbing Loops](https://www.sailrite.com/How-to-Sew-Webbing-Loops)** | Folding and tacking a loop — the keeper operation, near enough |
+| **[Sailrite — Adjustable Webbing Straps for Covers](https://www.sailrite.com/Adjustable-Webbing-Strap-for-Covers-Make-your-Own-Video)** | Tri-glide threading, and tabs for sliders |
+
+**One thing to ignore.** All of these are sewn on a walking-foot machine that
+eats an 8 mm stack without complaining. On the SE700 every box-X here is
+**hand-wheeled** — see the thickness figures on the pattern itself.
+
+---
+
 ## Further reading
 
 - [Sewing a box-X / box stitch](https://www.stitchbackgear.com/blogs/news/how-to-sew-a-box-x-stitch)

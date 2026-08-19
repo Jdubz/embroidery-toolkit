@@ -225,6 +225,25 @@ between how deep the pocket is and how wide a belt the panel can carry.
 | A slider has run off and cannot be replaced | Both ends were bound before the slider was parked | Park it before the panel goes into the ring, every time |
 | The lower outer piece will not lie on the panel | It was cut square on a panel with rounded corners | Cut the inner layer and the lower outer round the same template |
 
+## Watch it done
+
+Found and link-checked 2026-08-18. Nothing online builds this exact panel —
+a pocket as the cavity between two layers, with nothing cut open — so these
+cover the parts.
+
+| | What it shows |
+|---|---|
+| **[How To Neatly Sew a Lapped Zip with a Concealing Flap](https://threadsmonthly.com/sew-lapped-zip/)** *(article + video)* | The closest thing to the **placket** step anywhere: a flap covering the coil, caught in the seam that is being sewn regardless |
+| **[Bethany Lynne — How to Sew a Recessed Zipper, open-end method](https://www.bethanylynnemakes.com/how-to-sew-an-open-end-recessed-zipper/)** | Bag-maker's version of lapping cloth onto tape rather than cutting an opening into a panel |
+| **[Sew Sweetness — Zippers 4 Ways](https://sewsweetness.com/2012/10/zippers-4-ways.html)** | Compares the approaches side by side, which is the useful thing when deciding |
+
+**Translate one word.** In garment sewing a "lapped zipper" means one side of a
+seam folded over to hide the coil. Here **lap** means a stated overlap onto the
+tape, topstitched — a different operation with the same name. The arithmetic
+in this note is what matters, not theirs.
+
+---
+
 ## Further reading
 
 - [`zippers.md`](zippers.md) — the coil, the lap, shortening, stops and sliders
