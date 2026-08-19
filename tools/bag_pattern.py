@@ -2547,6 +2547,25 @@ def load_glossary() -> dict:
             if not str(w.get("url", "")).startswith("https://"):
                 raise ValueError(f"glossary: {t['term']!r} has a non-https "
                                  f"reference {w.get('url')!r}")
+        # A term's figure is the SAME declaration a step's figure is, so the
+        # drawing of a mitre is one drawing used twice rather than two that can
+        # disagree. Only the embedded form can be checked here -- whether a
+        # generated one draws anything is a question for the page, and
+        # tools/tests/test_figures.js asks it.
+        fg = t.get("figure")
+        if fg:
+            if ("doc" in fg) == ("kind" in fg):
+                raise ValueError(f"glossary: {t['term']!r} figure must name "
+                                 "either a doc+id or a kind, not both or neither")
+            if "doc" in fg:
+                d = REPO / fg["doc"]
+                if not d.is_file():
+                    raise ValueError(f"glossary: {t['term']!r} figure points at "
+                                     f"a missing {fg['doc']!r}")
+                if f'id="{fg.get("id")}"' not in d.read_text(encoding="utf-8"):
+                    raise ValueError(f"glossary: {t['term']!r} figure wants "
+                                     f"{fg.get('id')!r}, which {fg['doc']} "
+                                     "does not define")
         # Where a term names a technique note, its references must also appear
         # in that note's own "Watch it done" table, or the two drift and the
         # reader is told different things depending which they opened.

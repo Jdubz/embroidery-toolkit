@@ -1234,6 +1234,42 @@ finally:
 check("...and an invented kind is refused", _bad2 is not None and "kind" in (_bad2 or ""),
       _bad2 or "no error raised")
 
+# Figures on the terms. Where a drawing says something the sentence cannot --
+# a section through a bound seam does; a picture of the word "grain" does not.
+# Bare terms are bare on purpose, so this asserts the ones that must have one
+# rather than demanding every term does.
+_fig = {t["term"]: t["figure"] for t in _terms if t.get("figure")}
+check("the terms a drawing actually helps all carry one",
+      {"flange", "stitch line", "mitre", "lap join", "box-X", "keeper",
+       "slider", "binding", "ring", "tri-glide"} <= set(_fig),
+      str(sorted({"flange", "stitch line", "mitre", "lap join", "box-X",
+                  "keeper", "slider", "binding", "ring", "tri-glide"} - set(_fig))))
+check("a term figure is the SAME declaration a step figure is",
+      all(("doc" in f) != ("kind" in f) for f in _fig.values()),
+      "one drawing used twice, not two that can drift")
+check("...and every embedded id exists in the note it names",
+      all(f'id="{f["id"]}"' in (B.REPO / f["doc"]).read_text(encoding="utf-8")
+          for f in _fig.values() if "doc" in f))
+check("generated ones name a kind the page can actually draw",
+      {f["kind"] for f in _fig.values() if "kind" in f}
+      <= {"ring", "zip-panel", "face", "pocket-pieces", "seam", "anchors", "logos"},
+      str(sorted({f["kind"] for f in _fig.values() if "kind" in f})))
+_bad3 = None
+try:
+    B.load_glossary.cache_clear()
+    _o3 = B.GLOSSARY.read_text(encoding="utf-8")
+    B.GLOSSARY.write_text(_o3.replace('"id": "mitre"', '"id": "no-such-figure"', 1),
+                          encoding="utf-8")
+    B.load_glossary()
+except ValueError as e:
+    _bad3 = str(e)
+finally:
+    B.GLOSSARY.write_text(_o3, encoding="utf-8")
+    B.load_glossary.cache_clear()
+check("...and an id the note does not define is refused",
+      _bad3 is not None and "does not define" in (_bad3 or ""),
+      _bad3 or "no error raised")
+
 check("the glossary rides on the package so the page can link from it",
       len(h.package(SPECS["HipPack_10x7x4"], CONS, CONS_PATH, "later")["glossary"])
       == len(_terms))

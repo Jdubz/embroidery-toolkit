@@ -26,7 +26,11 @@
           "title": "Zippers 4 ways, compared — Sew Sweetness",
           "url": "https://sewsweetness.com/2012/10/zippers-4-ways.html"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/zippers.md",
+        "id": "lapped-panel"
+      }
     },
     {
       "term": "topstitch",
@@ -64,7 +68,11 @@
           "title": "How to shorten a zipper — Melly Sews",
           "url": "https://mellysews.com/how-to-shorten-a-zipper/"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/zippers.md",
+        "id": "shorten"
+      }
     },
     {
       "term": "box-X",
@@ -88,7 +96,11 @@
           "title": "How to properly sew a Box X stitch — Sailrite",
           "url": "https://www.sailrite.com/How-to-Sew-a-Box-X-Stitch"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/webbing-hardware.md",
+        "id": "box-x"
+      }
     },
     {
       "term": "placket",
@@ -105,7 +117,11 @@
           "title": "Lapped zip with a concealing flap — Threads Monthly",
           "url": "https://threadsmonthly.com/sew-lapped-zip/"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/panel-pocket.md",
+        "id": "pocket-section"
+      }
     },
     {
       "term": "gusset",
@@ -114,13 +130,21 @@
       "body": "A bag with no gusset is flat. Here the gusset plus the zipper panel form one continuous **ring** that the front and back panels are bound to. Its cut width is the bag's depth plus a flange at each side.",
       "aka": [
         "gussets"
-      ]
+      ],
+      "figure": {
+        "kind": "ring",
+        "stage": "join2"
+      }
     },
     {
       "term": "ring",
       "group": "parts",
       "short": "The closed loop of gusset + zipper panel that the two panels are bound into.",
-      "body": "Cut long and trimmed to fit, because its true length depends on the lap you actually achieve and on how hard the binding pulls. Its target is the stitch-line perimeter of a panel: 2 × (face width + face height)."
+      "body": "Cut long and trimmed to fit, because its true length depends on the lap you actually achieve and on how hard the binding pulls. Its target is the stitch-line perimeter of a panel: 2 × (face width + face height).",
+      "figure": {
+        "kind": "ring",
+        "stage": "join2"
+      }
     },
     {
       "term": "flange",
@@ -129,32 +153,48 @@
       "body": "This is the whole reason a bound bag's panels are cut *smaller* than the bag they make. In a turned seam the allowance is consumed on the inside; here it points outward and becomes part of the finished dimension.\n\n`flange = seam allowance + turn` — the distance from the finished edge in to the [[stitch line]].",
       "aka": [
         "flanges"
-      ]
+      ],
+      "figure": {
+        "kind": "seam"
+      }
     },
     {
       "term": "stitch line",
       "group": "geometry",
       "short": "Where the needle actually goes. Every figure in these patterns is measured from it.",
       "body": "Not the cut edge and not the edge of the binding. The `face` dimensions are the stitch-line box, and the usable interior is measured from it.\n\n**Guide off the RAW EDGE, not off the binding's inner edge.** The binding laps past the stitching, so guiding on its edge lands the needle 1/16\" shy — and a run that drifts comes out short of the panels it has to wrap.",
-      "see": "patterns/techniques/binding.md"
+      "see": "patterns/techniques/binding.md",
+      "figure": {
+        "doc": "patterns/techniques/binding.md",
+        "id": "offset-binding"
+      }
     },
     {
       "term": "turn",
       "group": "geometry",
       "short": "How far the binding folds round past the raw edges — 1/16\" here.",
-      "body": "Small and consequential: it is the entire difference between the panel you cut and the bag you get. `panel = finished − 2 × turn`."
+      "body": "Small and consequential: it is the entire difference between the panel you cut and the bag you get. `panel = finished − 2 × turn`.",
+      "figure": {
+        "kind": "seam"
+      }
     },
     {
       "term": "show",
       "group": "geometry",
       "short": "How much binding is visible on each face of the finished bag.",
-      "body": "Distinct from [[flange]], and they are not the same number. `visible cloth = overall − 2 × show` is what artwork must be sized to; `face = overall − 2 × flange` is the stitch-line box. Reading one for the other is a mistake this repo has made and corrected."
+      "body": "Distinct from [[flange]], and they are not the same number. `visible cloth = overall − 2 × show` is what artwork must be sized to; `face = overall − 2 × flange` is the stitch-line box. Reading one for the other is a mistake this repo has made and corrected.",
+      "figure": {
+        "kind": "seam"
+      }
     },
     {
       "term": "face",
       "group": "geometry",
       "short": "The stitch-line box — NOT the cloth you can see.",
-      "body": "The interior volume is computed from it. What you can see is `visible`, an eighth of an inch smaller each way."
+      "body": "The interior volume is computed from it. What you can see is `visible`, an eighth of an inch smaller each way.",
+      "figure": {
+        "kind": "seam"
+      }
     },
     {
       "term": "binding",
@@ -178,7 +218,11 @@
           "title": "Mitered corners, two ways — Melly Sews",
           "url": "https://mellysews.com/how-to-sew-mitered-corners/"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/binding.md",
+        "id": "bound-seam"
+      }
     },
     {
       "term": "bias",
@@ -218,7 +262,11 @@
           "title": "Binding around corners — Sailrite",
           "url": "https://www.sailrite.com/how-to-bind-around-corners"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/binding.md",
+        "id": "mitre"
+      }
     },
     {
       "term": "clip",
@@ -248,7 +296,11 @@
           "title": "Binding around corners OR CURVES — Sailrite",
           "url": "https://www.sailrite.com/How-to-Work-Binding-Around-Corners-or-Curves-Video"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/binding.md",
+        "id": "mitre"
+      }
     },
     {
       "term": "ease",
@@ -386,7 +438,11 @@
           "title": "How to sew webbing loops — Sailrite",
           "url": "https://www.sailrite.com/How-to-Sew-Webbing-Loops"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/webbing-hardware.md",
+        "id": "keeper-section"
+      }
     },
     {
       "term": "chassis",
@@ -415,7 +471,11 @@
           "title": "Adjustable webbing straps — Sailrite",
           "url": "https://www.sailrite.com/Adjustable-Webbing-Strap-for-Covers-Make-your-Own-Video"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/webbing-hardware.md",
+        "id": "tri-glide"
+      }
     },
     {
       "term": "coil",
@@ -432,7 +492,11 @@
           "title": "Zippers: an overview — Ripstop by the Roll",
           "url": "https://ripstopbytheroll.com/blogs/the-grid-online-blog/zippers-an-overview"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/zippers.md",
+        "id": "lapped-panel"
+      }
     },
     {
       "term": "reverse coil",
@@ -467,7 +531,11 @@
           "title": "Installing sliders on coil zipper — Dutchware",
           "url": "https://www.youtube.com/watch?v=w8HVH5knTUs"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/zippers.md",
+        "id": "two-sliders"
+      }
     },
     {
       "term": "stop",
@@ -483,13 +551,21 @@
           "title": "Shorten 5 zipper types & make stoppers — Threads Monthly",
           "url": "https://threadsmonthly.com/shorten-zips/"
         }
-      ]
+      ],
+      "figure": {
+        "doc": "patterns/techniques/zippers.md",
+        "id": "bound-end"
+      }
     },
     {
       "term": "tape",
       "group": "zippers",
       "short": "The woven band each side of the coil. It is what you sew through.",
-      "body": "About ½\" each side. Denser than the shell, so tension often needs easing off — find that out on scrap."
+      "body": "About ½\" each side. Denser than the shell, so tension often needs easing off — find that out on scrap.",
+      "figure": {
+        "doc": "patterns/techniques/zippers.md",
+        "id": "lapped-panel"
+      }
     },
     {
       "term": "hoop",
@@ -553,7 +629,11 @@
       "term": "welt",
       "group": "joins",
       "short": "A pocket opening cut INTO a panel and faced with bound lips.",
-      "body": "Named here only to say this family never does it. The hardest operation in bag making, it puts a slit across the grain where the load runs, and it cannot be practised on scrap — because the practice piece is the panel. Every pocket here is built by lapping onto tape instead, so nothing is ever cut open."
+      "body": "Named here only to say this family never does it. The hardest operation in bag making, it puts a slit across the grain where the load runs, and it cannot be practised on scrap — because the practice piece is the panel. Every pocket here is built by lapping onto tape instead, so nothing is ever cut open.",
+      "figure": {
+        "doc": "patterns/techniques/panel-pocket.md",
+        "id": "pocket-section"
+      }
     },
     {
       "term": "backstitch",

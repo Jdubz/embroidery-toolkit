@@ -70,6 +70,29 @@ for (const p of LIB.patterns){
     }
   }
 }
+/* Glossary figures too. A generated one is drawn for whichever bag is open,
+   so it has to hold for ALL of them -- a term is shared, a bag is not. */
+for (const p of LIB.patterns){
+  current = p.name;
+  for (const t of LIB.glossary || []){
+    if (!t.figure) continue;
+    checked++;
+    let node = null, err = null;
+    try { node = run.buildFigure(t.figure, p); } catch (e){ err = e.message; }
+    const what = `glossary "${t.term}" on ${p.name} `
+               + `[${t.figure.kind || t.figure.id}]`;
+    if (err) bad.push(`${what}: threw — ${err}`);
+    else if (!node) bad.push(`${what}: produced nothing`);
+    else if (t.figure.doc){
+      const src = node._html || "";
+      if (src.length < 400) bad.push(`${what}: markup truncated`);
+    }
+    else if (node.count() < 6) bad.push(`${what}: only ${node.count()} nodes`);
+    else if (/undefined|NaN/.test(JSON.stringify(node)))
+      bad.push(`${what}: renders undefined/NaN`);
+  }
+}
+
 /* Two steps showing the SAME picture is worse than one showing none: it
    teaches the reader that the figure is decoration and stops them looking.
    Four drawings were reused verbatim on this bag before anyone noticed --

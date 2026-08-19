@@ -236,6 +236,7 @@
         border-bottom:1px dotted var(--stitch)}
   .term:hover{background:var(--stitch); color:var(--sheet)}
   .termshort{font-size:15px; font-weight:600}
+  .termfig{margin:16px 0 18px}
   .watchlab{display:block; margin:18px 0 8px}
   .watch{display:flex; flex-direction:column; gap:7px}
   .watchlink{display:flex; align-items:baseline; gap:9px; text-decoration:none;
@@ -1498,6 +1499,19 @@ function openTerm(t){
   body.appendChild(el("p", "termshort", t.short));
   (t.aka || []).length && body.appendChild(
     el("div", "termaka", "also written: " + t.aka.join(", ")));
+  /* The drawing, where one says something the sentence cannot. Same
+     declaration a step's figure uses, so a mitre is ONE drawing used in both
+     places rather than two that can drift apart. A generated one is drawn for
+     the bag currently open, which is the right answer: you are reading the
+     word because you met it on that bag. */
+  if (t.figure){
+    const gfx = buildFigure(t.figure, LIB.patterns[current]);
+    if (gfx){
+      const f = el("figure", "stepfig termfig");
+      f.appendChild(gfx);
+      body.appendChild(f);
+    }
+  }
   /* [[cross refs]] jump to the other entry rather than dead-ending. */
   (t.body || "").split("\n\n").forEach(par => {
     const p = el("p");
