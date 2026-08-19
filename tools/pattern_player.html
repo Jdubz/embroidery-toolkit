@@ -677,47 +677,215 @@ function caption(s, x, y, txt, col){
                  "letter-spacing":1.5, fill:col || "var(--muted)"}, txt);
 }
 
-/* --- the gusset ring, flat then closed ------------------------------- */
+/* --- the gusset ring, at the stage the step is actually at -------------
+   Four steps touch the ring and they are four different moments. Drawing the
+   same picture on all of them is worse than drawing nothing: it teaches the
+   reader that the figure is decoration. `stage` says which moment:
+
+     cut     two flat pieces, nothing joined, the gusset still overlong
+     fit     clipped round a panel, with the trim mark on it
+     join1   the first lap closed, still a strip
+     join2   closed into a loop, both joins at the top corners
+*/
 function figRing(p, spec){
   const g = p.geometry, G = k => g[k].in;
-  const zc = G("zip_cut"), gc = G("gusset_cut"), lap = G("lap"), ring = G("ring");
-  const W = 660, PAD = 26, S = (W - 2*PAD) / (zc + gc);
-  const y = 92, hh = 34;
-  const s = fig(`0 0 ${W} 210`,
-    `The gusset ring laid flat: a ${g.zip_cut.text} zipper panel and a `
-    + `${g.gusset_cut.text} gusset, lapped ${g.lap.text} at each end, closing `
-    + `to a ${g.ring.text} ring.`);
-  caption(s, PAD, 24, "THE RING, OPENED OUT FLAT");
-  const zx = PAD, gx = PAD + zc*S;
-  /* zipper panel */
+  const zc = G("zip_cut"), gc = G("gusset_cut"), gl = G("gusset_cut_long") || gc,
+        lap = G("lap");
+  const stage = spec.stage || "fit";
+  const W = 660, PAD = 26;
+
+  if (stage === "join2"){
+    /* Closed: draw it as the loop it now is, so "second lap join" cannot be
+       mistaken for the first. */
+    const s = fig(`0 0 ${W} 300`,
+      `The ring closed into a loop: the zipper panel across the top and the `
+      + `gusset round the other three sides, with both lap joins at the top corners.`);
+    caption(s, PAD, 24, "THE RING, CLOSED — BOTH JOINS AT THE TOP CORNERS");
+    const bw = 420, bh = 190, X = (W - bw) / 2, Y = 56, t = 22;
+    s.add("rect", {x:X, y:Y, width:bw, height:bh, fill:"none",
+                   stroke:"var(--shell-lit)", "stroke-width":t});
+    s.add("rect", {x:X - t/2, y:Y - t/2, width:bw + t, height:t,
+                   fill:"var(--shell)"});
+    s.add("rect", {x:X - t/2, y:Y - 4, width:bw + t, height:8, fill:"var(--coil)"});
+    s.add("text", {x:X + bw/2, y:Y - 18, "text-anchor":"middle",
+                   "font-family":"var(--f-data)", "font-size":12,
+                   fill:"var(--ink)"}, "zipper panel");
+    s.add("text", {x:X + bw/2, y:Y + bh + 34, "text-anchor":"middle",
+                   "font-family":"var(--f-data)", "font-size":12,
+                   fill:"var(--ink)"}, "gusset");
+    [[X - t/2, "join 1"], [X + bw + t/2, "join 2 — this one"]].forEach(([jx, lbl], i) => {
+      const on = i === 1;
+      s.add("rect", {x:jx - 9, y:Y - t/2 - 6, width:18, height:t + 26,
+                     fill:on ? "var(--cut)" : "var(--muted)", opacity:on ? .5 : .22});
+      s.add("text", {x:jx, y:Y + t + 40, "text-anchor":"middle",
+                     "font-family":"var(--f-data)", "font-size":11,
+                     fill:on ? "var(--cut)" : "var(--muted)"}, lbl);
+    });
+    s.add("text", {x:PAD, y:288, "font-family":"var(--f-data)", "font-size":11,
+                   fill:"var(--muted)"},
+          `both joins land where the binding will mitre — hand-wheel them. `
+          + `Closed, the ring measures ${g.ring.text}.`);
+    return s;
+  }
+
+  /* Open: the pieces laid out end to end, at the length this stage has. */
+  const glen = stage === "cut" ? gl : gc;
+  const S = (W - 2*PAD) / (zc + gl);
+  const y = 100, hh = 34, zx = PAD, gx = PAD + zc*S;
+  const LABEL = {cut: "CUT FLAT — NOTHING JOINED YET",
+                 fit: "FITTED AND TRIMMED — STILL OPEN",
+                 join1: "FIRST LAP CLOSED — STILL A STRIP"}[stage];
+  const s = fig(`0 0 ${W} 235`,
+    `The zipper panel and the gusset laid flat, at the "${stage}" stage of the build.`);
+  caption(s, PAD, 24, LABEL);
+
   s.add("rect", {x:zx, y, width:zc*S, height:hh, fill:"var(--shell)", opacity:.9});
   s.add("rect", {x:zx, y:y+hh/2-4, width:zc*S, height:8, fill:"var(--coil)"});
   s.add("text", {x:zx + zc*S/2, y:y+hh+18, "text-anchor":"middle",
                  "font-family":"var(--f-data)", "font-size":12,
                  fill:"var(--ink)"}, "zipper panel");
-  /* gusset */
-  s.add("rect", {x:gx, y, width:gc*S, height:hh, fill:"var(--shell-lit)", opacity:.9});
-  s.add("text", {x:gx + gc*S/2, y:y+hh+18, "text-anchor":"middle",
+  s.add("rect", {x:gx, y, width:glen*S, height:hh,
+                 fill:"var(--shell-lit)", opacity:.9});
+  s.add("text", {x:gx + glen*S/2, y:y+hh+18, "text-anchor":"middle",
                  "font-family":"var(--f-data)", "font-size":12,
-                 fill:"var(--ink)"}, "gusset — cut long, trimmed to fit");
-  /* the two laps: one at the join in the middle, one where it closes round */
-  [[gx - lap*S, "join 1"], [PAD + (zc+gc)*S - lap*S, "join 2 — closes the ring"]]
-    .forEach(([lx, lbl], i) => {
-      s.add("rect", {x:lx, y:y-6, width:lap*S, height:hh+12,
-                     fill:"var(--cut)", opacity:.22});
-      s.add("path", {d:`M${lx},${y-6} v${hh+12} M${lx+lap*S},${y-6} v${hh+12}`,
-                     stroke:"var(--cut)", "stroke-width":1.4});
-      s.add("text", {x:lx + lap*S/2, y:y-14, "text-anchor":"middle",
-                     "font-family":"var(--f-data)", "font-size":11,
-                     fill:"var(--cut)"}, lbl);
-    });
-  dim1(s, zx, y+hh+46, zx+zc*S, g.zip_cut.text, "var(--stitch)");
-  dim1(s, gx, y+hh+46, gx+gc*S, g.gusset_cut.text, "var(--stitch)");
-  dim1(s, zx, y+hh+76, PAD+(zc+gc)*S, `laps ${g.lap.text} × 2 → ring closes at ${g.ring.text}`, "var(--good)");
-  s.add("text", {x:PAD, y:200, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--ink)"}, "gusset");
+
+  if (stage === "cut"){
+    /* The offcut, shown as the thing you will trim away rather than as part
+       of the piece -- that is the whole point of the step. */
+    s.add("rect", {x:gx + gc*S, y, width:(gl - gc)*S, height:hh,
+                   fill:"var(--cut)", opacity:.22});
+    s.add("path", {d:`M${gx + gc*S},${y-8} v${hh+16}`, stroke:"var(--cut)",
+                   "stroke-width":1.6, "stroke-dasharray":"6 4"});
+    s.add("text", {x:gx + gc*S + (gl-gc)*S/2, y:y-14, "text-anchor":"middle",
+                   "font-family":"var(--f-data)", "font-size":11,
+                   fill:"var(--cut)"}, "trimmed later");
+    dim1(s, gx, y+hh+46, gx+gl*S, `cut ${g.gusset_cut_long.text}`, "var(--stitch)");
+    dim1(s, gx, y+hh+76, gx+gc*S, `finishes ${g.gusset_cut.text}`, "var(--good)");
+    s.add("text", {x:PAD, y:224, "font-family":"var(--f-data)", "font-size":11,
+                   fill:"var(--muted)"},
+          "cut long, fit, then trim — the ring's true length depends on the lap "
+          + "you achieve and on how hard the binding pulls");
+    return s;
+  }
+
+  if (stage === "fit"){
+    s.add("path", {d:`M${gx + gc*S},${y-8} v${hh+16}`, stroke:"var(--cut)",
+                   "stroke-width":2});
+    s.add("text", {x:gx + gc*S, y:y-14, "text-anchor":"middle",
+                   "font-family":"var(--f-data)", "font-size":11,
+                   fill:"var(--cut)"}, "trim here");
+    dim1(s, gx, y+hh+46, gx+gc*S, `gusset to ${g.gusset_cut.text}`, "var(--stitch)");
+    dim1(s, zx, y+hh+76, gx+gc*S,
+         `plus ${g.lap.text} at each end → ring closes at ${g.ring.text}`, "var(--good)");
+    s.add("text", {x:PAD, y:224, "font-family":"var(--f-data)", "font-size":11,
+                   fill:"var(--muted)"},
+          `two strips lapped by ${g.lap.text} cover their combined length LESS `
+          + `${g.lap.text}, so only the zipper panel carries that allowance`);
+    return s;
+  }
+
+  /* join1: one lap actually closed, and the other end still loose. */
+  const lx = gx - lap*S;
+  s.add("rect", {x:lx, y:y-6, width:lap*S, height:hh+12,
+                 fill:"var(--cut)", opacity:.45});
+  s.add("path", {d:`M${lx},${y-6} v${hh+12} M${lx+lap*S},${y-6} v${hh+12}`,
+                 stroke:"var(--cut)", "stroke-width":1.6});
+  s.add("text", {x:lx + lap*S/2, y:y-14, "text-anchor":"middle",
+                 "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--cut)"}, "join 1 — this one");
+  [lx + lap*S*0.3, lx + lap*S*0.7].forEach(x =>
+    s.add("circle", {cx:x, cy:y+hh/2, r:3.4, fill:"var(--stitch)"}));
+  s.add("path", {d:`M${PAD + (zc+gc)*S - lap*S},${y-6} v${hh+12}`,
+                 stroke:"var(--muted)", "stroke-width":1.4, "stroke-dasharray":"5 4"});
+  s.add("text", {x:PAD + (zc+gc)*S - lap*S, y:y+hh+42, "text-anchor":"middle",
+                 "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--muted)"}, "join 2 — still open");
+  s.add("text", {x:PAD, y:224, "font-family":"var(--f-data)", "font-size":11,
                  fill:"var(--muted)"},
-        `two strips lapped by ${g.lap.text} cover their combined length LESS ${g.lap.text}, `
-        + `so only ONE of the pair carries that allowance — the zipper panel does`);
+        `lap ${g.lap.text} and topstitch two rows. Leave the other end loose — `
+        + "the ring is easier to fit to the panel while it is still a strip.");
+  return s;
+}
+
+/* --- the gusset with its ring anchors, topstitched --------------------
+   NOT a box-X. This step's own stitch line is "straight, both long edges",
+   and the figure used to show a box-X, which is the tack used on the D-ring
+   TAB two steps later. A drawing that contradicts its step is worse than no
+   drawing. */
+function figAnchors(p, spec){
+  const g = p.geometry, G = k => g[k].in;
+  const gw = G("gusset_w"), gc = G("gusset_cut"),
+        aw = G("ring_anchor_len"), n = spec.count || 2;
+  const W = 660, PAD = 34, S = (W - 2*PAD) / gc;
+  const y = 74, hh = Math.max(gw * S, 42);
+  const s = fig(`0 0 ${W} ${y + hh + 96}`,
+    `The gusset laid flat inside face up, with a ${g.ring_anchor_len.text} anchor `
+    + `strip across it at each D-ring position, topstitched along both long edges.`);
+  caption(s, PAD, 24, "GUSSET, INSIDE FACE UP — DO THIS WHILE IT IS FLAT");
+  s.add("rect", {x:PAD, y, width:gc*S, height:hh, fill:"var(--shell-lit)", opacity:.85});
+  s.add("text", {x:PAD + 8, y:y + hh + 20, "font-family":"var(--f-data)",
+                 "font-size":11, fill:"var(--muted)"}, "gusset interior");
+  /* One anchor near each end, which is where the upper corners land. */
+  for (let i = 0; i < n; i++){
+    const cx = PAD + gc*S * (i === 0 ? 0.13 : 0.87);
+    const x = cx - aw*S/2;
+    s.add("rect", {x, y:y-5, width:aw*S, height:hh+10,
+                   fill:"var(--web)", "fill-opacity":.55,
+                   stroke:"var(--web)", "stroke-width":1.4});
+    /* both LONG edges -- the strip runs the gusset's full width, so its long
+       edges are the two that run across the picture */
+    [y + 5, y + hh - 5].forEach(ly =>
+      s.add("path", {d:`M${x+3},${ly} H${x + aw*S - 3}`, stroke:"var(--stitch)",
+                     "stroke-width":2, "stroke-dasharray":"7 4"}));
+    s.add("text", {x:cx, y:y-14, "text-anchor":"middle",
+                   "font-family":"var(--f-data)", "font-size":11,
+                   fill:"var(--ink)"}, `ring ${i+1}`);
+  }
+  s.add("text", {x:PAD, y:y+hh+46, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--stitch)"},
+        "two straight runs per strip, along its LONG edges — no box-X here");
+  s.add("text", {x:PAD, y:y+hh+68, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--muted)"},
+        `each strip runs the gusset's full ${g.gusset_w.text} width, so both ends `
+        + "finish flush with the panel edges and the bindings catch them");
+  return s;
+}
+
+/* --- which faces carry embroidery, and therefore get hooped separately -- */
+function figLogos(p){
+  const m = p.model3d;
+  const logos = (m.features || []).filter(f => f.kind === "logo");
+  if (!logos.length) return null;
+  const W = 660, PAD = 20, gap = 14;
+  const cw = (W - 2*PAD - gap*(logos.length - 1)) / logos.length;
+  const s = fig(`0 0 ${W} 210`,
+    `The ${logos.length} faces of this bag that carry embroidery, each hooped `
+    + `and stitched flat before anything is assembled.`);
+  caption(s, PAD, 22, `${logos.length} SEPARATE HOOPINGS — ALL BEFORE ASSEMBLY`);
+  logos.forEach((f, i) => {
+    const face = m.faces[f.face] || {w:{in:1}, h:{in:1}};
+    const fw = face.w.in, fh = face.h.in;
+    const sc = Math.min(cw / fw, 96 / fh);
+    const w = fw*sc, h = fh*sc;
+    const X = PAD + i*(cw + gap) + (cw - w)/2, Y = 56;
+    s.add("rect", {x:X, y:Y, width:w, height:h, fill:"var(--shell)",
+                   "fill-opacity":.5, stroke:"var(--cut)", "stroke-width":1.2});
+    s.add("rect", {x:X + f.u*sc, y:Y + f.v*sc, width:Math.max(f.w*sc, 3),
+                   height:Math.max(f.h*sc, 3), fill:"var(--stitch)",
+                   "fill-opacity":.3, stroke:"var(--stitch)",
+                   "stroke-width":1.3, "stroke-dasharray":"4 3"});
+    s.add("text", {x:X + w/2, y:Y - 8, "text-anchor":"middle",
+                   "font-family":"var(--f-data)", "font-size":11,
+                   fill:"var(--ink)"}, f.face);
+    s.add("text", {x:PAD + i*(cw + gap) + cw/2, y:Y + h + 18, "text-anchor":"middle",
+                   "font-family":"var(--f-data)", "font-size":10,
+                   fill:"var(--muted)"}, (f.design || "").slice(0, 22));
+  });
+  s.add("text", {x:PAD, y:196, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--muted)"},
+        "each is a separate hooping, and every one of these pieces is cut "
+        + "OVERSIZED and trimmed to size afterwards");
   return s;
 }
 
@@ -821,6 +989,26 @@ function figFace(p, spec){
                      fill:"var(--ink)"}, (ft.label || ft.kind).split("—")[0].trim());
     }
   });
+  /* The belt, drawn through the keepers -- "thread your belt" and "sew the
+     keepers" are different steps and were the same picture. */
+  if (spec.belt){
+    const loops = (m.features || []).filter(ft => ft.face === name
+                                            && ft.kind === "belt-loop");
+    if (loops.length){
+      const by = Y + (loops[0].v + (loops[0].h || 1)/2)*S;
+      const bh = Math.max((p.geometry.belt ? p.geometry.belt.in : 1)*S, 10);
+      s.add("rect", {x:X - 26, y:by - bh/2, width:w + 52, height:bh,
+                     fill:"var(--web)", "fill-opacity":.75,
+                     stroke:"var(--web)", "stroke-width":1.4});
+      s.add("text", {x:X + w + 30, y:by - bh/2 - 8, "text-anchor":"end",
+                     "font-family":"var(--f-data)", "font-size":11,
+                     fill:"var(--web)"},
+            `your ${p.geometry.belt ? p.geometry.belt.text : ""} belt, threaded`);
+      loops.forEach(ft => s.add("rect", {x:X + ft.u*S, y:Y + ft.v*S,
+                     width:(ft.w||0)*S, height:(ft.h||0)*S, fill:"none",
+                     stroke:"var(--stitch)", "stroke-width":2}));
+    }
+  }
   dim1(s, X, Y+h+34, X+w, `${f.w.text} overall`, "var(--cut)");
   dim1(s, X+fl*S, Y+h+62, X+w-fl*S,
        `${p.geometry["face_" + (name === "left" || name === "right" ? "d" : "w")].text} stitch line`,
@@ -914,7 +1102,8 @@ function figSeam(p){
 
 /* --- dispatcher -------------------------------------------------------- */
 const FIG_KINDS = {ring:figRing, "zip-panel":figZipPanel, face:figFace,
-                   "pocket-pieces":figPocketPieces, seam:figSeam};
+                   "pocket-pieces":figPocketPieces, seam:figSeam,
+                   anchors:figAnchors, logos:figLogos};
 function buildFigure(spec, p){
   try {
     if (spec.doc){

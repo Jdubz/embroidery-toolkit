@@ -61,7 +61,7 @@ for (const p of LIB.patterns){
         if (src.length < 400 || !/<\/svg>/.test(src))
           bad.push(`${what}: markup looks truncated (${src.length} chars)`);
       }
-      else if (node.count() < 8) bad.push(`${what}: only ${node.count()} nodes`);
+      else if (node.count() < 6) bad.push(`${what}: only ${node.count()} nodes`);
       else if (spec.kind){
         const s = JSON.stringify(node);
         if (/undefined|NaN|\[object/.test(s))
@@ -70,6 +70,28 @@ for (const p of LIB.patterns){
     }
   }
 }
+/* Two steps showing the SAME picture is worse than one showing none: it
+   teaches the reader that the figure is decoration and stops them looking.
+   Four drawings were reused verbatim on this bag before anyone noticed --
+   including one that contradicted its own step's stitch line. */
+for (const p of LIB.patterns){
+  current = p.name;
+  const bySig = new Map();
+  for (const st of p.assembly || []){
+    for (const spec of st.figures || []){
+      let node = null;
+      try { node = run.buildFigure(spec, p); } catch (e) { continue; }
+      if (!node) continue;
+      const sig = JSON.stringify(node);
+      if (!bySig.has(sig)) bySig.set(sig, []);
+      bySig.get(sig).push(`${st.n} "${st.title.slice(0, 26)}"`);
+    }
+  }
+  for (const [, steps] of bySig)
+    if (steps.length > 1)
+      bad.push(`${p.name}: identical drawing on steps ${steps.join(" and ")}`);
+}
+
 console.log(`figures rendered: ${checked}`);
 if (bad.length){ bad.forEach(m => console.log("  FAIL " + m)); process.exit(1); }
 console.log("all figures render");

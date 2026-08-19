@@ -119,14 +119,15 @@
       "see": [
         "patterns/techniques/webbing-hardware.md"
       ],
+      "when": [
+        "shell_melts"
+      ],
       "figures": [
         {
           "kind": "ring",
-          "caption": "Why the gusset is cut long: the ring's true length depends on the lap you actually achieve and on how hard the binding pulls. Cut long, fit, then trim."
+          "stage": "cut",
+          "caption": "The gusset is cut LONG and trimmed later. Nothing is joined yet — this is the offcut you will lose once the ring has been fitted."
         }
-      ],
-      "when": [
-        "shell_melts"
       ]
     },
     {
@@ -142,7 +143,8 @@
       "figures": [
         {
           "kind": "ring",
-          "caption": "Why the gusset is cut long: the ring's true length depends on the lap you actually achieve and on how hard the binding pulls. Cut long, fit, then trim."
+          "stage": "cut",
+          "caption": "The gusset is cut LONG and trimmed later. Nothing is joined yet — this is the offcut you will lose once the ring has been fitted."
         }
       ]
     },
@@ -166,10 +168,8 @@
       ],
       "figures": [
         {
-          "kind": "face",
-          "face": "front",
-          "highlight": "logo",
-          "caption": "Every design placed on its own face, flat. Once the ring is closed none of this can be hooped."
+          "kind": "logos",
+          "caption": "Every face that carries a design, and each is a separate hooping. After this step none of them can be stitched flat again."
         }
       ]
     },
@@ -187,7 +187,8 @@
       "figures": [
         {
           "doc": "patterns/techniques/webbing-hardware.md",
-          "id": "box-x"
+          "id": "box-x",
+          "caption": "The tack itself, in the order it is sewn — one edge gets retraced, which is correct. Every box-X on this bag is thick enough to want hand-wheeling."
         }
       ]
     },
@@ -272,7 +273,8 @@
       "figures": [
         {
           "kind": "ring",
-          "caption": "Trim the gusset to the bare figure: only ONE of a lapped pair may carry the allowance, and the zipper panel is the one that does."
+          "stage": "fit",
+          "caption": "Trim to the bare figure: only ONE of a lapped pair may carry the allowance, and the zipper panel is the one that does."
         }
       ]
     },
@@ -289,8 +291,8 @@
       ],
       "figures": [
         {
-          "doc": "patterns/techniques/webbing-hardware.md",
-          "id": "box-x"
+          "kind": "anchors",
+          "caption": "Topstitched along both LONG edges — not box-X'd. That tack belongs to the D-ring tab, two steps on."
         }
       ]
     },
@@ -302,7 +304,8 @@
       "figures": [
         {
           "kind": "ring",
-          "caption": "Join 1, marked. Both joins land at the top corners, which is also where the binding will mitre."
+          "stage": "join1",
+          "caption": "One end only. Leave the other loose — the ring is easier to fit to the panel while it is still a strip."
         }
       ]
     },
@@ -319,8 +322,10 @@
       ],
       "figures": [
         {
-          "doc": "patterns/techniques/webbing-hardware.md",
-          "id": "box-x"
+          "kind": "face",
+          "face": "top",
+          "highlight": "webbing",
+          "caption": "Where the loop closes: across the top face, clear of the coil. The overlap is box-X'd as before."
         }
       ]
     },
@@ -332,7 +337,8 @@
       "figures": [
         {
           "kind": "ring",
-          "caption": "Join 2 closes the ring. Stitch through the webbing where it crosses, so the join is reinforced."
+          "stage": "join2",
+          "caption": "This one closes the loop. Both joins land where the binding will mitre, so hand-wheel them."
         }
       ]
     },
@@ -352,12 +358,7 @@
           "kind": "face",
           "face": "left",
           "highlight": "dring",
-          "caption": "Where the rings land on this bag."
-        },
-        {
-          "doc": "patterns/techniques/webbing-hardware.md",
-          "id": "box-x",
-          "caption": "The tack itself, in the order it is sewn."
+          "caption": "Where the rings land. The tack goes through tab + gusset + anchor, so it is the thickest stack on the bag."
         }
       ]
     },
@@ -374,8 +375,10 @@
       ],
       "figures": [
         {
-          "doc": "patterns/techniques/webbing-hardware.md",
-          "id": "box-x"
+          "kind": "face",
+          "face": "top",
+          "highlight": "handle",
+          "caption": "Both ends tacked through the gusset and the webbing behind it."
         }
       ]
     },
@@ -467,9 +470,10 @@
           "axis": "side"
         },
         {
-          "doc": "patterns/techniques/panel-pocket.md",
-          "id": "pocket-section",
-          "caption": "The same sandwich, turned. Neither outer piece hangs from the coil — each is still caught in the binding along its own outside edge."
+          "kind": "face",
+          "face": "back",
+          "highlight": "zip",
+          "caption": "On the panel: the run is vertical and stops short of the top, which is what frees the band the keepers need."
         }
       ]
     },
@@ -614,8 +618,9 @@
       "figures": [
         {
           "kind": "face",
-          "face": "front",
-          "caption": "The last look inside."
+          "face": "top",
+          "highlight": "zip",
+          "caption": "THE zipper — the main one, on the top face. Open it before this seam, not after."
         },
         {
           "doc": "patterns/techniques/binding.md",
@@ -655,7 +660,9 @@
         {
           "kind": "face",
           "face": "back",
-          "highlight": "belt-loop"
+          "highlight": "belt-loop",
+          "belt": true,
+          "caption": "Nothing left to sew. Check the belt runs without binding before you call it finished."
         }
       ]
     },
