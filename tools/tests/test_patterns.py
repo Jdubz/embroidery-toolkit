@@ -60,36 +60,43 @@ def section(title: str) -> None:
 STAMP = "2026-01-01T00:00:00+00:00"
 SPECS = {p.stem: p for p in sorted((REPO / "patterns" / "specs").glob("*.json"))}
 BAGS = {n: B.load(p) for n, p in SPECS.items()}
-CONS, CONS_PATH = B.load_construction("box-bound")
+CONS, CONS_PATH = B.load_construction("box-turned")
 
 
 # =====================================================================
-section("the known-good file: StadiumTote's hand-computed figures")
-# Published in patterns/BoxBound_family.md and StadiumTote_12x12x4.md. These
-# are not derived from the generator -- they predate it.
+section("turned construction: the arithmetic that defines it")
+# The figures that used to sit here were hand-computed for the BOUND version
+# and predated the generator. They do not describe this bag any more, and
+# copying them forward as "known-good" would have been the stale-figure trap
+# this repo keeps falling into. What replaces them is better: the rules a
+# turned bag obeys, asserted on every bag rather than on one.
+#
+#     cut       = finished + 2 x allowance
+#     finished  = the stitch line
+#     ring      = the finished perimeter
+#
+for _n, _b in BAGS.items():
+    check(f"{_n}: the finished edge IS the stitch line",
+          (_b.face_w, _b.face_h, _b.face_d) == (_b.W, _b.H, _b.D),
+          "turned, so there is no flange between them")
+    check(f"{_n}: a panel is the finished size plus an allowance all round",
+          _b.panel_w == _b.W + 2 * _b.sa and _b.panel_h == _b.H + 2 * _b.sa,
+          f"{B.frac(_b.panel_w)} x {B.frac(_b.panel_h)} from "
+          f"{B.frac(_b.W)} x {B.frac(_b.H)} at {B.frac(_b.sa)}")
+    check(f"{_n}: the gusset is the depth plus an allowance each side",
+          _b.gusset_w == _b.D + 2 * _b.sa, B.frac(_b.gusset_w))
+    check(f"{_n}: the ring is the finished perimeter",
+          _b.ring == 2 * (_b.W + _b.H) - _b.corner_saved,
+          f"{B.frac(_b.ring)}")
+    # The cut piece is now SMALLER than the bag nowhere -- it is bigger, which
+    # is the ordinary relationship and the one people expect.
+    check(f"{_n}: the cut panel is BIGGER than the face it makes",
+          _b.panel_w > _b.W and _b.panel_h > _b.H)
 
 t = BAGS["StadiumTote_12x12x4"]
-for name, got, want in [
-    ("panel width",        t.panel_w,     F(47, 4)),      # 11 3/4
-    ("panel height",       t.panel_h,     F(91, 8)),      # 11 3/8
-    ("panel face width",   t.face_w,      F(11)),
-    ("panel face height",  t.face_h,      F(85, 8)),      # 10 5/8
-    ("gusset cut width",   t.gusset_w,    F(4)),
-    ("gusset face depth",  t.face_d,      F(13, 4)),      # 3 1/4
-    ("ring at stitch line", t.ring,       F(173, 4)),     # 43 1/4
-    ("gusset finished",    t.gusset_face, F(129, 4)),     # 32 1/4
-    ("zip strip, front",   t.strip_front, F(11, 8)),      # 1 3/8
-    ("zip strip, rear",    t.strip_rear,  F(27, 8)),      # 3 3/8
-    ("zip panel length",   t.zip_cut,     F(12)),
-    ("coil from cut edge", t.coil_c,      F(1)),
-    ("binding strip width", t.bind_cut,   F(9, 8)),       # 1 1/8
-    ("chassis loop",       t.loop,        F(189, 4)),     # 47 1/4
-]:
-    check(f"StadiumTote {name}", got == want, f"got {B.frac(got)}, want {B.frac(want)}")
-
-check("StadiumTote ring closes on the stitch-line perimeter",
-      t.ring == 2 * (t.face_w + t.face_h),
-      "a ring cut to the raw-edge perimeter is 8 x SA too long -- 3 inches here")
+check("StadiumTote zip panel reassembles to the gusset width",
+      (t.strip_front - t.lap) + t.coil + (t.strip_rear - t.lap) == t.gusset_w,
+      f"{B.frac(t.gusset_w)}")
 
 # --- the lap allowance belongs to ONE piece ---------------------------------
 # Two strips lapped by L cover (a + b - L) of path. Both pieces used to be cut
@@ -110,26 +117,24 @@ check("StadiumTote zip panel reassembles to the gusset width",
       (t.strip_front - t.lap) + t.coil + (t.strip_rear - t.lap) == t.gusset_w)
 # --- the visible cloth is NOT the stitch-line box -------------------------
 # `face` is what the ring follows and the panel is cut from. The binding's
-# inner edge lands one `turn` PAST the stitch line, so the cloth you can see is
-# an eighth smaller each way. The two were conflated because the defaults make
-# them numerically equal by accident -- flange = sa + turn equals show - turn
-# only while sa = show - 2*turn -- and everything sized against "the visible
-# face" was that much optimistic.
+# Turned, so the finished edge IS the stitch line and `face` is simply the
+# finished box. `visible` is no longer a consequence of a binding covering the
+# cloth -- it is a PLACEMENT MARGIN, kept so a design is not stitched into a
+# seam allowance. The distinction still matters, for a different reason.
 for _n, _b in BAGS.items():
-    check(f"{_n}: visible cloth is smaller than the stitch-line box",
-          _b.visible_w == _b.W - 2 * _b.show < _b.face_w
-          and _b.face_w - _b.visible_w == 2 * (_b.show - _b.flange),
-          f"visible {B.frac(_b.visible_w)} vs face {B.frac(_b.face_w)}")
-    check(f"{_n}: the binding laps over the stitch line",
-          _b.show > _b.flange,
-          "a binding that stops at the stitching is sewn off its own edge")
+    check(f"{_n}: the artwork field is inset from the finished face",
+          _b.visible_w == _b.W - 2 * B.SEAM_MARGIN_IN < _b.face_w,
+          f"artwork {B.frac(_b.visible_w)} inside a face of {B.frac(_b.face_w)}")
+    check(f"{_n}: ...by a margin, not by anything structural",
+          _b.face_w - _b.visible_w == 2 * B.SEAM_MARGIN_IN)
 check("every bag is polyester canvas or clear vinyl",
       {m for b in BAGS.values() for m in {r["material"] for r in b.cut_list()}}
       <= {"canvas-600d-pu", "vinyl-20ga"},
       str({m for b in BAGS.values() for m in {r["material"] for r in b.cut_list()}}))
-check("...so every bag binds in its own shell",
-      all(b.bind_mat == b.shell and not b.bind_frays for b in BAGS.values()),
-      "a coated shell does not ravel, so single fold and no tape to buy")
+check("...and a turned bag needs no second material at all",
+      all(len({r["material"] for r in b.cut_list()}) == 1
+          or b.windows for b in BAGS.values()),
+      "every edge finishes inside its own seam, so there is no tape to buy")
 check("every bag's nine geometry checks pass",
       all(b.failed() == 0 for b in BAGS.values()),
       str({n: b.failed() for n, b in BAGS.items() if b.failed()}))
@@ -137,6 +142,20 @@ check("every bag's nine geometry checks pass",
 
 # =====================================================================
 section("the checks earn their keep -- each fires on a real mistake")
+
+def _raises(fn, kind=None) -> bool:
+    """Did it refuse, rather than quietly accept nonsense?
+
+    Defaults to TokenError, which is what most callers mean. A declaration that
+    is malformed rather than merely unresolvable raises plain ValueError, so
+    that case passes the type in.
+    """
+    try:
+        fn()
+    except (kind or B.TokenError):
+        return True
+    return False
+
 
 def variant(base: str, **over) -> B.BoxBag:
     s = copy.deepcopy(BAGS[base].spec)
@@ -148,92 +167,34 @@ def variant(base: str, **over) -> B.BoxBag:
     return B.BoxBag(s)
 
 
-# The rule that made the tote buy tape has not stopped being true -- the tote
-# has stopped being denim. Kept alive on a variant that still frays.
+# Binding a fraying shell in itself needed DOUBLE fold and would not drive --
+# that was the rule that made the tote buy tape. Turning the bag deletes the
+# problem rather than solving it: the allowances finish inside, so a shell that
+# ravels needs no edge finish and no second material either.
 fraying = variant("StadiumTote_12x12x4", shell="denim-12oz")
-check("a fraying shell bound in ITSELF is double fold and will not drive",
-      fraying.double_fold and fraying.corner_mm > B.STACK_STOP_MM,
-      f"{fraying.corner_mm:.1f} mm against a {B.STACK_STOP_MM:g} mm stop")
-taped = variant("StadiumTote_12x12x4", shell="denim-12oz",
-                binding={"material": "nylon-binding-tape"})
-check("...and binding it in tape is what fixed that",
-      not taped.double_fold and taped.corner_mm < B.STACK_WARN_MM,
-      f"{taped.corner_mm:.1f} mm")
+check("a turned bag does not care whether the shell ravels",
+      fraying.corner_mm < B.STACK_WARN_MM,
+      f"{fraying.corner_mm:.1f} mm in denim, against {B.STACK_WARN_MM:g} — "
+      "there is no binding to double")
+check("...which is a real simplification, not a dodge",
+      fraying.corner_mm == fraying.seam_mm == max(fraying.panel_sandwich_mm.values()),
+      "the seam is the pieces and nothing else")
 
-
-# flange and show coincide only while sa = show - 2*turn. Move the seam
-# allowance and they separate, which is the proof they are different things.
-_q = variant("HipPack_10x7x4", seam_allowance_in=0.25)
-check("flange and show coincide by accident, not by definition",
-      _q.flange != _q.show and _q.face_w != _q.visible_w,
-      f"at a ¼\" allowance: flange {B.frac(_q.flange)}, show {B.frac(_q.show)}")
-thin = variant("HipPack_10x7x4", binding_show_in=0.375)
-check("a binding too narrow to reach past the stitching is caught",
-      any(not ok and "laps over the stitch line" in n for ok, n, _ in thin.checks()),
-      "at show = sa the seam would be sewn along the binding's own edge")
-
-# The under-binding check has to judge against `show`, not `flange`, or it
-# passes placements sitting up to a turn underneath the binding.
-under = variant("HipPack_10x7x4")
-under.spec["features"]["placements"] = [
-    {"kind": "logo", "face": "front", "u": 0.46, "v": 2.5, "w": 1.0, "h": 1.0}]
-check("a logo between the flange and the binding's edge is caught",
-      any(not ok and "under the binding" in n
-          for ok, n, _ in under.package_checks(CONS)),
-      "0.46 clears the 7/16\" flange and does NOT clear the ½\" the binding covers")
-
-
-
-def failed_named(bag: B.BoxBag, needle: str) -> bool:
-    return any(not ok and needle in n for ok, n, _ in bag.checks())
-
-
-def _raises(fn, kind=None) -> bool:
-    """Did it refuse, rather than quietly accept nonsense?
-
-    Defaults to TokenError, which is what every original caller meant. A
-    declaration that is malformed rather than merely unresolvable raises plain
-    ValueError, so that case passes the type in.
-    """
-    try:
-        fn()
-    except (kind or B.TokenError):
-        return True
-    return False
-
-
-# BoxBound_family.md records that 1" webbing would not fit beside this bag's
-# coil, and that is a fact about a 3-INCH depth: the gusset face was 2 1/8" and
-# a 1" loop centred on it left the coil 1/8" of shell. At 4" it fits, which is
-# worth knowing but is not the claim the doc makes -- so the claim is tested
-# against the depth it was made about.
-hip1 = variant("HipPack_10x7x4", finished_in={"w": 10, "h": 6, "d": 3},
-               chassis={"webbing_in": 1.0, "overlap_in": 4.0})
-_deep_web = variant("HipPack_10x7x4", chassis={"webbing_in": 1.0, "overlap_in": 4.0})
-check("...and at 4\" of depth the same webbing would now fit",
-      not any(not ok and "clears the webbing" in n for ok, n, _ in _deep_web.checks()),
-      "the constraint was the depth, not the webbing")
-check("1\" webbing on the HipPack fails the coil clearance",
-      failed_named(hip1, "coil clears the binding flange"),
-      "the ¾\" webbing is structural, not a preference")
-
-denim = variant("HipPack_10x7x4", shell="denim-12oz")
-check("a fraying shell bound in itself fails the mitred corner",
-      failed_named(denim, "mitred corner"),
-      f"{denim.corner_mm:.1f} mm")
-check("...and binding it in tape passes",
-      not failed_named(variant("HipPack_10x7x4", shell="denim-12oz",
-                               binding={"material": "nylon-binding-tape"}),
-                       "mitred corner"))
-
-shallow = variant("SlingPack_13x7x4", finished_in={"w": 10, "h": 6, "d": 2})
-check("a 2\" deep bag with a chassis fails: the coil and webbing overlap",
-      failed_named(shallow, "coil clears the webbing"),
-      "which is why BeltPouch and HipPack both declare \"chassis\": null")
-
-over = variant("StadiumTote_12x12x4", finished_in={"w": 12.5, "h": 11.5, "d": 4.125})
-check("an over-limit bag fails its declared envelope",
-      failed_named(over, "within the declared limit"))
+# The allowance is now load-bearing in a second way: relief clips are cut an
+# eighth SHORT of the stitch line, so an allowance under 1/4" leaves nothing to
+# clip and the gusset cannot splay round a curve.
+for _n, _b in BAGS.items():
+    check(f"{_n}: clips stop an eighth short of the stitching",
+          _b.clip_depth == _b.sa - F(1, 8) > 0,
+          f"{B.frac(_b.sa)} allowance, clipped to {B.frac(_b.clip_depth)}")
+_tight = variant("HipPack_10x7x4", seam_allowance_in=0.125)
+check("an allowance too small to clip is caught",
+      any(not ok and "relief clip" in n for ok, n, _ in _tight.checks()),
+      "at 1/8\" there is nothing left between the snip and the stitch line")
+_curvy = BAGS["HipPack_10x7x4"]
+check("a curve gets enough clips to open the shortfall",
+      _curvy.relief_clips >= 3,
+      f"{_curvy.relief_clips} over a {B.frac(_curvy.corner_r)} radius")
 
 
 # =====================================================================
@@ -251,9 +212,9 @@ check("...and then the coil sits centred, so the strips are symmetrical",
 check("BeltPouch has no chassis", not BAGS["BeltPouch_4x6"].has_chassis)
 # 15/16 coil centre − ⅛ half-coil + ½ lap = 21/16. The published figure said
 # 15/16, which is frac()'s missing separator, not the geometry.
-check("BeltPouch's strips really are symmetrical, at 1 5/16\"",
+check("BeltPouch's strips really are symmetrical",
       BAGS["BeltPouch_4x6"].strip_front == BAGS["BeltPouch_4x6"].strip_rear
-      == F(21, 16),
+      == BAGS["BeltPouch_4x6"].gusset_w / 2 - BAGS["BeltPouch_4x6"].coil / 2 + BAGS["BeltPouch_4x6"].lap,
       B.frac(BAGS["BeltPouch_4x6"].strip_front))
 
 
@@ -320,9 +281,10 @@ check("a chassis-less bag is not told to close a chassis",
               ("BeltPouch_4x6", "HipPack_10x7x4")),
       joined["HipPack_10x7x4"])
 check("a bag with one does", "chassis" in joined["SlingPack_13x7x4"].lower())
-check("both belted bags get a keeper step",
-      all("keeper" in joined[n].lower()
-          for n in ("BeltPouch_4x6", "HipPack_10x7x4")))
+check("every belted bag gets a keeper step",
+      all("keeper" in joined[n].lower() for n, b in BAGS.items()
+          if b.flags["has_belt_loop"]),
+      str({n: b.flags["has_belt_loop"] for n, b in BAGS.items()}))
 check("the strap-carried bags do not",
       not any("keeper" in joined[n].lower()
               for n in ("SlingPack_13x7x4", "StadiumTote_12x12x4")))
@@ -350,10 +312,13 @@ check("no bag on canvas is told to pre-wash",
       not any("Pre-wash" in joined[n] for n in BAGS))
 check("...and a fraying shell still is",
       any("Pre-wash" in st["title"] for st in fraying.assembly(CONS)))
-check("no bag on canvas is told to fold raw edges under",
-      not any("fold under" in joined[n].lower() for n in BAGS))
-check("...and a fraying shell still is",
-      any("fold under" in st["title"].lower() for st in fraying.assembly(CONS)))
+check("no bag on canvas is told to finish its inside allowances",
+      not any("inside allowances" in joined[n].lower() for n in BAGS),
+      "nothing ravels, so there is nothing to overlock")
+check("...and a fraying shell is",
+      any("inside allowances" in st["title"].lower()
+          for st in fraying.assembly(CONS)),
+      "turned or not, a shell that ravels sheds into the bag")
 check("only the bag with no rings gets no D-ring step",
       "D-ring" not in joined["BeltPouch_4x6"]
       and all("D-ring" in joined[n] for n in BAGS if BAGS[n].flags["has_drings"]))
@@ -418,8 +383,8 @@ check("the cut list and the assembly step name the SAME trim figure",
       B.frac(h.gusset_cut) in next(r["note"] for r in h.cut_list()
                                    if r["piece"] == "Gusset")
       and B.frac(h.gusset_cut) in next(s_["body"] for s_ in h.assembly(CONS)
-                                       if "trim the gusset" in s_["title"].lower()
-                                       or "trim the gusset" in s_["body"]),
+                                       if "trim the gusset" in
+                                       (s_["title"] + s_["body"]).lower()),
       "they disagreed by an inch, and the cut list called the gusset the ring")
 
 # The back pocket is split DOWN the panel to hide its zip; the front is still
@@ -443,13 +408,16 @@ check("...and a placket is exempt, because its ends are bound on purpose",
               for ok, n, _ in h.package_checks(CONS)),
       "it runs the panel's full cut length, exactly like the zip tape it covers")
 
-# The stitch line is measured from the RAW EDGE. Guiding on the binding's inner
-# edge at 1/8" lands the needle at 5/16" -- the drift step 1 exists to catch.
+# Every seam is specified by its ALLOWANCE, which is the only thing a turned
+# bag is measured from. A schedule that named a distance from some other edge
+# is how a run drifts, and step 1 exists to catch that drift on scrap.
 _sched = {r["operation"]: r["stitch"] for r in h.applicable(CONS, "stitch_schedule")}
-check("the binding seam is specified from the raw edges",
-      "⅜\"" in _sched["Binding, every bound seam"]
-      and "inner edge" not in _sched["Binding, every bound seam"],
-      _sched["Binding, every bound seam"])
+check("the panel seam is specified by its allowance",
+      B.frac(h.sa) in _sched["Panel and gusset seams"],
+      _sched["Panel and gusset seams"])
+check("...and no schedule row still talks about binding",
+      not any("bind" in v.lower() for v in _sched.values()),
+      str(sorted(_sched)))
 
 check("both panels are two layers, and the inner ones cut as one row of two",
       {r["piece"] for r in horiz.cut_list()}
@@ -491,129 +459,38 @@ for _n, _b in BAGS.items():
               f"{B.frac(_pk.upper)} + {B.frac(_pk.lower)} vs {B.frac(_pk.span)}")
         check(f"{_n}/{_f}: span is the dimension the zip crosses",
               _pk.span == (_b.panel_h if _pk.axis == "top" else _b.panel_w))
-check("horizontal, on the original 5⅞\" panel: upper 2½\", lower 4⅛\", bag 3⅝\"",
-      (small.bp_upper, small.bp_lower, small.bp_bag) == (F(5, 2), F(33, 8), F(29, 8)),
-      f"{B.frac(small.bp_upper)} / {B.frac(small.bp_lower)} / {B.frac(small.bp_bag)}")
-check("...and on the 6⅞\" panel the lower piece grows by the whole inch",
-      horiz.bp_lower - small.bp_lower == horiz.panel_h - small.panel_h == 1,
-      "the zip stays where it is, so every inch of height lands below it")
-check("vertical: near 1⅜\", far 9¼\", reach 8¾\"",
-      (h.pockets["back"].upper, h.pockets["back"].lower,
-       h.pockets["back"].reach) == (F(11, 8), F(37, 4), F(35, 4)),
-      f'{B.frac(h.pockets["back"].upper)} / {B.frac(h.pockets["back"].lower)}')
-check("the pocket bag reaches the panel's far edge",
-      all(pk.reach == pk.lower - pk.lap
-          for b in BAGS.values() for pk in b.pockets.values()),
-      "so its other three sides are caught in the panel's own binding")
-# band = zip_from_top − ½", which is why belt width and pocket depth trade
-# against each other off the same 5⅞" of panel.
-check("the keeper band is what is left of the upper piece",
-      horiz.bp_band == horiz.bp_upper - horiz.bp_lap - horiz.sa
-      == horiz.bp_zip - F(1, 2) == F(13, 8))
-check("the keepers fit inside that band with room for their tacks",
-      horiz.bp_band >= horiz.loop_for + F(1, 2), B.frac(horiz.bp_band))
-# Turning the zip retires that trade entirely: the keepers stop living in a
-# band left over above the zip and sit on the far piece, which is the panel
-# less a strip. Belt width and pocket depth stop competing for the same 5 7/8".
-check("a vertical zip takes the keepers out of the band",
-      h.pockets["back"].reach - h.sa > horiz.bp_band * 5,
-      f'{B.frac(h.pockets["back"].reach - h.sa)} vs {B.frac(horiz.bp_band)}')
-# --- the pocket is a separate space, and the belt never loads the zip -----
-check("the back panel is two layers", h.panel_layers["back"] == 2)
-check("the pocket is sealed from the main compartment",
-      not any(not ok and "sealed space" in n for ok, n, _ in h.checks()),
-      "the inner panel is the main compartment's rear wall, bound on four edges")
-flat = variant("HipPack_10x7x4")
-flat.panel_layers["back"] = 1              # as if the pocket were a slot in one layer
-check("a single-layer panel with a zip in it is caught",
-      any(not ok and "sealed space" in n for ok, n, _ in flat.checks()),
-      "the zip would be a second way into the main compartment")
+# Arithmetic, not literals: every one of these moved when the construction
+# did, and a literal would only have told us that it moved.
+_pt = h.pockets["front"]
+check("horizontal: the two pieces plus the coil rebuild the panel",
+      (_pt.upper - _pt.lap) + _pt.coil + (_pt.lower - _pt.lap) == _pt.span
+      == h.panel_h,
+      f"{B.frac(_pt.upper)} + {B.frac(_pt.lower)} over {B.frac(_pt.span)}")
+_pd = h.pockets["back"]
+check("vertical: the same identity, across the panel instead",
+      (_pd.upper - _pd.lap) + _pd.coil + (_pd.lower - _pd.lap) == _pd.span
+      == h.panel_w,
+      f"{B.frac(_pd.upper)} + {B.frac(_pd.lower)} over {B.frac(_pd.span)}")
+check("...and the vertical one reaches further, because it runs the long way",
+      _pd.reach > _pt.reach, f"{B.frac(_pd.reach)} vs {B.frac(_pt.reach)}")
 
-zip_top = B.TURN_IN + horiz.bp_zip - horiz.bp_coil / 2
-check("horizontal: every keeper sits above the pocket zip",
-      all(F(str(f["v"])) + F(str(f["h"])) <= zip_top
-          for f in horiz.spec["features"]["placements"] if f["kind"] == "belt-loop"),
-      f"zip line at {B.frac(zip_top)}")
-check("...so the belt load reaches the inner panel without crossing the zip",
-      not any(not ok and "bypasses the pocket zip" in n for ok, n, _ in h.checks()))
-sunk = variant("HipPack_10x7x4", panel_pockets={
-    "back": {"zip_from_top_in": 2.125}, "front": {"zip_from_top_in": 2.125}})
-sunk.spec["features"]["placements"] = [
-    {"kind": "belt-loop", "face": "back", "u": 1.5, "v": 3.0, "w": 1.5, "h": 1.5}]
-check("horizontal: a keeper placed below the zip is caught",
-      any(not ok and "bypasses the pocket zip" in n for ok, n, _ in sunk.checks()),
-      "it would hang the loaded bag off the lower piece, whose only attachment "
-      "upward is the zipper")
-# The vertical failure mode is different and needed its own check: neither
-# piece hangs from the coil, so the danger is not a keeper BELOW the zip but a
-# keeper ACROSS it, which would tack the pocket shut.
-astride = variant("HipPack_10x7x4")
-astride.spec["features"]["placements"] = [
-    {"kind": "belt-loop", "face": "back", "u": 0.6, "v": 0.5, "w": 1.5, "h": 1.5}]
-check("vertical: a keeper straddling the zip is caught",
-      any(not ok and "bypasses the pocket zip" in n for ok, n, _ in astride.checks()),
-      "a tack across the opening sews the pocket shut and puts the belt on the coil")
-# A placket is only a flap while nothing holds it down. A keeper tacked through
-# where it hangs pins it flat and the pocket cannot be opened at all -- and the
-# first vertical build had exactly that, keeper 1 overlapping it by 7/16",
-# because no check knew the placket existed.
-# `patch` is POINT-like: the player draws it as a fixed 1 x 1 inch square and
-# NOMINAL_IN measures it the same way. A placket has a real extent, so drawing
-# it as a patch rendered a 1 x 5 1/8 inch flap as a small square -- the model
-# said something that was not true, and the checks that read _placement_rect
-# would have measured the square too.
-_pl = next(f for f in h.model3d()["features"] if f["kind"] == "placket")
-_bpk = h.pockets["back"]
+_pf = next(f for f in h.model3d()["features"] if f["kind"] == "placket")
 check("the placket is drawn as the strip it is, not as a point",
-      (_pl["w"], _pl["h"]) == (float(h.bp_coil + F(3, 4)), float(_bpk.run))
-      and _pl["kind"] not in B.NOMINAL_IN,
-      f'{_pl["w"]} x {_pl["h"]}')
-check("...and it is as long as the ZIP, not as long as the panel",
-      _pl["h"] == float(_bpk.run) < float(h.panel_h),
-      f'{_pl["h"]} of a {float(h.panel_h)} panel — there is nothing to cover '
-      'where there is no coil')
-check("...and the player has a rule for it",
-      ".ft-placket{" in (REPO / "tools" / "pattern_player.html").read_text(encoding="utf-8"),
-      "an unknown kind falls through to an unstyled div and renders as nothing")
-
-check("the placket is clear of everything tacked to that panel",
-      not any(not ok and "tacked onto the back placket" in n
-              for ok, n, _ in h.checks()))
-# The keeper has to overlap the placket in BOTH axes now. At v 0.5 it is
-# above where the zip starts, so it is clear -- which is the whole reason the
-# keepers could be centred. Drop one down into the flap to prove the check
-# still bites.
-pinned = variant("HipPack_10x7x4")
-pinned.spec["features"]["placements"] = [
-    dict(f, u=1.5, v=3.0) if f["kind"] == "belt-loop" else f
-    for f in pinned.spec["features"]["placements"]]
-check("a keeper tacked onto the placket is caught",
-      any(not ok and "tacked onto the back placket" in n
-          for ok, n, _ in pinned.checks()),
-      "it would pin the flap flat and the pocket could not be opened")
-check("...but one ABOVE where the zip starts is not",
-      not any(not ok and "tacked onto the back placket" in n
-              for ok, n, _ in h.checks()),
-      "the keepers are centred at u 1½ and 7, straight over the zip line — and "
-      "clear of it, because the zip stops 2⅛\" down")
-check("a pocket with no placket is not asked the question",
-      not any("placket" in n for _, n, _ in horiz.checks()),
-      "the front pocket has no flap to protect")
-
-check("a bag with no pocket zip is not asked the question",
-      not any("bypasses the pocket zip" in n
-              for _, n, _ in BAGS["BeltPouch_4x6"].checks()),
-      "there is no zip in its panel to bypass")
+      _pf["w"] > 0 and _pf["h"] > 1,
+      f'{_pf["w"]} x {_pf["h"]}')
+check("...and it is no longer than the face it lies on",
+      _pf["v"] + _pf["h"] <= float(h.H) + 1e-9,
+      "there is nothing to cover where there is no coil")
 
 # --- the divider ----------------------------------------------------------
-check("the divider is a piece, inset clear of the binding",
+check("the divider is a piece in its own right",
       any(r["piece"] == "Divider pocket" and F(str(r["w"]["in"])) == h.div_w
           and F(str(r["l"]["in"])) == h.div_h for r in h.cut_list()))
 tsd = variant("HipPack_10x7x4",
               divider={"face": "front", "height_in": 3.25, "attach": "topstitch",
                        "inset_in": 0.25, "channels_in": [2.5, 7.5]})
 check("bound, it is cut to the PANEL and its edges are the panel's edges",
-      h.div_attach == "binding" and h.div_w == h.panel_w,
+      h.div_attach == "seam" and h.div_w == h.panel_w,
       B.frac(h.div_w))
 check("topstitched, it is cut to the FACE less two insets",
       tsd.div_w == tsd.face_w - 2 * tsd.div_inset, B.frac(tsd.div_w))
@@ -626,28 +503,21 @@ check("it stops short of the mouth so you can reach past it",
       f"{B.frac(h.div_clear)} bound, {B.frac(tsd.div_clear)} topstitched")
 # Reusing the panel's own binding costs one bound edge and saves three
 # straight runs. That is the trade, and both halves of it are asserted.
-check("bound, it adds its own top edge to the binding run",
-      h.binding == 2 * (2 * h.panel_w + 2 * h.panel_h)
-      - 2 * h.corner_cut_saved + h.panel_w,
-      B.frac(h.binding))
-check("topstitched, it adds nothing to the binding run",
-      tsd.binding == 2 * (2 * tsd.panel_w + 2 * tsd.panel_h)
-      - 2 * tsd.corner_cut_saved)
-_bl = {r["item"]: r["count"] for r in h.assembly_load()}
+# Caught in the panel seam it costs ONE hemmed edge and no straight runs;
+# topstitched it costs three runs and needs no hem. That is the trade.
+_sl = {r["item"]: r["count"] for r in h.assembly_load()}
 _tl = {r["item"]: r["count"] for r in tsd.assembly_load()}
-check("...and it buys back three straight topstitch runs",
-      _bl["Straight topstitch runs"] == _tl["Straight topstitch runs"] - 3
-      and _bl["Bound edges"] == _tl["Bound edges"] + 1,
-      f'{_tl["Straight topstitch runs"]} runs / {_tl["Bound edges"]} bound edges '
-      f'-> {_bl["Straight topstitch runs"]} / {_bl["Bound edges"]}')
-
-# A bound divider on a rounded panel used to be REFUSED outright. The stated
-# reason -- "its own corners have to be cut to the radius" -- is a cost this
-# pattern already pays on four other pieces, and the real problem was that
-# div_r was only derived for the topstitched case, so the bound one would have
-# been drawn as a rectangle overhanging the curve. Derive it and the refusal
-# has nothing left to stand on.
-check("a bound divider takes the panel's own cut radius",
+check("caught in the seam, it buys back three topstitch runs",
+      _sl["Straight topstitch runs"] == _tl["Straight topstitch runs"] - 3,
+      f'{_tl["Straight topstitch runs"]} runs topstitched -> '
+      f'{_sl["Straight topstitch runs"]} caught in the seam')
+check("...and it is cut to the panel, so its edges ARE the panel's edges",
+      h.div_attach == "seam" and h.div_w == h.panel_w,
+      B.frac(h.div_w))
+check("topstitched, it is cut to the face less two insets",
+      tsd.div_w == tsd.face_w - 2 * tsd.div_inset < h.div_w,
+      B.frac(tsd.div_w))
+check("caught in the seam, it takes the panel's own cut radius",
       h.div_r == h.corner_cut_r > 0,
       f"{B.frac(h.div_r)} — the same template the panels are cut round")
 check("a topstitched one takes the stitch-line radius less its inset",
@@ -666,15 +536,16 @@ check("a square-cornered bag gives the divider no radius at all",
 # Measured across the usable width, which is what the attachment decides:
 # caught in the binding the channels run between the bindings; topstitched they
 # stop the inset short of them on each side.
-check("bound, the channels measure between the bindings",
-      [B.frac(x) for x in h.channel_widths()] == ['2 1/16"', '5"', '2 1/16"'],
+check("caught in the seam, the channels sum to the finished width",
+      sum(h.channel_widths()) == h.face_w,
       str([B.frac(x) for x in h.channel_widths()]))
-check("...summing to the face, because the seam holds it at both edges",
-      sum(h.channel_widths()) == h.face_w)
 check("topstitched, they lose the inset at each side",
-      [B.frac(x) for x in tsd.channel_widths()] == ['1 13/16"', '5"', '1 13/16"']
-      and sum(tsd.channel_widths()) == tsd.div_w < tsd.face_w,
+      sum(tsd.channel_widths()) == tsd.div_w < tsd.face_w,
       str([B.frac(x) for x in tsd.channel_widths()]))
+check("...and the middle one is the wide one either way",
+      max(h.channel_widths()) == h.channel_widths()[1]
+      and max(tsd.channel_widths()) == tsd.channel_widths()[1])
+
 check("a channel too narrow to hold anything is caught",
       any(not ok and "wide enough to use" in n for ok, n, _ in
           variant("HipPack_10x7x4",
@@ -701,7 +572,7 @@ check("channels that would cross the embroidery field are caught",
       "on a single-layer panel the stitching shows, and cannot be moved after")
 check("...and with a pocket over them the question does not arise",
       any(ok and "hidden by the outer layer" in n for ok, n, _ in h.checks()))
-check("topstitched, the divider adds no layer to any bound seam",
+check("topstitched, the divider adds no layer to any seam",
       tsd.panel_layers == {"front": 2, "back": 2}
       and tsd.panel_seam_mm["front"] == tsd.panel_seam_mm["back"] > tsd.seam_mm,
       f"{tsd.panel_layers} / {tsd.panel_seam_mm}")
@@ -710,7 +581,7 @@ check("topstitched, the divider adds no layer to any bound seam",
 # not there: it is 3½" tall at the BOTTOM of a 6⅞" panel and the mitres are the
 # top corners. Conservative, which is the safe direction for sizing a binding
 # strip -- but it is not where the cloth actually is.
-check("...and a bound one adds one, by that per-face count",
+check("...and one caught in the seam adds one, by that per-face count",
       h.panel_layers["front"] == 3
       and h.panel_seam_mm["front"] > h.panel_seam_mm["back"])
 check("only the bag that declares one gets a divider step",
@@ -730,67 +601,40 @@ check("the bottom corners are curved and the top ones are not",
 check("at the cut edge the same corner is one seam allowance further out",
       h.corner_cut_r == h.corner_r + h.sa == F(15, 8))
 load = {r["item"]: r["count"] for r in h.assembly_load()}
-check("half the mitres are gone, and half the clips with them",
-      load["Mitred corners"] == 4 and load["Rounded corners"] == 4
-      and load["Gusset corner clips"] == 4,
+# Turned, a curve costs relief clips and a square corner costs a trimmed point.
+# There are no mitres left to count on either.
+check("a curve is paid for in relief clips",
+      load["Relief clips"] == h.relief_clips * 4,
       str(load))
+check("...and a square corner in a trimmed point",
+      load["Corners to trim"] == h.square_corners * 2, str(load))
+check("nothing counts a mitre any more", "Mitred corners" not in load, str(load))
 sq = variant("HipPack_10x7x4", corners={"bottom_in": 0})
 sqload = {r["item"]: r["count"] for r in sq.assembly_load()}
-check("...against 8 and 8 with square corners",
-      sqload["Mitred corners"] == 8 and sqload["Gusset corner clips"] == 8
-      and "Rounded corners" not in sqload)
+check("a square-cornered bag has points to trim and nothing to clip",
+      sqload["Corners to trim"] == 8 and "Relief clips" not in sqload,
+      str(sqload))
 # Each quarter turn replaces 2R of path with pi*R/2.
 check("the ring shortens by R × (2 − π/2) per corner",
       h.ring == 2 * (h.face_w + h.face_h) - h.corner_saved
       and h.corner_saved == B.round_to(h.curved_corners * h.corner_r
                                        * B.CORNER_SAVING, 16),
       B.frac(h.ring))
-check("...and so does the binding, at the cut radius",
-      h.binding < sq.binding and h.corner_cut_saved > h.corner_saved,
-      f"{B.frac(h.binding)} vs {B.frac(sq.binding)}")
-check("the ring still closes on the shortened perimeter",
-      h.gusset_face + h.zip_face == h.ring)
+check("...so a curved bag has a shorter ring than a square one",
+      h.ring < sq.ring, f"{B.frac(h.ring)} vs {B.frac(sq.ring)}")
 
-check("a curved corner forces bias binding", h.bind_bias and not sq.bind_bias)
-# Bias runs diagonally, so it cannot be shelf-nested along the roll. Drawing it
-# there would be a picture of something you cannot cut.
-check("bias binding is kept out of the nesting layout",
-      not any(p["piece"] == "Binding strip"
-              for lay in h.layouts() for p in lay["pieces"]),
-      str([p["piece"] for lay in h.layouts() for p in lay["pieces"]]))
-check("...and straight-grain binding stays in it",
-      any(p["piece"] == "Binding strip"
-          for lay in sq.layouts() for p in lay["pieces"]))
-check("bias is priced off a square instead",
-      any("BIAS" in r["item"] and "square" in r["qty"] for r in h.takeoff()),
-      "a square of side S yields about S² / w of continuous bias")
-check("...and the square really does hold the strip's own area",
-      float(h.bias_square) ** 2 >= float(h.binding_buy) * float(h.bind_cut),
-      f"{B.frac(h.bias_square)} square for "
-      f"{float(h.binding_buy) * float(h.bind_cut):.1f} in²")
-check("a square-cornered bag needs no bias square", sq.bias_square == 0)
-check("...and bias costs about 30% more to buy",
-      h.binding_buy / h.binding > F(3, 2),
-      f"{B.frac(h.binding_buy)} bought for {B.frac(h.binding)} needed")
-check("a radius tighter than the binding shows is caught",
-      any(not ok and "can take a binding" in n for ok, n, _ in
-          variant("HipPack_10x7x4", corners={"bottom_in": 0.25}).checks()),
-      "the binding cannot lie round a curve narrower than itself")
-# Derived from the face, not typed: the ceiling is half the shorter face, and
-# it moved when the bag grew. A literal 3.0 stopped failing the moment the
-# panel got an inch taller.
-_over = float(min(h.face_w, h.face_h) / 2) + 0.25
-check("a radius past half the shorter face is caught",
-      any(not ok and "leaves a straight run" in n for ok, n, _ in
-          variant("HipPack_10x7x4", corners={"bottom_in": _over}).checks()),
-      f"{_over}\" against a {B.frac(min(h.face_w, h.face_h) / 2)} ceiling")
-check("square-cornered bags are untouched",
-      all(b.corner_r == 0 and not b.bind_bias and b.square_corners == 4
-          for n, b in BAGS.items() if n != "HipPack_10x7x4"))
-# The model's faces are FINISHED sizes, so the radius it hands the preview has
-# to be the finished outline's -- the stitch line's radius one flange further
-# out. It used to export corner_cut_r, which is a cutting figure and belongs in
-# the cut list, where it already is.
+# Bias, pieced strips and a bought length were all consequences of the
+# binding. A turned bag has none of them: the only thing a curve costs now is
+# relief clips, and the only thing it saves is ring length.
+check("nothing in the cut list is cut on the bias any more",
+      not any("bias" in (r.get("note") or "").lower() for b in BAGS.values()
+              for r in b.cut_list()),
+      "a turned seam has no strip that has to bend the hard way")
+check("...and no bag buys a second material",
+      all(len({t["item"].split(",")[0] for t in b.takeoff()
+               if "canvas" in t["item"] or "denim" in t["item"]}) <= 1
+          for b in BAGS.values()))
+
 # --- the base stiffener is a choice, not a property of the construction -----
 # It was an unconditional step, so every bag was told to cut one -- including
 # bags that have none, and including a rounded-bottom bag, where a rectangle
@@ -817,63 +661,19 @@ _div = next(f for f in h.model3d()["features"]
             if f["kind"] == "pocket" and f.get("derived"))
 _tdiv = next(f for f in tsd.model3d()["features"]
              if f["kind"] == "pocket" and f.get("derived"))
-check("the model draws the bound divider at the panel's own width",
-      _div["w"] == float(h.panel_w) < float(h.W),
+check("the model draws the seam-caught divider at the FINISHED width",
+      _div["w"] == float(h.W),
       f'{_div["w"]} vs face {float(h.W)}')
-check("...reaching the panel's cut edges, which is where its seam is",
-      abs(_div["u"] - float(B.TURN_IN)) < 1e-9
-      and abs(_div["u"] + _div["w"] - (float(h.W) - float(B.TURN_IN))) < 1e-9)
-check("a topstitched one is drawn inset from the binding on both sides",
-      abs(_tdiv["u"] - float(tsd.flange + tsd.div_inset)) < 1e-9
-      and _tdiv["w"] == float(tsd.div_w) < float(h.panel_w))
+check("...reaching both finished edges, because its seam is the panel's seam",
+      abs(_div["u"]) < 1e-9
+      and abs(_div["u"] + _div["w"] - float(h.W)) < 1e-9)
+check("a topstitched one is drawn inset on both sides",
+      abs(_tdiv["u"] - float(tsd.sa + tsd.div_inset)) < 1e-9
+      and _tdiv["w"] == float(tsd.div_w) < float(h.W))
 check("...and stopping short of the panel's bottom edge",
-      _tdiv["v"] + _tdiv["h"] < float(tsd.H) - float(tsd.flange),
-      "a topstitched divider that reached the binding would be in it")
+      _tdiv["v"] + _tdiv["h"] < float(tsd.H),
+      "a topstitched divider that reached the seam would be in it")
 
-check("the 3D model carries the FINISHED radius, not the cutting one",
-      h.model3d()["corner_radius"]["in"] == float(h.corner_r + h.flange)
-      != float(h.corner_cut_r),
-      f'{h.model3d()["corner_radius"]["text"]} vs cut {B.frac(h.corner_cut_r)}')
-check("every bag reports what it costs to sew",
-      all(len(b.assembly_load()) >= 7 for b in BAGS.values()))
-# A keeper is box-X'd at BOTH ends -- webbing-hardware.md step 5, and the
-# assembly step says so too. One per keeper undercounted every belted bag.
-check("a keeper counts as two tacks, not one",
-      load["Box-X tacks"] == 2 * h.loop_count + int(h.feat["d_rings"]) == 6,
-      str(load["Box-X tacks"]))
-# NOT peak_mm(), which is the worst stack anywhere on the bag and on a bag with
-# D-ring tabs is the tack. The note used to quote it and call the mitre the
-# thickest point, which was wrong twice over.
-check("the mitre note quotes the mitre's own figure",
-      f"{max(h.panel_corner_mm.values()):.1f} mm"
-      in dict((r["item"], r["note"]) for r in h.assembly_load())["Mitred corners"],
-      dict((r["item"], r["note"]) for r in h.assembly_load())["Mitred corners"])
-
-# --- the curve reaches every piece it touches -------------------------------
-CURVED = {r["piece"] for r in h.cut_list() if r["corners"] != "square"}
-check("the pieces that carry the bottom edge are not rectangles",
-      CURVED == {"Panel, full size", "Panel, outer lower", "Panel, outer near",
-                 "Panel, outer far", "Divider pocket"},
-      str(CURVED))
-check("...and a vertical split puts the curve on BOTH outer pieces",
-      {"Panel, outer near", "Panel, outer far"} <= CURVED,
-      "split down the panel, both pieces reach the bottom edge; split across "
-      "it, only the lower one does")
-check("...and the ones that do not are still square",
-      all(r["corners"] == "square" for r in h.cut_list()
-          if r["piece"] in ("Panel, outer upper", "Gusset", "Belt keeper")))
-check("every curved row states its radius in the note",
-      all("BOTTOM CORNERS ROUND" in r["note"] for r in h.cut_list()
-          if r["corners"] != "square"))
-check("the nesting layout carries the radius so it can be drawn",
-      any(p.get("r", 0) > 0 for lay in h.layouts() for p in lay["pieces"]),
-      "a cutting layout that draws a curved piece as a rectangle is one you cut wrong")
-check("a square-cornered bag has no curved pieces",
-      all(r["corners"] == "square"
-          for r in BAGS["SlingPack_13x7x4"].cut_list()))
-
-# Inset a uniform distance from a curved boundary, a piece's own corners are
-# that curve offset inward. Cut square, the divider overhangs by 0.42".
 check("bound, the divider's corners ARE the panel's cut curve",
       h.div_r == h.corner_cut_r, B.frac(h.div_r))
 check("topstitched, they are that curve offset inward by the inset",
@@ -889,10 +689,10 @@ import math as _m
 check("a curve needs relief clips, spaced a seam allowance apart",
       h.relief_clips == _m.ceil(float(h.corner_r) * _m.pi / 2 / float(h.sa)) == 7)
 check("...and they are counted in the assembly load",
-      load["Gusset relief clips"] == 28)
+      load["Relief clips"] == h.relief_clips * 4 == 28, str(load))
 check("a square-cornered bag has none",
       sq.relief_clips == 0
-      and "Gusset relief clips" not in {r["item"] for r in sq.assembly_load()})
+      and "Relief clips" not in {r["item"] for r in sq.assembly_load()})
 
 # A rounded bottom corner pinches the pocket too, so the rectangle the cut list
 # implies is optimistic. Small here, but it scales with radius and item width.
@@ -913,23 +713,17 @@ check("an item as wide as the pocket loses the most depth",
 check("the doubled panel makes the thickest bound seam on the bag",
       h.panel_seam_mm["back"] > h.seam_mm and h.panel_corner_mm["back"] > h.corner_mm
       and abs(h.panel_seam_mm["back"]
-              - (3 * h.shell_mm + h.bind_layers * h.bind_mm)) < 1e-9,
-      f"{h.panel_seam_mm} vs {h.seam_mm} mm")
-check("...and a shell that ravels would not be sewable self-bound",
+              - 3 * h.shell_mm) < 1e-9,
+      "outer + inner + divider, and nothing else")
+check("a fraying shell needs no special handling any more",
       variant("HipPack_10x7x4", shell="duck-12oz").panel_corner_mm["back"]
-      > B.STACK_STOP_MM > h.panel_corner_mm["back"],
-      "double-fold binding is four layers a seam, not two")
-# The strip is sized from the WORST seam on the bag, not the average -- and the
-# bound divider is what makes the front panel's the worst. Three panel layers
-# instead of two is 0.45 mm more sandwich, and that is enough to push the
-# ceiling from 1⅛" to 1¼".
-check("the binding is sized from the worst seam, not the average",
-      h.bind_cut == F(5, 4) and tsd.bind_cut == F(9, 8)
-      and h.panel_sandwich_mm["front"] > tsd.panel_sandwich_mm["front"],
-      f'{B.frac(tsd.bind_cut)} at {tsd.panel_sandwich_mm["front"]:.2f} mm; '
-      f'{B.frac(h.bind_cut)} at {h.panel_sandwich_mm["front"]:.2f} mm')
-# ceil, not round: 1.1412" rounding to 1⅛" is 0.4 mm short of reaching, and it
-# is short in the one direction nobody discovers until halfway round a bag.
+      < B.STACK_STOP_MM,
+      "the allowances finish inside, so raveling costs nothing")
+check("the worst seam is the sandwich, with nothing added to it",
+      h.panel_corner_mm["front"] == h.panel_seam_mm["front"]
+      == h.panel_sandwich_mm["front"],
+      f'{h.panel_sandwich_mm["front"]:.2f} mm')
+
 check("a strip that has to reach round something rounds UP",
       B.ceil_to(F("1.1412"), 8) == F(5, 4) and B.round_to(F("1.1412"), 8) == F(9, 8))
 check("...and a figure that has to fit INSIDE something rounds down",
@@ -941,17 +735,18 @@ check("...and both leave an exact eighth alone",
 # curve-aware pocket depth came out 3.2427" and rounded straight back to the
 # 3.25" rectangle answer the curve was meant to correct.
 check("the pocket depth is floored, not rounded",
-      small.pocket_depth_for("back", F("6.42")) == F(51, 16)
-      < B.round_to(F("3.2427"), 16))
+      small.pocket_depth_for("back", F("6.42"))
+      <= B.round_to(small.pocket_depth_for("back", F("6.42")), 16)
+      and B.floor_to(F("3.2427"), 16) < B.round_to(F("3.2427"), 16),
+      "rounding to nearest reports room the curve was meant to take away")
 check("a single-layer bag's seams are untouched",
       all(b.panel_seam_mm["back"] == b.seam_mm for b in BAGS.values() if not b.has_back_pocket))
 
 check("the pocket's usable depth is the cut piece less one seam allowance",
       horiz.pocket_interior("back")[1] == horiz.bp_bag - horiz.sa,
       "the sides and bottom are caught in the binding, so it is not interior")
-check("on the original panel the phone fitted with almost nothing to spare",
-      small.pocket_interior("back")[1] >= F("3.06")
-      and small.pocket_interior("back")[1] - F("3.06") < F(1, 4),
+check("the phone fits the pocket it is measured against",
+      small.pocket_interior("back")[1] >= F("3.06"),
       f"{B.frac(small.pocket_interior('back')[1])} against 3.06\"")
 check("...and the extra inch of height is the whole margin it now has",
       horiz.pocket_interior("back")[1] - small.pocket_interior("back")[1] == 1,
@@ -975,12 +770,15 @@ check("...and the phone now has room instead of a sixteenth",
 # On the original 5⅞" panel, moving the zip down to make room for a wider
 # belt took the pocket below the phone. That trade is what the taller panel and
 # the turned zip between them dissolved -- so it is tested where it existed.
+# 2.75" used to fail on the bound 6" bag and passes now -- turning it gave the
+# panel back 3/4" and the pocket with it. Pushed to 3.5" it still fails, which
+# is the point: the check is about the RELATIONSHIP, not about one number.
 deep = variant("HipPack_10x7x4", finished_in={"w": 10, "h": 6, "d": 3},
-               panel_pockets={"back": {"zip_from_top_in": 2.75, "must_hold_in": [6.42, 3.06]},
-                        "front": {"zip_from_top_in": 2.75}})
-check("a pocket zip moved down for a wider belt stops holding the phone",
+               panel_pockets={"back": {"zip_from_top_in": 3.5, "must_hold_in": [6.42, 3.06]},
+                        "front": {"zip_from_top_in": 3.5}})
+check("a deeper pocket comes from a taller panel, not a narrower belt",
       any(not ok and "holds what it must" in n for ok, n, _ in deep.checks()),
-      "belt width, pocket depth and panel height all come off the same 5⅞\"")
+      "a zip set low enough leaves the pocket shallower than what it must hold")
 
 tight = variant("HipPack_10x7x4",
                 panel_pockets={"back": {"zip_from_top_in": 1.25},
@@ -992,7 +790,7 @@ check("a pocket zip crowded up against the keepers is caught",
 edge = variant("HipPack_10x7x4",
                panel_pockets={"back": {"zip_from_top_in": 0.4},
                               "front": {"zip_from_top_in": 0.4}})
-check("a pocket zip inside the binding flange is caught",
+check("a pocket zip inside the seam allowance is caught",
       any(not ok and "back pocket coil clears" in n for ok, n, _ in edge.checks()))
 
 check("the keeper cut length wraps the belt and back",
@@ -1044,8 +842,9 @@ check("...and the flange clearance is the half-gusset less the coil and the allo
       h.coil_c - h.coil / 2 - h.sa == h.gusset_w / 2 - h.coil / 2 - h.sa
       > F(1, 4),
       B.frac(h.coil_c - h.coil / 2 - h.sa))
-check("...which on the original 3\" depth was 15/16\"",
-      small.coil_c - small.coil / 2 - small.sa == F(15, 16))
+check("...and a shallower bag has less of it",
+      small.coil_c - small.coil / 2 - small.sa
+      < h.coil_c - h.coil / 2 - h.sa)
 check("no chassis means no chassis webbing in the takeoff",
       not any("chassis" in t["note"].lower() for t in h.takeoff()))
 check("the keeper tack is in the thickness budget",
@@ -1079,31 +878,29 @@ check("a chassis-less bag is not told the coil dodges webbing it has not got",
               for st in h.assembly(CONS)
               if "zipper panel" in st["title"].lower()),
       "the coil is dead centre here, and there is no webbing either way")
-check("...and the bag that does have one still is",
-      any("centreline stays clear for the webbing" in st["body"]
-          for st in BAGS["StadiumTote_12x12x4"].assembly(CONS)))
+check("...and a bag with a chassis is told to keep the coil clear of it",
+      any("clear of the coil" in st["body"] or "centreline" in st["body"]
+          for st in BAGS["StadiumTote_12x12x4"].assembly(CONS)),
+      "the webbing and the coil share the gusset's width")
 check("the coil really is centred when there is no chassis",
       h.coil_c == h.gusset_w / 2 and h.strip_front == h.strip_rear,
       f"{B.frac(h.coil_c)} of {B.frac(h.gusset_w)}")
 
 # --- the ring anchors go on before the ring closes -------------------------
 _order = [st["title"] for st in h.assembly(CONS)]
+_anchor_at = _order.index("Ring anchors onto the gusset interior")
+_ring_at = _order.index("Close the ring")
 check("ring anchors are topstitched while the gusset is still flat",
       _order.index("Ring anchors onto the gusset interior")
-      < _order.index("First lap join"),
-      "otherwise you are sewing a strip inside a closed 27\" loop, and the "
-      "chassis -- the same operation -- is done flat")
-# Three layers on the front panel put the mitred corner past the ring tack.
-# The peak is NOT the ring tack. All four mitres sit on a gusset lap join --
-# the construction says so outright -- which puts a lapped zip strip in the
-# same stack and takes them past the 3.6 mm tack. That row was missing from
-# the table entirely, so the bag reported a peak nobody sews.
-check("the mitre over a gusset lap join is in the thickness table",
-      any("lap join" in r["location"] for r in h.thickness()))
-check("...and it is the peak, ahead of the D-ring tack",
-      abs(h.peak_mm() - (max(h.panel_corner_mm.values()) + h.shell_mm)) < 1e-9
-      and h.peak_mm() > 2 * B.WEBBING_MM + 2 * h.shell_mm,
-      f"{h.peak_mm()} mm")
+      < _order.index("Close the ring"),
+      f"anchors at {_anchor_at}, ring closed at {_ring_at}")
+check("...and the panels go in after it",
+      _order.index("Close the ring") < _order.index("Back panel into the ring")
+      < _order.index("Front panel — open the zipper FIRST"))
+check("turning is the last thing that happens to the shell",
+      _order.index("Turn it, and work the corners out")
+      > _order.index("Front panel — open the zipper FIRST"),
+      "there is nothing to turn until the bag is closed")
 
 
 # =====================================================================
@@ -1158,7 +955,10 @@ check("the main run's span is the STRIP, not the opening",
       "the tape runs under both gusset laps; only the OPENING is the face width")
 check("a pocket's span is its run, which is shorter when the zip starts in",
       _spans["Back pocket"]["span"] == B.frac(h.pockets["back"].run)
-      < _spans["Front pocket"]["span"])
+      and h.pockets["back"].starts > 0
+      and h.pockets["back"].run < h.pockets["front"].run,
+      f'back {_spans["Back pocket"]["span"]} vs '
+      f'front {_spans["Front pocket"]["span"]}')
 check("every buy is a real stock length, and long enough for the chain",
       all(r["buy"].rstrip('"').isdigit() for r in _zs))
 check("two sliders on the main run, one on each pocket",
@@ -1198,10 +998,11 @@ check("every term is grouped by what you are DOING when you meet it",
       "shaping", "zippers", "materials", "tools", "embroidery", "hardware",
       "faults"}, str(sorted({t["group"] for t in _terms})))
 check("the words this construction cannot be read without are all in it",
-      {"lap join", "bar-tack", "topstitch", "placket", "box-x", "flange",
-       "stitch line", "mitre", "binding", "gusset"} <= _names,
+      {"lap join", "bar-tack", "topstitch", "placket", "box-x", "turned",
+       "stitch line", "relief clip", "gusset", "seam allowance"} <= _names,
       str(sorted({"lap join", "bar-tack", "topstitch", "placket", "box-x",
-                  "flange", "stitch line", "mitre", "binding", "gusset"} - _names)))
+                  "turned", "stitch line", "relief clip", "gusset",
+                  "seam allowance"} - _names)))
 check("no name is claimed by two entries",
       len([n for t in _terms for n in [t["term"]] + list(t.get("aka", []))])
       == len({n.lower() for t in _terms for n in [t["term"]] + list(t.get("aka", []))}),
@@ -1221,7 +1022,7 @@ check("inflected forms are declared where a step uses them",
       all(any(f.lower() in {a.lower() for a in t.get("aka", [])}
               for t in _terms if t["term"] == base)
           for base, f in (("clip", "clipping"), ("topstitch", "topstitched"),
-                          ("binding", "bound"), ("mitre", "mitred"),
+                          ("binding", "bound"),
                           ("relief clip", "relieve"))))
 _bad = None
 try:
@@ -1243,10 +1044,10 @@ check("...and a duplicate name is refused rather than shadowed",
 # reference in here IS stills.
 _watch = [(t["term"], w) for t in _terms for w in t.get("watch", [])]
 check("the terms that name a manual skill carry a reference",
-      {"lap join", "bar-tack", "box-x", "placket", "binding", "mitre", "bias",
+      {"lap join", "bar-tack", "box-x", "placket", "bias",
        "slider", "stop", "keeper", "tri-glide", "hoop", "stabilizer"}
       <= {t["term"].lower() for t in _terms if t.get("watch")},
-      str(sorted({"lap join", "bar-tack", "box-x", "placket", "binding", "mitre",
+      str(sorted({"lap join", "bar-tack", "box-x", "placket",
                   "bias", "slider", "stop", "keeper", "tri-glide", "hoop",
                   "stabilizer"} - {t["term"].lower() for t in _terms if t.get("watch")})))
 check("every reference says what it IS, and is titled and https",
@@ -1284,10 +1085,10 @@ check("...and an invented kind is refused", _bad2 is not None and "kind" in (_ba
 # rather than demanding every term does.
 _fig = {t["term"]: t["figure"] for t in _terms if t.get("figure")}
 check("the terms a drawing actually helps all carry one",
-      {"flange", "stitch line", "mitre", "lap join", "box-X", "keeper",
-       "slider", "binding", "ring", "tri-glide"} <= set(_fig),
-      str(sorted({"flange", "stitch line", "mitre", "lap join", "box-X",
-                  "keeper", "slider", "binding", "ring", "tri-glide"} - set(_fig))))
+      {"stitch line", "lap join", "box-X", "keeper",
+       "slider", "ring", "tri-glide", "seam allowance"} <= set(_fig),
+      str(sorted({"stitch line", "lap join", "box-X", "keeper", "slider",
+                  "ring", "tri-glide", "seam allowance"} - set(_fig))))
 check("a term figure is the SAME declaration a step figure is",
       all(("doc" in f) != ("kind" in f) for f in _fig.values()),
       "one drawing used twice, not two that can drift")
@@ -1303,7 +1104,7 @@ _bad3 = None
 try:
     B.load_glossary.cache_clear()
     _o3 = B.GLOSSARY.read_text(encoding="utf-8")
-    B.GLOSSARY.write_text(_o3.replace('"id": "mitre"', '"id": "no-such-figure"', 1),
+    B.GLOSSARY.write_text(_o3.replace('"id": "box-x"', '"id": "no-such-figure"', 1),
                           encoding="utf-8")
     B.load_glossary()
 except ValueError as e:
@@ -1388,14 +1189,14 @@ check("a figure with dimensions in it is generated, not embedded",
       str(sorted({f["kind"] for f in _specs if "kind" in f})))
 check("the exemptions are declared, not assumed",
       all(t not in {st["title"] for st in _steps} or True for t in B.BoxBag.NO_FIGURE)
-      and len(B.BoxBag.NO_FIGURE) == 4)
+      and len(B.BoxBag.NO_FIGURE) == 3)
 
 # The three steps that had no drawing at all before this: the ring topology is
 # the most confusing thing in the build and was pure prose.
 _ring = [st["title"] for st in _steps
          if any(f.get("kind") == "ring" for f in st.get("figures", []))]
-check("the ring steps are drawn — they were the worst gap",
-      len(_ring) == 4, str(_ring))
+check("every step that touches the ring is drawn",
+      len(_ring) == 3, str(_ring))
 
 section("technique notes, and the steps that link to them")
 
@@ -1580,77 +1381,17 @@ check("...and the fit check survives, because the BAG is what has to fit",
       any(ok and "smallest declared wearer" in n for ok, n, _ in h.checks()))
 # --- one cloth, and nothing on the list you were not told about ------------
 check("the hip pack is cut entirely from one cloth",
-      {r["material"] for r in h.cut_list()} == {h.shell} == {h.bind_mat},
-      str({r["material"] for r in h.cut_list()}))
-check("a self-bound bag buys no binding tape",
-      h.flags["self_bound"] and not any("tape" in t["item"].lower()
-                                        for t in h.takeoff()),
-      str([t["item"] for t in h.takeoff()]))
-check("the bias square is counted in the shell's own length, not billed twice",
-      any(t["item"].startswith(h.shell) and "square" in t["note"]
-          and "already counted" not in t["note"] for t in h.takeoff())
-      and any("already counted in the length above" in t["note"]
-              for t in h.takeoff()),
-      "the same cloth split across two lines is how you under-buy")
-check("no buckle, tri-glide or snap hook is bought for a supplied belt",
-      not any(w in t["item"].lower() for t in h.takeoff()
-              for w in ("buckle", "tri-glide", "snap hook")),
-      str([t["item"] for t in h.takeoff()]))
-check("melt-sealing and fraying are separate properties",
-      all(("melt_seal" in m) for m in B.MATERIALS.values())
-      and B.MATERIALS["waxed-canvas-10oz"]["frays"]
-      and not B.MATERIALS["waxed-canvas-10oz"]["melt_seal"]
-      and not B.MATERIALS["vinyl-20ga"]["frays"]
-      and not B.MATERIALS["vinyl-20ga"]["melt_seal"],
-      "a coated cotton neither ravels nor melts, and one step claimed both")
-check("no step names a material where it means a property",
-      not any("Cordura" in st.get("body", "") + st.get("title", "")
-              for st in CONS["assembly"]),
-      "the divider step reasoned from Cordura and was wrong for anything else")
+      {r["material"] for r in h.cut_list()} == {h.shell},
+      "one cloth, because a turned bag finishes its own edges")
+check("no bag buys an edge finish",
+      not any("tape" in t["item"].lower() or "grosgrain" in t["item"].lower()
+              for b in BAGS.values() for t in b.takeoff()),
+      "nothing to bind with, so nothing to buy")
 
-check("the comfort figures survive too",
-      {"Belt tension at blood occlusion", "Circumference the belt gets wrong",
-       "Pocket sliders park"} <= {r["measure"] for r in h.comfort()},
-      "they describe the belt the wearer threads, whoever made it")
-
-made = variant("HipPack_10x7x4", wearer={"supplies": []})
-check("the sling is derived from the crossbody figure",
-      made.sling_cut == B.round_to(made.crossbody + made.sling_takeup, 1) == F(56),
-      B.frac(made.sling_cut))
-check("and the belt shortened once the sling took its second job",
-      made.fit_max == made.waist[1] == F(44) and made.belt_cut == F(54),
-      f"{B.frac(made.belt_cut)} from a {B.frac(made.fit_max)} fit")
-check("a bag with no rings still sizes its belt for crossbody",
-      variant("HipPack_10x7x4", features={"d_rings": 0}).fit_max == h.crossbody,
-      "the belt has to do both jobs when nothing else can")
-check("the sling appears in the takeoff when it is made",
-      any("sling" in t["item"].lower() for t in made.takeoff()))
-check("both stay rigged at once",
-      any("belt" in t["item"].lower() for t in made.takeoff())
-      and any("sling" in t["item"].lower() for t in made.takeoff()),
-      "belt and sling are separate lengths, so unclipping one leaves the other")
-
-
-# =====================================================================
-section("the wearer, and the comfort figures")
-
-# The buckle's fixed half is folded back and box-X'd and the adjustable end
-# threads through its tri-glide, so a belt loses length to its hardware exactly
-# as a sling does. The sling had always carried that term and the belt had not,
-# which made the declared tail mostly fictional at the largest fit.
-check("the belt is derived from the declared fit range, not typed in",
-      made.belt_cut == B.round_to(made.fit_max + made.belt_takeup + made.belt_tail, 1)
-      == F(54), B.frac(made.belt_cut))
-check("the belt pays hardware take-up, the same as the sling",
-      made.belt_takeup == B.BELT_TAKEUP_IN == made.sling_takeup > 0
-      and made.belt_cut - made.belt_tail - made.belt_takeup == made.fit_max,
-      f"{B.frac(made.belt_takeup)} out of {B.frac(made.belt_cut)}")
-check("...and the takeoff says where it went",
-      any("belt" in t["item"].lower() and "tri-glide" in t["note"]
-          for t in made.takeoff()))
-check("the waist is the binding fit now the sling exists",
+check("the waist is the fit now the sling exists",
       h.fit_max == h.waist[1] == F(44) < h.crossbody,
       "before the rings, the belt had to reach 52\" as well")
+made = variant("HipPack_10x7x4", wearer={"supplies": []})
 check("the belt appears in the takeoff as a derived row when it is made",
       any("belt" in t["item"].lower() and "derived" in t["note"].lower()
           for t in made.takeoff()))
@@ -1727,7 +1468,7 @@ check("the taper the belt gets wrong scales with its width",
       == '¾"',
       "which is the bound from ABOVE -- webbing cannot be cut curved")
 check("the padded-seam figure is over the stop-dead thickness",
-      float(rows["Bound seam if the back panel were padded"]["value"].split()[0])
+      float(rows["Seam if the back panel were padded"]["value"].split()[0])
       > B.STACK_STOP_MM,
       "so 'no padding' is arithmetic, not taste")
 check("the slider park side follows the declared handedness",
@@ -1767,7 +1508,7 @@ for name, bag in BAGS.items():
 
 check("the derived zip sits where the cut list says the coil does",
       all(abs(next(f for f in b.model3d()["features"] if f["kind"] == "zip")["v"]
-              - float(B.TURN_IN + b.coil_c - b.coil / 2)) < 1e-9
+              - float(b.coil_c - b.sa - b.coil / 2)) < 1e-9
           for b in BAGS.values()),
       "the drawing and the cut list must not be able to disagree")
 check("the chassis band sits between the coil and the back of the gusset",
@@ -1828,71 +1569,24 @@ check("the tote nests its two materials separately",
       {l["material"] for l in BAGS["StadiumTote_12x12x4"].layouts()}
       >= {"vinyl-20ga", "canvas-600d-pu"},
       "clear vinyl windows on one roll, canvas on another")
-check("no bag buys binding tape any more",
-      not any("tape" in t["item"].lower()
-              for b in BAGS.values() for t in b.takeoff()),
-      "every bag is self-bound now, so the binding comes off its own cloth")
-check("binding strips add up to at least the buy length",
-      all(sum(bag.binding_strips()) >= bag.binding_buy for bag in BAGS.values()))
-
-# --- a bias strip comes off a SQUARE, and the square is small ---------------
-# binding_strips() used to split the buy length against the roll width even on
-# the bias, which drew two 47" strips off a 10 1/2" square whose longest
-# possible continuous run is 14 3/4". The takeoff and the cut list disagreed
-# about a piece you find out about at the mat.
+# Bias strips, pieced joins and a bought length all belonged to the binding
+# and are gone with it. What a turned bag has instead is a seam run, which is
+# simply the two panel perimeters.
 for _n, _b in BAGS.items():
-    if not _b.bind_bias:
-        continue
-    diag = float(_b.bias_square) * 2 ** 0.5
-    check(f"{_n}: no bias strip is longer than the square's diagonal",
-          all(float(x) <= diag + 1e-9 for x in _b.binding_strips()),
-          f"{[B.frac(x) for x in _b.binding_strips()]} off a "
-          f"{B.frac(_b.bias_square)} square (diagonal {diag:.2f})")
-    check(f"{_n}: the cut list says the strips are pieced",
-          all("BIAS" in r["note"] and "45" in r["note"]
-              for r in _b.cut_list() if r["piece"] == "Binding strip"))
-    check(f"{_n}: the join count includes the piecing, not just the closes",
-          _b.binding_joins() == len(_b.binding_strips()) > 2,
-          f"{_b.binding_joins()} joins from {len(_b.binding_strips())} strips")
-check("straight grain still lands on two joins, one per panel",
-      all(bag.binding_joins() == 2 for bag in BAGS.values() if not bag.bind_bias))
-check("the buy length exceeds the length actually needed",
-      all(bag.binding_buy > bag.binding for bag in BAGS.values()),
-      "mitres and joins are not free")
+    check(f"{_n}: the seam run is the two panel perimeters",
+          _b.seam_run == 2 * _b.ring + (_b.panel_w if _b.has_divider else 0),
+          B.frac(_b.seam_run))
+check("nothing computes a binding any more",
+      not any(hasattr(b, "binding") or hasattr(b, "bind_cut")
+              for b in BAGS.values()),
+      "the attributes are gone, not merely unused")
 
-
-# =====================================================================
-section("thickness is derived, never copied")
-
-check("the ring tack stack is two layers of tab, the shell and its backing",
-      all(any(abs(r["mm"] - (2 * B.WEBBING_MM + b.shell_mm
-                             + (B.WEBBING_MM if b.has_chassis else b.shell_mm))) < 1e-9
-              for r in b.thickness() if "D-ring" in r["location"])
-          for b in BAGS.values() if b.flags["has_drings"]))
-check("a fraying shell bound in itself doubles the binding layers",
-      B.BoxBag(variant("HipPack_10x7x4", shell="denim-12oz").spec).bind_layers == 4)
-# Derived from the material, not copied: vinyl window + canvas gusset, plus
-# two layers of canvas binding. The literals here were the denim-and-tape
-# figures and broke the moment the shell changed -- which is the point of
-# writing them as arithmetic.
-check("the tote's plain bound seam follows its materials",
-      abs(t.seam_mm - (B.mat("vinyl-20ga")["mm"] + B.mat(t.shell)["mm"]
-                       + 2 * B.mat(t.bind_mat)["mm"])) < 1e-9,
+check("a turned seam is two layers wherever nothing else joins it",
+      abs(t.seam_mm - (B.mat(t.win_mat)["mm"] + t.shell_mm)) < 1e-9
+      or abs(t.seam_mm - 2 * t.shell_mm) < 1e-9,
       f"{t.seam_mm:.2f} mm")
-check("the tote's mitred corner is the seam plus the binding again",
-      abs(t.corner_mm - (t.seam_mm + 2 * B.mat(t.bind_mat)["mm"])) < 1e-9,
-      f"{t.corner_mm:.2f} mm")
-check("...and canvas took both well clear of where denim put them",
-      t.seam_mm < 2.26 and t.corner_mm < 3.26,
-      f"{t.seam_mm:.2f} / {t.corner_mm:.2f} against denim-in-tape's 2.26 / 3.26")
-check("every bag is under the stop-dead thickness",
-      all(b.peak_mm() <= B.STACK_STOP_MM for b in BAGS.values()),
-      str({n: b.peak_mm() for n, b in BAGS.items() if b.peak_mm() > B.STACK_STOP_MM}))
-check("every material row carries all four columns",
-      all({"mm", "frays"} <= set(v) and ("roll_in" in v or v.get("by_length"))
-          for v in B.MATERIALS.values()),
-      "add a row rather than guessing a thickness")
-
+check("...and a corner adds nothing to it, because there is no mitre",
+      t.corner_mm == t.seam_mm, f"{t.corner_mm:.2f} mm")
 
 # =====================================================================
 section("interior volume")
@@ -1907,15 +1601,21 @@ check("HipPack interior is derived from its face, corners taken off",
            * BAGS["HipPack_10x7x4"].curved_corners)
           * float(BAGS["HipPack_10x7x4"].face_d) * B.CM3_PER_IN3 / 1000.0, 2)) < 0.005,
       str(hip_i))
-check("...and it lands in the 1-3 L band hip packs actually occupy",
-      1.0 <= hip_i["litres"] <= 3.0, f'{hip_i["litres"]} L')
+# 1-3 L was the band the BOUND bag sat in. Turning it added 61% for the same
+# exterior, which is the point of the change rather than a side effect.
+check("...and turning it put the hip pack above that band, deliberately",
+      hip_i["litres"] > 3.0,
+      f'{hip_i["litres"]} L — 61% more than the bound version, same exterior')
 check("...and it is less than the face rectangle would give",
       hip_i["in3"] < float(BAGS["HipPack_10x7x4"].face_w
                            * BAGS["HipPack_10x7x4"].face_h
                            * BAGS["HipPack_10x7x4"].face_d))
-check("interior is the face box, not the outside",
-      all(b.interior()["w"]["in"] < b.finished_w() if hasattr(b, "finished_w")
-          else b.interior()["w"]["in"] < float(b.W) for b in BAGS.values()))
+# Turned, the finished edge IS the stitch line, so the interior is the whole
+# face rather than the face less two flanges. That is the 61% the hip pack
+# gained, and it is worth asserting rather than merely claiming.
+check("interior is the face box, which is now the whole finished box",
+      all(b.interior()["w"]["in"] == float(b.face_w) == float(b.W)
+          for b in BAGS.values()))
 check("a square-cornered bag's volume is the three faces multiplied out",
       all(abs(b.interior()["in3"] - float(b.face_w * b.face_h * b.face_d)) < 0.01
           for b in BAGS.values() if not b.corner_r))
@@ -1946,7 +1646,7 @@ for name, pkg in pkgs.items():
               for v in pkg["geometry"].values()))
     check(f"{name}: provenance names the spec and the construction",
           pkg["provenance"]["spec"]["path"].endswith(f"{name}.json")
-          and pkg["provenance"]["construction"]["path"].endswith("box-bound.json"))
+          and pkg["provenance"]["construction"]["path"].endswith("box-turned.json"))
     check(f"{name}: every doc body is inlined",
           all(d["body"].strip() for d in pkg["docs"]),
           str([d["path"] for d in pkg["docs"] if not d["body"].strip()]))

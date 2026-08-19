@@ -201,7 +201,7 @@ BELT_TAKEUP_IN = F(4)
 FLAGS = ("has_chassis", "shell_frays", "double_fold", "has_windows",
          "has_handle", "has_drings", "has_belt_loop", "has_belt_anchor",
          "has_ring_anchor", "has_sling", "has_back_pocket", "has_front_pocket",
-         "has_panel_pocket", "has_divider", "has_bound_divider",
+         "has_panel_pocket", "has_divider", "has_seamed_divider",
          "has_stiffener", "has_pockets", "shell_melts", "self_bound",
          "has_webbing", "supplies_carry",
          "has_top_zip", "has_side_zip", "has_placket",
@@ -878,9 +878,13 @@ class BoxBag:
         return [b - a for a, b in zip(edges, edges[1:])]
 
     def channel_edge(self) -> F:
-        """Where the divider's side edge sits in face_size coordinates."""
-        return self.sa + (self.div_inset
-                              if self.div_attach == "topstitch" else F(0))
+        """How far the outermost channel starts from the face's edge.
+
+        Caught in the panel seam the divider reaches the finished edge, so its
+        outer channels run the whole way -- there is no inset to subtract.
+        Topstitched, it stops div_inset short on each side.
+        """
+        return F(0) if self.div_attach == "seam" else self.div_inset
 
     @property
     def words(self) -> dict:
@@ -1273,8 +1277,8 @@ class BoxBag:
     #: rather than an assumed exemption.
     NO_FIGURE = {
         "Pre-wash and dry the shell",
-        "Fold under every raw edge that will show",
-        "Pockets onto the gusset, over the webbing",
+        "Finish the inside allowances",
+
         "Base stiffener, loose",
     }
 

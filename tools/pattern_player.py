@@ -44,8 +44,8 @@ REQUIRED = ("schema_version", "name", "title", "description", "summary",
             "stitch_schedule", "tools", "checklist", "thickness", "peak_mm",
             "comfort", "assembly_load", "sources", "model3d", "checks", "notes",
             "open_questions", "docs", "embroidery", "provenance")
-REQUIRED_GEOMETRY = ("ring", "panel_w", "panel_h", "gusset_w", "sa", "flange",
-                     "show", "coil_c")
+REQUIRED_GEOMETRY = ("ring", "panel_w", "panel_h", "gusset_w", "sa",
+                     "clip_depth", "seam_run", "coil_c")
 
 #: The order patterns appear in the dropdown: smallest first, so the list reads
 #: as a size ladder rather than as an alphabet.

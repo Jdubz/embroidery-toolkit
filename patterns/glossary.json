@@ -147,13 +147,23 @@
       }
     },
     {
-      "term": "flange",
-      "group": "geometry",
-      "short": "The seam allowance sticking OUT of the bag, which the binding then wraps.",
-      "body": "This is the whole reason a bound bag's panels are cut *smaller* than the bag they make. In a turned seam the allowance is consumed on the inside; here it points outward and becomes part of the finished dimension.\n\n`flange = seam allowance + turn` — the distance from the finished edge in to the [[stitch line]].",
+      "term": "turned",
       "aka": [
-        "flanges"
+        "bagged out",
+        "turn"
       ],
+      "group": "joins",
+      "short": "Sewn inside out and pulled right side out through an opening, so the allowances finish inside.",
+      "body": "The ordinary construction for a bag of this kind, and what this family uses. Pieces go together RIGHT SIDES TOGETHER, the bag is turned through the zip, and every seam finishes itself — no binding, no edge finish, and nothing to buy.\\n\\nTwo consequences worth holding onto: a cut piece is BIGGER than the bag it makes (finished + 2 x allowance), and the last seam has to be sewn with the zip OPEN, because that is what you turn it through."
+    },
+    {
+      "term": "seam allowance",
+      "aka": [
+        "allowance"
+      ],
+      "group": "geometry",
+      "short": "The cloth between the stitch line and the raw edge — ⅜\" here.",
+      "body": "Every piece is cut FINISHED SIZE PLUS one allowance on every edge, which is why a 10\" bag comes off a 10¾\" panel. Turned, the allowance finishes inside and does two more jobs: it is what [[relief clip]]s are cut into so a curve can splay, and it is trimmed back at the corners so they turn out flat.\n\nBelow about ¼\" there is nothing left to clip into.",
       "figure": {
         "kind": "seam"
       }
@@ -161,28 +171,8 @@
     {
       "term": "stitch line",
       "group": "geometry",
-      "short": "Where the needle actually goes. Every figure in these patterns is measured from it.",
-      "body": "Not the cut edge and not the edge of the binding. The `face` dimensions are the stitch-line box, and the usable interior is measured from it.\n\n**Guide off the RAW EDGE, not off the binding's inner edge.** The binding laps past the stitching, so guiding on its edge lands the needle 1/16\" shy — and a run that drifts comes out short of the panels it has to wrap.",
-      "see": "patterns/techniques/binding.md",
-      "figure": {
-        "doc": "patterns/techniques/binding.md",
-        "id": "offset-binding"
-      }
-    },
-    {
-      "term": "turn",
-      "group": "geometry",
-      "short": "How far the binding folds round past the raw edges — 1/16\" here.",
-      "body": "Small and consequential: it is the entire difference between the panel you cut and the bag you get. `panel = finished − 2 × turn`.",
-      "figure": {
-        "kind": "seam"
-      }
-    },
-    {
-      "term": "show",
-      "group": "geometry",
-      "short": "How much binding is visible on each face of the finished bag.",
-      "body": "Distinct from [[flange]], and they are not the same number. `visible cloth = overall − 2 × show` is what artwork must be sized to; `face = overall − 2 × flange` is the stitch-line box. Reading one for the other is a mistake this repo has made and corrected.",
+      "short": "Where the needle goes. On a turned bag it IS the finished edge.",
+      "body": "Every figure in these patterns is measured from it, and on a turned bag that makes it easy: the stitch line and the finished outline are the same line. A piece is cut one seam allowance outside it on every edge.",
       "figure": {
         "kind": "seam"
       }
@@ -190,8 +180,8 @@
     {
       "term": "face",
       "group": "geometry",
-      "short": "The stitch-line box — NOT the cloth you can see.",
-      "body": "The interior volume is computed from it. What you can see is `visible`, an eighth of an inch smaller each way.",
+      "short": "The finished box — what the bag measures, and what its interior is.",
+      "body": "On a turned bag `face` and the finished size are one and the same. `visible` is a placement margin inside it, kept so a design is not stitched into a seam allowance.",
       "figure": {
         "kind": "seam"
       }
@@ -199,30 +189,13 @@
     {
       "term": "binding",
       "group": "joins",
-      "short": "A strip wrapped over a raw edge and stitched through, finishing it and joining it in one pass.",
-      "body": "**Single fold** where the shell does not ravel: two layers at the seam. **Double fold** where it does, with the outer edge turned under: four layers, and on a mitred corner that is the difference between sewable and not.\n\nCut on the BIAS wherever it has to go round a curve; straight grain will not ease.",
-      "see": "patterns/techniques/binding.md",
+      "short": "A strip wrapped over a raw edge to finish and join it in one pass.",
+      "body": "**This family does not use it.** The bags are TURNED: the allowances finish inside and each seam finishes itself, which is the ordinary way a bag of this kind is made. Binding is kept as a term because it is worth recognising — it is how technical soft goods and marine work are built, and the note on it is at `patterns/techniques/retired/binding.md`.",
       "aka": [
         "bind",
         "bound",
         "binds"
-      ],
-      "watch": [
-        {
-          "kind": "article",
-          "title": "Binding around corners — Sailrite",
-          "url": "https://www.sailrite.com/how-to-bind-around-corners"
-        },
-        {
-          "kind": "article",
-          "title": "Mitered corners, two ways — Melly Sews",
-          "url": "https://mellysews.com/how-to-sew-mitered-corners/"
-        }
-      ],
-      "figure": {
-        "doc": "patterns/techniques/binding.md",
-        "id": "bound-seam"
-      }
+      ]
     },
     {
       "term": "bias",
@@ -238,37 +211,6 @@
       ]
     },
     {
-      "term": "mitre",
-      "aka": [
-        "miter",
-        "mitred",
-        "mitring",
-        "mitres",
-        "mitered",
-        "mitering"
-      ],
-      "group": "joins",
-      "short": "The folded corner that lets one continuous binding strip turn a square corner.",
-      "body": "Sew to the stitch-line intersection and STOP. Fold the binding straight back on itself so a 45° diagonal appears, fold it forward down the next edge, then resume. The binding doubles at that fold, which makes the mitre the thickest seam on most of these bags.\n\nA ROUNDED corner needs no mitre at all — the strip eases round it.",
-      "see": "patterns/techniques/binding.md",
-      "watch": [
-        {
-          "kind": "video",
-          "title": "Mitered corners — binding",
-          "url": "https://www.youtube.com/watch?v=H2IhhakrSkE"
-        },
-        {
-          "kind": "article",
-          "title": "Binding around corners — Sailrite",
-          "url": "https://www.sailrite.com/how-to-bind-around-corners"
-        }
-      ],
-      "figure": {
-        "doc": "patterns/techniques/binding.md",
-        "id": "mitre"
-      }
-    },
-    {
       "term": "clip",
       "group": "shaping",
       "short": "A single cut into the seam allowance, to the stitch line, so it can splay at a corner.",
@@ -282,25 +224,14 @@
     {
       "term": "relief clip",
       "group": "shaping",
-      "short": "Shallow snips spaced along a curve so a flat strip's raw edge can reach further than its stitch line.",
-      "body": "Round a convex curve the raw edge has about 25% further to travel than the stitch line does. Relieve it with several shallow snips a seam allowance apart — **not** one deep cut, which becomes a weak point.",
+      "short": "Snips in the seam allowance that let it splay round a curve.",
+      "body": "Cut them an eighth SHORT of the stitch line, spaced about a seam allowance apart. Never to the line: the stitching pulls out of it. Round a convex curve the raw edge has further to travel than its own stitch line, and this is what lets it.",
       "aka": [
         "relieve",
         "relieved",
         "relieving",
         "relief"
-      ],
-      "watch": [
-        {
-          "kind": "article",
-          "title": "Binding around corners OR CURVES — Sailrite",
-          "url": "https://www.sailrite.com/How-to-Work-Binding-Around-Corners-or-Curves-Video"
-        }
-      ],
-      "figure": {
-        "doc": "patterns/techniques/binding.md",
-        "id": "mitre"
-      }
+      ]
     },
     {
       "term": "ease",
@@ -639,16 +570,6 @@
       "group": "embroidery",
       "short": "Growing each colour slightly so neighbours overlap instead of leaving bare cloth between them.",
       "body": "About 0.2 mm per side here. It has a cost that is easy to miss: it takes 0.2 mm per side off every KNOCKOUT too, so a gap drawn at 1.4 mm closes to 1.0 mm."
-    },
-    {
-      "term": "welt",
-      "group": "joins",
-      "short": "A pocket opening cut INTO a panel and faced with bound lips.",
-      "body": "Named here only to say this family never does it. The hardest operation in bag making, it puts a slit across the grain where the load runs, and it cannot be practised on scrap — because the practice piece is the panel. Every pocket here is built by lapping onto tape instead, so nothing is ever cut open.",
-      "figure": {
-        "doc": "patterns/techniques/panel-pocket.md",
-        "id": "pocket-section"
-      }
     },
     {
       "term": "backstitch",

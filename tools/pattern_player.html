@@ -477,7 +477,7 @@ function build(pkg){
   box.style.height = H + "px";
   $("#scaleNote").textContent = scale.toFixed(1) + " px per inch — drawn from the cut list";
 
-  const bindPx = m.binding_show.in * scale;
+  const bindPx = 0;   /* turned: nothing sits on the outside of a face */
   const rPx = (m.corner_radius ? m.corner_radius.in : 0) * scale;
 
   for (const name of Object.keys(FACE)){
@@ -517,7 +517,7 @@ function build(pkg){
      ribbon of flat facets following the arc. It is the same band -- one piece
      of fabric, no creases, no seams -- and faceting it is purely how a box
      model has to draw a curve. Six per quarter turn is under 0.2% short of the
-     true arc length, which is finer than the binding is wide. */
+     true arc length, which is finer than the seam is wide. */
   const FACETS = 6;
   if (rPx){
     const seg = [];
@@ -743,7 +743,7 @@ function figRing(p, spec){
     });
     s.add("text", {x:PAD, y:288, "font-family":"var(--f-data)", "font-size":11,
                    fill:"var(--muted)"},
-          `both joins land where the binding will mitre — hand-wheel them. `
+          `both joins land at the top corners, where the ring is thickest. `
           + `Closed, the ring measures ${g.ring.text}.`);
     return s;
   }
@@ -785,7 +785,7 @@ function figRing(p, spec){
     s.add("text", {x:PAD, y:224, "font-family":"var(--f-data)", "font-size":11,
                    fill:"var(--muted)"},
           "cut long, fit, then trim — the ring's true length depends on the lap "
-          + "you achieve and on how hard the binding pulls");
+          + "you achieve once the seams are sewn");
     return s;
   }
 
@@ -868,7 +868,7 @@ function figAnchors(p, spec){
   s.add("text", {x:PAD, y:y+hh+68, "font-family":"var(--f-data)", "font-size":11,
                  fill:"var(--muted)"},
         `each strip runs the gusset's full ${g.gusset_w.text} width, so both ends `
-        + "finish flush with the panel edges and the bindings catch them");
+        + "finish flush with the panel edges and the panel seams catch them");
   return s;
 }
 
@@ -957,7 +957,8 @@ const FEAT_FILL = {zip:"var(--coil)", placket:"var(--web)", pocket:"var(--shell-
 function figFace(p, spec){
   const name = spec.face, m = p.model3d, f = m.faces[name];
   if (!f) return null;
-  const fw = f.w.in, fh = f.h.in, fl = m.flange.in, show = m.binding_show.in,
+  const fw = f.w.in, fh = f.h.in,
+        sa = (m.seam_allowance || {in:0}).in,
         R = (m.corner_radius || {in:0}).in;
   const W = 660, PAD = 54, S = Math.min((W - 2*PAD) / fw, 300 / fh);
   const w = fw*S, h = fh*S, X = (W - w)/2, Y = 46;
@@ -973,11 +974,12 @@ function figFace(p, spec){
     : `M${X},${Y} h${w} v${h} h${-w} Z`;
   s.add("path", {d, fill:"var(--shell)", "fill-opacity":.55,
                  stroke:"var(--cut)", "stroke-width":1.4});
-  /* the binding band round the outside, and the stitch line inside it */
-  s.add("path", {d, fill:"none", stroke:"var(--binding)",
-                 "stroke-width":Math.max(show*S, 3), opacity:.55});
-  s.add("rect", {x:X+fl*S, y:Y+fl*S, width:w-2*fl*S, height:h-2*fl*S, fill:"none",
-                 stroke:"var(--stitch)", "stroke-width":1, "stroke-dasharray":"6 4"});
+  /* Turned: the outline IS the stitch line. What is dashed inside it is the
+     margin artwork keeps off the seam, not a binding. */
+  const mg = 0.375;
+  s.add("rect", {x:X+mg*S, y:Y+mg*S, width:w-2*mg*S, height:h-2*mg*S, fill:"none",
+                 stroke:"var(--stitch)", "stroke-width":1, "stroke-dasharray":"6 4",
+                 opacity:.55});
   /* features that live on this face */
   (m.features || []).filter(ft => ft.face === name).forEach(ft => {
     const on = !hi || ft.kind === hi;
@@ -1030,8 +1032,8 @@ function figFace(p, spec){
     }
   }
   dim1(s, X, Y+h+34, X+w, `${f.w.text} overall`, "var(--cut)");
-  dim1(s, X+fl*S, Y+h+62, X+w-fl*S,
-       `${p.geometry["face_" + (name === "left" || name === "right" ? "d" : "w")].text} stitch line`,
+  dim1(s, X, Y+h+62, X+w,
+       `${p.geometry["face_" + (name === "left" || name === "right" ? "d" : "w")].text} finished — the stitch line IS the edge`,
        "var(--stitch)");
   vdim(s, X-24, Y, Y+h, f.h.text, "var(--cut)");
   return s;
@@ -1080,47 +1082,64 @@ function figPocketPieces(p, spec){
   return s;
 }
 
-/* --- a bound seam in section, with THIS bag's stack -------------------- */
-function figSeam(p){
+/* --- a turned seam in section, with THIS bag's numbers ---------------- */
+function figSeam(p, spec){
   const g = p.geometry;
-  const W = 620, s = fig(`0 0 ${W} 250`,
-    `Section through a bound seam on this bag: two panels wrong sides together, `
-    + `allowances out, the binding wrapping the flange.`);
-  caption(s, 30, 22, "BOUND SEAM — SECTION");
-  const y = 110, t = 13, X = 60, L = 300;
-  s.add("rect", {x:X, y:y-t, width:L, height:t, fill:"var(--shell)"});
-  s.add("rect", {x:X, y:y,   width:L, height:t, fill:"var(--shell-lit)"});
-  s.add("text", {x:X+8, y:y-t-8, "font-family":"var(--f-data)", "font-size":11,
-                 fill:"var(--ink)"}, "panel");
-  s.add("text", {x:X+8, y:y+t+18, "font-family":"var(--f-data)", "font-size":11,
-                 fill:"var(--ink)"}, "gusset");
-  /* the flange sticking out to the right, and the binding wrapping it */
-  const F = 150, fx = X + L;
-  s.add("rect", {x:fx, y:y-t, width:F, height:2*t, fill:"var(--shell-dim)"});
-  s.add("path", {d:`M${fx+F+22},${y-t-12} v${2*t+24} `
-                 + `a12,12 0 0 0 -12,12 h${-(F+30)} v-10 h${F+18} `
-                 + `a2,2 0 0 0 2,-2 v${-(2*t+24)} z`,
-                 fill:"none"});
-  s.add("path", {d:`M${fx-30},${y-t-13} h${F+34} a13,13 0 0 1 0,${2*t+26} h${-(F+34)}`,
-                 fill:"none", stroke:"var(--binding)", "stroke-width":9, opacity:.9});
-  s.add("text", {x:fx+F/2, y:y+t+44, "text-anchor":"middle",
+  /* Step 1 shows both halves; the turning step shows only what it
+     produces, so the two are not the same picture. */
+  const only = (spec || {}).stage === "turned";
+  const W = 620, s = fig(`0 0 ${W} 300`,
+    `Section through a turned seam: two pieces face to face, stitched one seam `
+    + `allowance in, then folded apart so the allowance finishes inside.`);
+  caption(s, 30, 22, only ? "WHAT TURNING PRODUCES"
+                          : "TURNED SEAM — BEFORE AND AFTER");
+
+  const t = 13, X = 70, L = 330, SA = 120;
+  let y = 78;
+  /* --- as sewn: right sides together, allowance to the right --- */
+  if (!only){
+  s.add("rect", {x:X, y:y-t, width:L+SA, height:t, fill:"var(--shell)"});
+  s.add("rect", {x:X, y:y,   width:L+SA, height:t, fill:"var(--shell-lit)"});
+  s.add("text", {x:X-8, y:y-4, "text-anchor":"end",
                  "font-family":"var(--f-data)", "font-size":11,
-                 fill:"var(--binding)"}, "binding wraps the flange");
-  /* one stitch line through everything */
-  s.add("circle", {cx:fx-16, cy:y, r:5, fill:"var(--stitch)"});
-  s.add("text", {x:fx-16, y:y-t-26, "text-anchor":"middle",
-                 "font-family":"var(--f-data)", "font-size":11, fill:"var(--stitch)"},
-        "one line catches all five");
-  dim1(s, fx, y+t+70, fx+F, `flange ${g.flange.text} = ${g.sa.text} + ${g.turn.text}`, "var(--cut)");
-  dim1(s, fx-30, y+t+100, fx+F+13, `binding shows ${g.show.text} on each face`, "var(--binding)");
-  s.add("text", {x:30, y:236, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--ink)"}, "panel");
+  s.add("text", {x:X-8, y:y+t+8, "text-anchor":"end",
+                 "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--ink)"}, "gusset");
+  s.add("circle", {cx:X+L, cy:y+t/2-t/2, r:5, fill:"var(--stitch)"});
+  s.add("path", {d:`M${X+L},${y-t-16} v${2*t+18}`, stroke:"var(--stitch)",
+                 "stroke-width":1.5, "stroke-dasharray":"5 4"});
+  s.add("text", {x:X+L, y:y-t-22, "text-anchor":"middle",
+                 "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--stitch)"}, "stitch line");
+  dim1(s, X+L, y+t+34, X+L+SA, `${g.sa.text} allowance`, "var(--cut)");
+  caption(s, X, y-t-44, "RIGHT SIDES TOGETHER");
+  }
+
+  /* --- turned: the allowance folds inside --- */
+  y = only ? 120 : 210;
+  s.add("path", {d:`M${X},${y-t} h${L} a${t},${t} 0 0 1 0,${2*t} h${-L} z`,
+                 fill:"var(--shell)"});
+  s.add("rect", {x:X+L-SA*0.7, y:y-t-2, width:SA*0.7, height:4,
+                 fill:"var(--shell-dim)"});
+  s.add("rect", {x:X+L-SA*0.7, y:y+t-2, width:SA*0.7, height:4,
+                 fill:"var(--shell-dim)"});
+  s.add("text", {x:X+L-SA*0.7-6, y:y-t+2, "text-anchor":"end",
+                 "font-family":"var(--f-data)", "font-size":10.5,
+                 fill:"var(--muted)"}, "allowance, inside");
+  s.add("circle", {cx:X+L, cy:y, r:5, fill:"var(--stitch)"});
+  s.add("text", {x:X+L+16, y:y+4, "font-family":"var(--f-data)",
+                 "font-size":11, fill:"var(--stitch)"}, "= the finished edge");
+  caption(s, X, y-t-30, "TURNED RIGHT SIDE OUT");
+
+  s.add("text", {x:30, y:288, "font-family":"var(--f-data)", "font-size":11,
                  fill:"var(--muted)"},
-        `${p.peak_mm ? "" : ""}the allowance points OUT, so it is part of the finished bag — `
-        + `panel cut ${g.panel_w.text}, bag ${g.w.text}`);
+        `so the panel is cut ${g.panel_w.text} to finish ${g.w.text} — `
+        + `the finished size PLUS an allowance on every edge`);
   return s;
 }
 
-/* --- standard coil against reverse coil, both faces --------------------
+/* --- standard coil against reverse coil/* --- standard coil against reverse coil, both faces --------------------
    There is no freely-licensed PHOTOGRAPH of this anywhere -- Commons has
    coil-versus-moulded and nothing on reverse use -- and a photograph would
    be the weaker answer regardless, because the whole distinction is a
@@ -1359,15 +1378,15 @@ function panelFor(name, p){
     d.appendChild(el("p", null, p.summary));
     d.appendChild(tableOf(["Measure", "Figure"], [
       ["Finished overall", {t:`${p.finished.w.text} W × ${p.finished.d.text} D × ${p.finished.h.text} H`, cls:"d"}],
-      [" …the bound rib eats", {t:`${p.geometry.flange.text} off every edge (${p.geometry.sa.text} allowance + ${p.geometry.turn.text} binding turn), and it points OUTWARD`, cls:"d"}],
-      [" …leaving a stitch-line box", {t:`${p.geometry.face_w.text} × ${p.geometry.face_d.text} × ${p.geometry.face_h.text}`, cls:"d"}],
-      [" …and visible cloth", {t:`${p.geometry.visible_w.text} × ${p.geometry.visible_h.text} between the bindings — size artwork to this`, cls:"d"}],
+      [" …the seam takes", {t:`${p.geometry.sa.text} off every edge, folded INSIDE`, cls:"d"}],
+      [" …so the finished edge IS", {t:"the stitch line — nothing sits outside it", cls:"d"}],
+      [" …artwork field", {t:`${p.geometry.visible_w.text} × ${p.geometry.visible_h.text}, kept clear of the seam`, cls:"d"}],
       ["Interior", {t:`${p.interior.w.text} × ${p.interior.h.text} × ${p.interior.d.text} — ${p.interior.litres} L`, cls:"d"}],
-      ["Panel cut", {t:`${p.geometry.panel_w.text} × ${p.geometry.panel_h.text} — the finished size LESS two ${p.geometry.turn.text} turns, not plus two allowances`, cls:"d"}],
+      ["Panel cut", {t:`${p.geometry.panel_w.text} × ${p.geometry.panel_h.text} — the finished size PLUS an allowance on every edge`, cls:"d"}],
       ["Gusset cut width", {t:p.geometry.gusset_w.text, cls:"d"}],
       ["Ring at the stitch line", {t:p.geometry.ring.text, cls:"d"}],
-      ["Seam allowance / flange", {t:`${p.geometry.sa.text} / ${p.geometry.flange.text}`, cls:"d"}],
-      ["Binding shows, each face", {t:p.geometry.show.text, cls:"d"}]
+      ["Seam allowance", {t:`${p.geometry.sa.text}, clipped to ${p.geometry.clip_depth.text} at a curve`, cls:"d"}],
+      ["Seam to sew", {t:`${p.geometry.seam_run.text}, then turned through the zip`, cls:"d"}]
     ]));
     if (p.docs.filter(x => x.kind === "pattern").length){
       d.appendChild(el("h2", null, "Long-form notes"));
@@ -1801,7 +1820,7 @@ function render(){
   apply();
 
   const lg = $("#legend"); lg.innerHTML = "";
-  const items = [["var(--binding)", "binding, " + p.model3d.binding_show.text + " each face"],
+  const items = [["var(--stitch)", "seam, " + p.geometry.sa.text + " allowance, folded inside"],
                  ["var(--coil)", "zip coil, " + p.geometry.coil_c.text + " from the cut edge"]];
   if (p.flags.has_chassis) items.push(["var(--web)", p.geometry.loop.text + " chassis, inside the gusset"]);
   if (p.flags.has_drings) items.push(["var(--metal)", "D-rings on external tabs"]);
