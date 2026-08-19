@@ -119,8 +119,16 @@ SEAM_MARGIN_IN = F(3, 8)
 MATERIALS = {
     "cordura-1000d":      {"mm": 0.50, "frays": False, "melt_seal": True,  "roll_in": 60,
                            "needle": "jeans 100/16"},
+    # `creases` -- takes a permanent fold. Nothing to do with fraying or
+    # melting: it is about whether a piece can be BENT double to turn it and
+    # recover. PVC cannot, and it cannot be pressed out either, because heating
+    # it releases hydrogen chloride.
+    # `creases`: takes a PERMANENT fold. Nothing to do with fraying or melting
+    # -- it is about whether a piece can be bent double to turn the bag and
+    # recover afterwards. PVC cannot, and it cannot be pressed out either,
+    # because heating it releases hydrogen chloride.
     "vinyl-20ga":         {"mm": 0.51, "frays": False, "melt_seal": False, "roll_in": 54,
-                           "needle": "Microtex 90/14"},
+                           "creases": True, "needle": "Microtex 90/14"},
     "nylon-binding-tape": {"mm": 0.50, "frays": False, "melt_seal": True,  "by_length": True},
     "webbing-1in":        {"mm": 1.30, "frays": False, "melt_seal": True,  "by_length": True},
     "denim-10oz":         {"mm": 0.60, "frays": True,  "melt_seal": False, "roll_in": 58,
@@ -1302,6 +1310,7 @@ class BoxBag:
         "Finish the inside allowances",
 
         "Base stiffener, loose",
+        "Finished",
     }
 
     def figure_gaps(self, construction: dict) -> list[str]:
@@ -1723,6 +1732,17 @@ class BoxBag:
         ck(self.sa >= F(1, 4), "the seam allowance can take a relief clip",
            f"{frac(self.sa)} allowance, clipped to {frac(self.clip_depth)} — "
            f"a snip that stops 1/8\" short of the stitch line")
+        # A turned bag is pulled through its own zip, so every panel has to
+        # bend double and recover. A material that takes a permanent crease
+        # cannot, and PVC cannot be pressed out afterwards either. Bound
+        # construction exists for exactly this case -- nothing is turned.
+        creasing = sorted({m for m in {r["material"] for r in self.cut_list()}
+                           if mat(m).get("creases")})
+        ck(not creasing, "every material survives being turned",
+           "nothing here takes a permanent fold" if not creasing else
+           f"{', '.join(creasing)} creases permanently — a panel of it cannot be "
+           f"pulled through a {frac(self.zip_face)} opening and recover, and it "
+           "cannot be pressed out")
         ck(self.visible_w > 0 and self.visible_h > 0,
            "artwork clears the seam",
            f"{frac(self.visible_w)} x {frac(self.visible_h)} inside a "

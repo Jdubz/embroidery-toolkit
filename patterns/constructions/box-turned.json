@@ -256,6 +256,24 @@
     },
     {
       "n": 13,
+      "title": "Pockets onto the gusset, over the webbing",
+      "when": [
+        "has_pockets"
+      ],
+      "stitch": "straight, 3.0 mm",
+      "body": "An applied pocket goes on the gusset's inside face, over the webbing, while the gusset is flat. Its top edge is hemmed; its other three sides finish inside the panel seams.",
+      "see": [
+        "patterns/techniques/panel-pocket.md"
+      ],
+      "figures": [
+        {
+          "doc": "patterns/techniques/panel-pocket.md",
+          "id": "pocket-section"
+        }
+      ]
+    },
+    {
+      "n": 14,
       "title": "Close the ring",
       "stitch": "straight, {sa}, right sides together",
       "body": "Both joins are plain seams, sewn RIGHT SIDES TOGETHER at {sa} — the same seam as everywhere else on this bag, and the allowances finish inside.\n\nTrim the gusset first: target {gusset_cut}, which is {gusset_face} of finished ring plus {sa} at each end. Then seam each end of the gusset to an end of the zipper panel. Press the allowances toward the gusset, or finger-press and topstitch them down if you want them to stay put.\n\nThe ring now measures {ring} at the stitch line, which is the finished perimeter of a panel.\n\n**Mark the ring's four quarter points before you go any further** — the two joins, the midpoint of the zip and the midpoint of the base. Matching those to the panel is what stops the ring wandering as you sew it on.",
@@ -268,7 +286,7 @@
       ]
     },
     {
-      "n": 14,
+      "n": 15,
       "title": "Close the chassis loop across the top face",
       "when": [
         "has_chassis"
@@ -288,7 +306,7 @@
       ]
     },
     {
-      "n": 15,
+      "n": 16,
       "title": "Grab handle",
       "when": [
         "has_handle"
@@ -303,24 +321,6 @@
           "kind": "face",
           "face": "top",
           "highlight": "handle"
-        }
-      ]
-    },
-    {
-      "n": 16,
-      "title": "Pockets onto the gusset, over the webbing",
-      "when": [
-        "has_pockets"
-      ],
-      "stitch": "straight, 3.0 mm",
-      "body": "An applied pocket goes on the gusset's inside face, over the webbing, while the gusset is flat. Its top edge is hemmed; its other three sides finish inside the panel seams.",
-      "see": [
-        "patterns/techniques/panel-pocket.md"
-      ],
-      "figures": [
-        {
-          "doc": "patterns/techniques/panel-pocket.md",
-          "id": "pocket-section"
         }
       ]
     },
@@ -546,16 +546,28 @@
       "see": [
         "patterns/techniques/webbing-hardware.md"
       ],
-      "body": "Thread the strap through its hardware and clip it to the D-rings.",
+      "body": "Thread the strap through its hardware and clip it to the D-rings. Nothing left to sew.",
       "figures": [
         {
           "doc": "patterns/techniques/webbing-hardware.md",
           "id": "tri-glide"
         }
+      ],
+      "when": [
+        "has_drings"
       ]
     },
     {
       "n": 29,
+      "title": "Finished",
+      "unless": [
+        "has_drings",
+        "supplies_carry"
+      ],
+      "body": "Nothing left to sew. Thread your belt through the keeper and check it runs without binding — if the tunnel is tight, unpick ONE tack, refit the keeper round the actual belt, re-tack and trim."
+    },
+    {
+      "n": 30,
       "title": "Base stiffener, loose",
       "when": [
         "has_stiffener"
@@ -563,7 +575,7 @@
       "body": "Cut it to the FLOOR, not to the face — on a rounded-bottom bag the flat floor is two radii shorter. It drops in loose so it can come out to wash the bag."
     },
     {
-      "n": 30,
+      "n": 31,
       "title": "Thread your belt, clip your strap",
       "when": [
         "supplies_carry"
