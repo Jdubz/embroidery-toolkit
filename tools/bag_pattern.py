@@ -2238,6 +2238,10 @@ class BoxBag:
                                      for k, v in f.items()}
                                     for f in step.get("figures", [])
                                     if self.applies(f)],
+                        # Somebody else demonstrating THIS step. Carried
+                        # verbatim: a reference is not a dimension and must not
+                        # go through resolve().
+                        "watch": json.loads(json.dumps(step.get("watch", []))),
                         "see": list(step.get("see", []))})
         return out
 
@@ -2593,6 +2597,20 @@ def load_construction(name: str) -> tuple[dict | None, Path]:
     c = json.loads(p.read_text(encoding="utf-8"))
     if c.get("construction") != name:
         raise ValueError(f"{p.name}: 'construction' must equal the filename stem")
+    # A reference has to say what it IS and where it goes. Half of what a search
+    # returns for these operations is a photo walkthrough on a page whose URL
+    # says "video", so the kind is required rather than assumed.
+    for st in c.get("assembly", []):
+        for wref in st.get("watch", []):
+            if wref.get("kind") not in ("video", "article", "photos"):
+                raise ValueError(f"{p.name}: {st['title']!r} has a reference of "
+                                 f"kind {wref.get('kind')!r}")
+            if not str(wref.get("title", "")).strip():
+                raise ValueError(f"{p.name}: {st['title']!r} has an untitled "
+                                 "reference -- a bare URL says nothing")
+            if not str(wref.get("url", "")).startswith("https://"):
+                raise ValueError(f"{p.name}: {st['title']!r} has a non-https "
+                                 f"reference {wref.get('url')!r}")
     return c, p
 
 

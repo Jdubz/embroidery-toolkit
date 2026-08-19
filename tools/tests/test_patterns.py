@@ -1017,6 +1017,45 @@ check("...and every stated length matches the derived buy",
       f"hardware {_hwlen} vs schedule "
       f"{sorted(int(r['buy'].rstrip(chr(34))) for r in _zs)}")
 
+section("every step shows somebody doing it")
+# Matched to what the step SAYS. The first set of these was gathered for the
+# bound construction -- binding corners, mitres, cutting bias -- and every one
+# became the wrong technique to show the moment the bags were turned.
+_hw = [(st["title"], r) for st in h.assembly(CONS) for r in st.get("watch", [])]
+check("the hip pack's steps carry references", len(_hw) >= 25,
+      f"{len(_hw)} across {len({t for t, _ in _hw})} steps")
+check("every reference says what it IS, and is titled and https",
+      all(r["kind"] in ("video", "article", "photos") and r["title"].strip()
+          and r["url"].startswith("https://") for _, r in _hw))
+check("...and they are not all claimed to be video",
+      len({r["kind"] for _, r in _hw}) == 3,
+      str(sorted({r["kind"] for _, r in _hw})))
+# The steps a reader is most likely to want shown: the zip install, the seam
+# that joins the ring to a panel round a curve, and the turn.
+for _t in ("Build the zipper panel", "Back panel into the ring",
+           "Turn it, and work the corners out", "Front panel — open the zipper FIRST"):
+    check(f"{_t[:38]}: has one", any(t == _t for t, _ in _hw))
+check("the curve step is shown on VIDEO, because it is the one that needs it",
+      any(r["kind"] == "video" for t, r in _hw if t == "Back panel into the ring"))
+# Nothing left over from the bound set.
+check("no reference still shows a technique this bag does not use",
+      not any(x in r["url"] for _, r in _hw
+              for x in ("bind-around-corners", "mitered-corners",
+                        "Corners-or-Curves", "continuous-bias")),
+      str([r["url"] for _, r in _hw if "bind" in r["url"]]))
+_bad5 = None
+try:
+    _o5 = B.CONSTRUCTIONS.joinpath("box-turned.json")
+    _t5 = _o5.read_text(encoding="utf-8")
+    _o5.write_text(_t5.replace('"kind": "video"', '"kind": "clip"', 1), encoding="utf-8")
+    B.load_construction("box-turned")
+except ValueError as e:
+    _bad5 = str(e)
+finally:
+    _o5.write_text(_t5, encoding="utf-8")
+check("...and an invented kind is refused", _bad5 is not None and "kind" in (_bad5 or ""),
+      _bad5 or "no error raised")
+
 section("the glossary: terminology is defined, not assumed")
 _G = B.load_glossary()
 _terms = _G["terms"]

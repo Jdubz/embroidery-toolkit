@@ -130,6 +130,19 @@
           "kind": "logos",
           "caption": "Every face that carries a design, each a separate hooping, all before assembly."
         }
+      ],
+      "watch": [
+        {
+          "kind": "photos",
+          "title": "Hooping without a hoop — WeAllSew",
+          "url": "https://weallsew.com/embroidery-basics-2-hooping-without-a-hoop/",
+          "note": "floating a piece too small to hoop, which is most of these"
+        },
+        {
+          "kind": "article",
+          "title": "Floating fabric for machine embroidery — Sewing Machine Fun",
+          "url": "https://www.sewingmachinefun.com/how-to-float-fabric-machine-embroidery-tutorial/"
+        }
       ]
     },
     {
@@ -147,6 +160,19 @@
           "doc": "patterns/techniques/zippers.md",
           "id": "two-sliders"
         }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Concealed vs reverse-use coil — YKK",
+          "url": "https://ykkamericas.com/what-is-the-difference-between-concealed-and-reverse-use-coil-zippers/",
+          "note": "which face is which, and why the slider is the part that decides"
+        },
+        {
+          "kind": "article",
+          "title": "Zippers: an overview — Ripstop by the Roll",
+          "url": "https://ripstopbytheroll.com/blogs/the-grid-online-blog/zippers-an-overview"
+        }
       ]
     },
     {
@@ -163,6 +189,19 @@
         {
           "doc": "patterns/techniques/zippers.md",
           "id": "two-sliders"
+        }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Concealed vs reverse-use coil — YKK",
+          "url": "https://ykkamericas.com/what-is-the-difference-between-concealed-and-reverse-use-coil-zippers/",
+          "note": "which face is which, and why the slider is the part that decides"
+        },
+        {
+          "kind": "article",
+          "title": "Zippers: an overview — Ripstop by the Roll",
+          "url": "https://ripstopbytheroll.com/blogs/the-grid-online-blog/zippers-an-overview"
         }
       ]
     },
@@ -183,6 +222,13 @@
           "id": "box-x",
           "caption": "The tack itself, in the order it is sewn."
         }
+      ],
+      "watch": [
+        {
+          "kind": "photos",
+          "title": "The box X stitch — Stitchback DIY trail gear",
+          "url": "https://www.stitchbackgear.com/articles/2019/12/19/the-box-x-stitch"
+        }
       ]
     },
     {
@@ -197,6 +243,26 @@
         {
           "kind": "zip-panel",
           "caption": "The panel at its own strip widths, and the finished width it has to match."
+        }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "DIY fanny pack, with video — Hello Sewing",
+          "url": "https://hellosewing.com/diy-fanny-pack-pattern/",
+          "note": "the closest whole build to this one: zip sewn right sides together, front to back, turned through the part-open zip"
+        },
+        {
+          "kind": "article",
+          "title": "How to sew a zipper pouch — Melly Sews",
+          "url": "https://mellysews.com/sew-zipper-pouch/",
+          "note": "the fold-back install in close-up: sew, fold away from the coil, topstitch through the fold"
+        },
+        {
+          "kind": "article",
+          "title": "Recessed zipper, open-end method — Bethany Lynne",
+          "url": "https://www.bethanylynnemakes.com/how-to-sew-an-open-end-recessed-zipper/",
+          "note": "the same install where the zip becomes a strip of a panel"
         }
       ]
     },
@@ -213,6 +279,19 @@
           "doc": "patterns/techniques/zippers.md",
           "id": "shorten",
           "caption": "Tack first, trim 1\" beyond it, then cap."
+        }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Shorten 5 zipper types & make stoppers — Threads Monthly",
+          "url": "https://threadsmonthly.com/shorten-zips/",
+          "note": "covers coil specifically"
+        },
+        {
+          "kind": "article",
+          "title": "How to shorten a zipper — Melly Sews",
+          "url": "https://mellysews.com/how-to-shorten-a-zipper/"
         }
       ]
     },
@@ -231,6 +310,14 @@
         {
           "kind": "anchors",
           "caption": "Topstitched along both long edges, while the gusset is still flat."
+        }
+      ],
+      "watch": [
+        {
+          "kind": "photos",
+          "title": "The box X stitch — Stitchback DIY trail gear",
+          "url": "https://www.stitchbackgear.com/articles/2019/12/19/the-box-x-stitch",
+          "note": "stills rather than video, and the best of them"
         }
       ]
     },
@@ -251,6 +338,19 @@
           "face": "left",
           "highlight": "dring",
           "caption": "Where the rings land. The tack goes through tab, gusset and anchor at once."
+        }
+      ],
+      "watch": [
+        {
+          "kind": "photos",
+          "title": "The box X stitch — Stitchback DIY trail gear",
+          "url": "https://www.stitchbackgear.com/articles/2019/12/19/the-box-x-stitch"
+        },
+        {
+          "kind": "article",
+          "title": "How to properly sew a box X stitch — Sailrite",
+          "url": "https://www.sailrite.com/How-to-Sew-a-Box-X-Stitch",
+          "note": "the marine version, on webbing under real load"
         }
       ]
     },
@@ -282,6 +382,14 @@
           "kind": "ring",
           "stage": "join2",
           "caption": "Closed. Mark the quarter points now — matching them to the panel is what keeps the ring from twisting."
+        }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "The zipper gusset — Cozy Nest Design",
+          "url": "https://www.cozynestdesign.com/the-convertiblereversible-bag-the-zipper-gusset/",
+          "note": "joining the zip panel and the gusset into one ring, and marking it"
         }
       ]
     },
@@ -322,6 +430,13 @@
           "face": "top",
           "highlight": "handle"
         }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Adjustable webbing straps — Sailrite",
+          "url": "https://www.sailrite.com/Adjustable-Webbing-Strap-for-Covers-Make-your-Own-Video"
+        }
       ]
     },
     {
@@ -345,6 +460,18 @@
           "doc": "patterns/techniques/panel-pocket.md",
           "id": "pocket-section",
           "caption": "The inner layer is the compartment wall; the pocket is the cavity in front of it."
+        }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Recessed zipper, enclosed end — Bethany Lynne",
+          "url": "https://www.bethanylynnemakes.com/how-to-sew-a-recessed-zipper/"
+        },
+        {
+          "kind": "article",
+          "title": "Zippers 4 ways, compared — Sew Sweetness",
+          "url": "https://sewsweetness.com/2012/10/zippers-4-ways.html"
         }
       ]
     },
@@ -371,6 +498,13 @@
           "highlight": "zip",
           "caption": "On the panel: the run is vertical and stops short of the top."
         }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Recessed zipper, open-end method — Bethany Lynne",
+          "url": "https://www.bethanylynnemakes.com/how-to-sew-an-open-end-recessed-zipper/"
+        }
       ]
     },
     {
@@ -392,6 +526,14 @@
           "highlight": "placket",
           "caption": "The flap, over the coil, on the face that goes against the body."
         }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Lapped zip with a concealing flap — Threads Monthly",
+          "url": "https://threadsmonthly.com/sew-lapped-zip/",
+          "note": "the closest thing anywhere to this flap: caught in a seam being sewn regardless, hanging free over the coil"
+        }
       ]
     },
     {
@@ -408,6 +550,20 @@
           "face": "{divider_face}",
           "highlight": "pocket",
           "caption": "Cut to the panel, so its sides and bottom finish inside the panel's own seam. Only its top edge is hemmed."
+        }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Patch pocket tutorial — WeAllSew",
+          "url": "https://weallsew.com/patch-pocket-tutorial/",
+          "note": "hemming the top edge and topstitching the pocket down; the divider is a patch pocket whose other three sides go into the panel seam"
+        },
+        {
+          "kind": "article",
+          "title": "How to sew patch pockets — AppleGreen Cottage",
+          "url": "https://www.applegreencottage.com/how-to-sew-patch-pockets/",
+          "note": "the triangular tack at each top corner, which is what stops a pocket mouth tearing"
         }
       ]
     },
@@ -429,6 +585,13 @@
         {
           "doc": "patterns/techniques/webbing-hardware.md",
           "id": "keeper-section"
+        }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "How to sew webbing loops — Sailrite",
+          "url": "https://www.sailrite.com/How-to-Sew-Webbing-Loops"
         }
       ]
     },
@@ -455,6 +618,14 @@
           "doc": "patterns/techniques/panel-pocket.md",
           "id": "pocket-tack",
           "caption": "Why above: there the box-X reaches the inner layer."
+        }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "How to sew webbing loops — Sailrite",
+          "url": "https://www.sailrite.com/How-to-Sew-Webbing-Loops",
+          "note": "folding and tacking a loop, which is the keeper operation"
         }
       ]
     },
@@ -493,6 +664,13 @@
           "doc": "patterns/techniques/webbing-hardware.md",
           "id": "keeper-section"
         }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "How to sew webbing loops — Sailrite",
+          "url": "https://www.sailrite.com/How-to-Sew-Webbing-Loops"
+        }
       ]
     },
     {
@@ -505,6 +683,38 @@
           "kind": "seam",
           "stage": "sewn",
           "caption": "Right sides together, all raw edges level, allowance to the outside — it folds inside when the bag is turned."
+        }
+      ],
+      "watch": [
+        {
+          "kind": "video",
+          "title": "Sewing gussets made easy — curves and directional fabric",
+          "url": "https://www.youtube.com/watch?v=WJE0y1fu01U",
+          "note": "the whole operation this step describes, on video"
+        },
+        {
+          "kind": "video",
+          "title": "How to add gussets for better bag making",
+          "url": "https://www.youtube.com/watch?v=-sGw5C6ONOc",
+          "note": "adding a gusset to a CURVED panel specifically"
+        },
+        {
+          "kind": "article",
+          "title": "Sewing smooth curves and tight corners — Prickly Gorse (MYOG)",
+          "url": "https://www.myogtutorials.com/curves_corners/",
+          "note": "where the relief-clip rule here comes from: snip to an eighth SHORT of the stitch line"
+        },
+        {
+          "kind": "article",
+          "title": "Attaching the outer to the gusset — Mrs H",
+          "url": "https://handmadebymrsh.blogspot.com/2015/06/attaching-outer-to-gusset-nappy-bag-sew.html",
+          "note": "gusset underneath, panel on top"
+        },
+        {
+          "kind": "article",
+          "title": "5 tips for sewing gusset curves — Country Cow Designs",
+          "url": "https://countrycowdesigns.com/blog/gusset-curves/",
+          "note": "match the centres first, then work outward"
         }
       ]
     },
@@ -523,6 +733,20 @@
       ],
       "see": [
         "patterns/techniques/zippers.md"
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "DIY fanny pack, with video — Hello Sewing",
+          "url": "https://hellosewing.com/diy-fanny-pack-pattern/",
+          "note": "the closest whole build to this one: zip sewn right sides together, front to back, turned through the part-open zip"
+        },
+        {
+          "kind": "article",
+          "title": "How to make a bag with a zipper — WhatTheCraft",
+          "url": "https://whatthecraft.com/how-to-make-a-bag-with-a-zipper-sewing-tutorial/",
+          "note": "reaching in through the opening to keep the far wall clear"
+        }
       ]
     },
     {
@@ -534,6 +758,20 @@
           "kind": "seam",
           "stage": "turned",
           "caption": "What the seam becomes: the allowance folds inside and the stitching is the finished edge."
+        }
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "DIY fanny pack, with video — Hello Sewing",
+          "url": "https://hellosewing.com/diy-fanny-pack-pattern/",
+          "note": "the closest whole build to this one: zip sewn right sides together, front to back, turned through the part-open zip"
+        },
+        {
+          "kind": "article",
+          "title": "How to sew a lined zipper pouch — Bethany Lynne",
+          "url": "https://www.bethanylynnemakes.com/how-to-sew-a-lined-zipper-pouch/",
+          "note": "working the corners out with a point turner rather than anything sharp"
         }
       ]
     },

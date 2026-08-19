@@ -240,6 +240,7 @@
   .termphoto img{display:block; width:100%; height:auto; border:1px solid var(--rule)}
   .termphoto figcaption{margin-top:9px; font-size:13.5px; line-height:1.55;
                         color:var(--ink)}
+  .wnote{color:var(--muted)}
   .credit{margin-top:7px; font-family:var(--f-data); font-size:10.5px;
           color:var(--faint)}
   .credit a{color:var(--faint)}
@@ -1277,6 +1278,24 @@ function cards(items, kind, docs){
       if (spec.caption) f.appendChild(el("figcaption", null, spec.caption));
       b.appendChild(f);
     });
+    /* Somebody else demonstrating THIS step. The kind is shown because half
+       of what a search returns for these operations is a photo walkthrough on
+       a page whose URL says "video". */
+    if ((n.watch || []).length){
+      b.appendChild(el("div", "lab watchlab", "Watch it done"));
+      const wl = el("div", "watch");
+      n.watch.forEach(r => {
+        const a = el("a", "watchlink");
+        a.href = r.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+        a.appendChild(el("span", "kindtag k-" + r.kind, r.kind));
+        const txt = el("span");
+        txt.appendChild(document.createTextNode(" " + r.title));
+        if (r.note) txt.appendChild(el("span", "wnote", " — " + r.note));
+        a.appendChild(txt);
+        wl.appendChild(a);
+      });
+      b.appendChild(wl);
+    }
     /* A step that needs a method rather than a number links to the technique
        note that teaches it, instead of re-explaining it badly in eighty words. */
     (n.see || []).forEach(path => {
