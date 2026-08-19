@@ -428,6 +428,8 @@ could confirm only as far as the title.
 | **[How to Install Sliders on Coil Zipper](https://www.youtube.com/watch?v=w8HVH5knTUs)** — Dutchware *(video)* | The same thing from a gear-maker rather than a garment sewist. Chain by the yard, sliders separate — how this family buys zippers |
 | **[Inserting a slider onto a continuous zip](https://www.youtube.com/watch?v=24_71RzEqTE)** *(video, title only verified)* | Third angle on the same operation |
 | **[Sailrite — How to Install Zipper Sliders on Coil Zippers](https://www.sailrite.com/how-to-install-zipper-slider)** | Sailrite is the closest thing to this repo's domain: canvas, marine, heavy thread. Page is script-rendered so I could not confirm the embedded video |
+| **[Bethany Lynne — recessed zipper, open-end method](https://www.bethanylynnemakes.com/how-to-sew-an-open-end-recessed-zipper/)** | The LAP itself: cloth brought onto the tape and topstitched, rather than an opening cut into a panel. This note is mostly about that operation and had nothing showing it |
+| **[Sew Sweetness — Zippers 4 Ways](https://sewsweetness.com/2012/10/zippers-4-ways.html)** | The four approaches side by side, which is the useful thing when deciding rather than executing |
 | **[How to Shorten 5 Zipper Types & Make Stoppers](https://threadsmonthly.com/shorten-zips/)** *(article + video)* | The bar-tacked stop. Covers coil specifically, which most tutorials skip |
 | **[Melly Sews — How to Shorten a Zipper](https://mellysews.com/how-to-shorten-a-zipper/)** *(article + video)* | Same operation, clearer photographs |
 

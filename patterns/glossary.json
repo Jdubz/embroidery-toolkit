@@ -14,7 +14,19 @@
       "group": "joins",
       "short": "Two pieces overlapped by a stated amount and topstitched, rather than seamed edge to edge.",
       "body": "The flat join this construction uses wherever a seam would be too thick to bind. One piece lies ON TOP of the other by the lap distance and two rows of topstitching hold it. There is no allowance turned under and nothing to press.\n\n**The arithmetic catches people out.** Two strips lapped by ½\" cover their combined length LESS ½\", not less an inch — the lap is shared. So only ONE of the pair may be cut with that allowance on it, and in this family it is always the zipper panel; the gusset is trimmed to the bare figure.",
-      "see": "patterns/techniques/zippers.md"
+      "see": "patterns/techniques/zippers.md",
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Recessed zipper, open-end method — Bethany Lynne",
+          "url": "https://www.bethanylynnemakes.com/how-to-sew-an-open-end-recessed-zipper/"
+        },
+        {
+          "kind": "article",
+          "title": "Zippers 4 ways, compared — Sew Sweetness",
+          "url": "https://sewsweetness.com/2012/10/zippers-4-ways.html"
+        }
+      ]
     },
     {
       "term": "topstitch",
@@ -40,7 +52,19 @@
       "group": "stitches",
       "short": "A dense zigzag worked back and forth over a short distance to lock something in place.",
       "body": "A commercial machine has a programmed bar-tack. **This one does not**, so it is worked by hand: zigzag about 3 mm wide at 0.4 mm length, five or six passes back and forth over the same ground.\n\nTwo uses here, and they are unrelated. Across a zipper coil it becomes the new **stop** that keeps the slider on the chain. Anywhere else it is a strength tack. See [[box-X]] for the version used on webbing.",
-      "see": "patterns/techniques/zippers.md"
+      "see": "patterns/techniques/zippers.md",
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Shorten 5 zipper types & make stoppers — Threads Monthly",
+          "url": "https://threadsmonthly.com/shorten-zips/"
+        },
+        {
+          "kind": "article",
+          "title": "How to shorten a zipper — Melly Sews",
+          "url": "https://mellysews.com/how-to-shorten-a-zipper/"
+        }
+      ]
     },
     {
       "term": "box-X",
@@ -52,7 +76,19 @@
       "group": "stitches",
       "short": "A stitched rectangle with both diagonals inside it — the standard tack for webbing under load.",
       "body": "It spreads the load over an area instead of a line. Sewn as one continuous path, which means one edge of the box gets retraced; that is correct, not a mistake.\n\nEvery box-X on this bag is a thick stack and wants hand-wheeling rather than the foot pedal.",
-      "see": "patterns/techniques/webbing-hardware.md"
+      "see": "patterns/techniques/webbing-hardware.md",
+      "watch": [
+        {
+          "kind": "photos",
+          "title": "The Box X Stitch — Stitchback DIY trail gear",
+          "url": "https://www.stitchbackgear.com/articles/2019/12/19/the-box-x-stitch"
+        },
+        {
+          "kind": "article",
+          "title": "How to properly sew a Box X stitch — Sailrite",
+          "url": "https://www.sailrite.com/How-to-Sew-a-Box-X-Stitch"
+        }
+      ]
     },
     {
       "term": "placket",
@@ -62,6 +98,13 @@
       "see": "patterns/techniques/panel-pocket.md",
       "aka": [
         "plackets"
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Lapped zip with a concealing flap — Threads Monthly",
+          "url": "https://threadsmonthly.com/sew-lapped-zip/"
+        }
       ]
     },
     {
@@ -123,13 +166,32 @@
         "bind",
         "bound",
         "binds"
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Binding around corners — Sailrite",
+          "url": "https://www.sailrite.com/how-to-bind-around-corners"
+        },
+        {
+          "kind": "article",
+          "title": "Mitered corners, two ways — Melly Sews",
+          "url": "https://mellysews.com/how-to-sew-mitered-corners/"
+        }
       ]
     },
     {
       "term": "bias",
       "group": "materials",
       "short": "45° to the weave — the direction cloth stretches.",
-      "body": "A binding strip cut on the bias eases round a curve; one cut on the straight grain ripples or drags. The cost is that a bias strip comes off the DIAGONAL of a square, so its length is capped by the square's size rather than by the roll width, and long runs are pieced with 45° joins."
+      "body": "A binding strip cut on the bias eases round a curve; one cut on the straight grain ripples or drags. The cost is that a bias strip comes off the DIAGONAL of a square, so its length is capped by the square's size rather than by the roll width, and long runs are pieced with 45° joins.",
+      "watch": [
+        {
+          "kind": "video",
+          "title": "Continuous bias binding from one square, two seams",
+          "url": "https://www.youtube.com/watch?v=j4NHseVkF30"
+        }
+      ]
     },
     {
       "term": "mitre",
@@ -144,7 +206,19 @@
       "group": "joins",
       "short": "The folded corner that lets one continuous binding strip turn a square corner.",
       "body": "Sew to the stitch-line intersection and STOP. Fold the binding straight back on itself so a 45° diagonal appears, fold it forward down the next edge, then resume. The binding doubles at that fold, which makes the mitre the thickest seam on most of these bags.\n\nA ROUNDED corner needs no mitre at all — the strip eases round it.",
-      "see": "patterns/techniques/binding.md"
+      "see": "patterns/techniques/binding.md",
+      "watch": [
+        {
+          "kind": "video",
+          "title": "Mitered corners — binding",
+          "url": "https://www.youtube.com/watch?v=H2IhhakrSkE"
+        },
+        {
+          "kind": "article",
+          "title": "Binding around corners — Sailrite",
+          "url": "https://www.sailrite.com/how-to-bind-around-corners"
+        }
+      ]
     },
     {
       "term": "clip",
@@ -167,6 +241,13 @@
         "relieved",
         "relieving",
         "relief"
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Binding around corners OR CURVES — Sailrite",
+          "url": "https://www.sailrite.com/How-to-Work-Binding-Around-Corners-or-Curves-Video"
+        }
       ]
     },
     {
@@ -298,7 +379,14 @@
       "group": "parts",
       "short": "A cloth tunnel tacked to the back panel that a belt threads through.",
       "body": "Fold it round a scrap of the ACTUAL belt to get the tunnel size right, then box-X both ends. Both ends — one tack per keeper is an undercount that has shipped here.",
-      "see": "patterns/techniques/webbing-hardware.md"
+      "see": "patterns/techniques/webbing-hardware.md",
+      "watch": [
+        {
+          "kind": "article",
+          "title": "How to sew webbing loops — Sailrite",
+          "url": "https://www.sailrite.com/How-to-Sew-Webbing-Loops"
+        }
+      ]
     },
     {
       "term": "chassis",
@@ -320,7 +408,14 @@
       "group": "hardware",
       "short": "A three-bar slide that locks webbing by friction so a strap can be adjusted.",
       "body": "Threading is the whole trick: over the top bar, UNDER the middle bar, back over the top bar. Passed straight through, it slips.",
-      "see": "patterns/techniques/webbing-hardware.md"
+      "see": "patterns/techniques/webbing-hardware.md",
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Adjustable webbing straps — Sailrite",
+          "url": "https://www.sailrite.com/Adjustable-Webbing-Strap-for-Covers-Make-your-Own-Video"
+        }
+      ]
     },
     {
       "term": "coil",
@@ -330,6 +425,13 @@
       "see": "patterns/techniques/zippers.md",
       "aka": [
         "coils"
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Zippers: an overview — Ripstop by the Roll",
+          "url": "https://ripstopbytheroll.com/blogs/the-grid-online-blog/zippers-an-overview"
+        }
       ]
     },
     {
@@ -337,7 +439,14 @@
       "group": "zippers",
       "short": "The same chain made up with the coil on the BACK, so the outside shows flat tape.",
       "body": "Costs nothing extra and sheds water better. Two consequences: the chain goes on the bench coil-DOWN or the finished pull ends up inside, and a reverse slider is a DIFFERENT PART from a standard one.\n\nNot waterproof — water-shedding.",
-      "see": "patterns/techniques/zippers.md"
+      "see": "patterns/techniques/zippers.md",
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Concealed vs reverse-use coil — YKK",
+          "url": "https://ykkamericas.com/what-is-the-difference-between-concealed-and-reverse-use-coil-zippers/"
+        }
+      ]
     },
     {
       "term": "slider",
@@ -346,6 +455,18 @@
       "body": "It zips BEHIND itself, which is why two sliders close a run only when their noses point outward and their tails meet. Both go on before either end is stopped; there is no adding one afterwards.",
       "aka": [
         "sliders"
+      ],
+      "watch": [
+        {
+          "kind": "video",
+          "title": "Tricks for installing sliders on small coil zippers",
+          "url": "https://www.youtube.com/watch?v=qzFljmO7hPU"
+        },
+        {
+          "kind": "video",
+          "title": "Installing sliders on coil zipper — Dutchware",
+          "url": "https://www.youtube.com/watch?v=w8HVH5knTUs"
+        }
       ]
     },
     {
@@ -355,6 +476,13 @@
       "body": "Bought zippers have metal ones. Cut to length, you make your own with a [[bar-tack]] — and trim 1\" beyond it, never flush. Where a zip end is bound over, the stop must sit INSIDE the stitch line so the binding never has to wrap a lump.",
       "aka": [
         "stops"
+      ],
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Shorten 5 zipper types & make stoppers — Threads Monthly",
+          "url": "https://threadsmonthly.com/shorten-zips/"
+        }
       ]
     },
     {
@@ -372,6 +500,13 @@
         "hooped",
         "hooping",
         "hoops"
+      ],
+      "watch": [
+        {
+          "kind": "photos",
+          "title": "Hooping without a hoop — WeAllSew",
+          "url": "https://weallsew.com/embroidery-basics-2-hooping-without-a-hoop/"
+        }
       ]
     },
     {
@@ -382,7 +517,19 @@
       ],
       "group": "embroidery",
       "short": "Backing that supports fabric while it is stitched.",
-      "body": "**Sticky-back tear-away** is the one used here: hooped by itself, its paper scored and peeled, the blank pressed down and BASTED to it. Use one you can baste rather than iron — a coated shell will not take a fusible, and heat is what most waterproof finishes cannot survive."
+      "body": "**Sticky-back tear-away** is the one used here: hooped by itself, its paper scored and peeled, the blank pressed down and BASTED to it. Use one you can baste rather than iron — a coated shell will not take a fusible, and heat is what most waterproof finishes cannot survive.",
+      "watch": [
+        {
+          "kind": "article",
+          "title": "Floating fabric for machine embroidery — Sewing Machine Fun",
+          "url": "https://www.sewingmachinefun.com/how-to-float-fabric-machine-embroidery-tutorial/"
+        },
+        {
+          "kind": "photos",
+          "title": "Hooping without a hoop — WeAllSew",
+          "url": "https://weallsew.com/embroidery-basics-2-hooping-without-a-hoop/"
+        }
+      ]
     },
     {
       "term": "underlay",

@@ -236,6 +236,18 @@
         border-bottom:1px dotted var(--stitch)}
   .term:hover{background:var(--stitch); color:var(--sheet)}
   .termshort{font-size:15px; font-weight:600}
+  .watchlab{display:block; margin:18px 0 8px}
+  .watch{display:flex; flex-direction:column; gap:7px}
+  .watchlink{display:flex; align-items:baseline; gap:9px; text-decoration:none;
+             color:var(--ink); font-size:13.5px; line-height:1.45;
+             border-bottom:1px solid var(--rule); padding-bottom:7px}
+  .watchlink:hover{color:var(--stitch)}
+  .kindtag{flex:0 0 auto; font-family:var(--f-label); text-transform:uppercase;
+           letter-spacing:.11em; font-size:8.5px; padding:2px 6px;
+           border:1px solid currentColor; border-radius:2px}
+  .k-video{color:var(--cut)}
+  .k-photos{color:var(--amber)}
+  .k-article{color:var(--muted)}
   .termaka{font-family:var(--f-data); font-size:11px; color:var(--muted);
            margin:-6px 0 12px}
   .stepfig{margin:14px 0 4px; padding:12px; background:var(--sheet);
@@ -1511,6 +1523,21 @@ function openTerm(t){
       btn.onclick = () => openDoc(doc);
       body.appendChild(btn);
     }
+  }
+  /* Somebody else demonstrating it. The kind is shown because half of what a
+     search turns up for these operations is a photo walkthrough on a page
+     whose URL says "video" -- and the best box-X reference here IS stills. */
+  if ((t.watch || []).length){
+    body.appendChild(el("div", "lab watchlab", "Watch it done"));
+    const ul = el("div", "watch");
+    t.watch.forEach(w => {
+      const a = el("a", "watchlink");
+      a.href = w.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.appendChild(el("span", "kindtag k-" + w.kind, w.kind));
+      a.appendChild(document.createTextNode(" " + w.title));
+      ul.appendChild(a);
+    });
+    body.appendChild(ul);
   }
   $("#reader").hidden = false;
   $("#readerClose").focus();

@@ -1193,6 +1193,47 @@ finally:
     B.load_glossary.cache_clear()
 check("...and a duplicate name is refused rather than shadowed",
       _bad is not None and "twice" in (_bad or ""), _bad or "no error raised")
+# Watch-it-done references. `kind` is required and only three values are
+# honest, because half of what a search turns up for these operations is a
+# photo walkthrough on a page whose URL says "video" -- and the best box-X
+# reference in here IS stills.
+_watch = [(t["term"], w) for t in _terms for w in t.get("watch", [])]
+check("the terms that name a manual skill carry a reference",
+      {"lap join", "bar-tack", "box-x", "placket", "binding", "mitre", "bias",
+       "slider", "stop", "keeper", "tri-glide", "hoop", "stabilizer"}
+      <= {t["term"].lower() for t in _terms if t.get("watch")},
+      str(sorted({"lap join", "bar-tack", "box-x", "placket", "binding", "mitre",
+                  "bias", "slider", "stop", "keeper", "tri-glide", "hoop",
+                  "stabilizer"} - {t["term"].lower() for t in _terms if t.get("watch")})))
+check("every reference says what it IS, and is titled and https",
+      all(w["kind"] in ("video", "article", "photos") and w["title"].strip()
+          and w["url"].startswith("https://") for _, w in _watch),
+      f"{len(_watch)} references")
+check("...and they are not all claimed to be video",
+      len({w["kind"] for _, w in _watch}) == 3,
+      str(sorted({w["kind"] for _, w in _watch})))
+# A term and the note it points at must offer the SAME references, or the
+# reader is told different things depending which they opened first.
+_drift = [(term, w["url"]) for t in _terms if t.get("see") and t.get("watch")
+          for term, w in [(t["term"], w) for w in t["watch"]]
+          if w["url"] not in (B.REPO / t["see"]).read_text(encoding="utf-8")]
+check("a term's references also appear in the note it points at", not _drift,
+      str(_drift[:2]))
+_bad2 = None
+try:
+    B.load_glossary.cache_clear()
+    _o = B.GLOSSARY.read_text(encoding="utf-8")
+    B.GLOSSARY.write_text(_o.replace('"kind": "photos"', '"kind": "clip"', 1),
+                          encoding="utf-8")
+    B.load_glossary()
+except ValueError as e:
+    _bad2 = str(e)
+finally:
+    B.GLOSSARY.write_text(_o, encoding="utf-8")
+    B.load_glossary.cache_clear()
+check("...and an invented kind is refused", _bad2 is not None and "kind" in (_bad2 or ""),
+      _bad2 or "no error raised")
+
 check("the glossary rides on the package so the page can link from it",
       len(h.package(SPECS["HipPack_10x7x4"], CONS, CONS_PATH, "later")["glossary"])
       == len(_terms))

@@ -2533,6 +2533,30 @@ def load_glossary() -> dict:
         if t.get("see") and not (REPO / t["see"]).is_file():
             raise ValueError(f"glossary: {t['term']!r} points at a missing "
                              f"{t['see']!r}")
+        # A reference has to say what it IS. Half of what a search turns up for
+        # these operations is a photo walkthrough on a page whose URL says
+        # "video", and the best box-X reference here is stills -- so "kind" is
+        # required rather than assumed, and only these three are honest.
+        for w in t.get("watch", []):
+            if w.get("kind") not in ("video", "article", "photos"):
+                raise ValueError(f"glossary: {t['term']!r} has a reference of "
+                                 f"kind {w.get('kind')!r}")
+            if not str(w.get("title", "")).strip():
+                raise ValueError(f"glossary: {t['term']!r} has an untitled "
+                                 "reference -- a bare URL says nothing")
+            if not str(w.get("url", "")).startswith("https://"):
+                raise ValueError(f"glossary: {t['term']!r} has a non-https "
+                                 f"reference {w.get('url')!r}")
+        # Where a term names a technique note, its references must also appear
+        # in that note's own "Watch it done" table, or the two drift and the
+        # reader is told different things depending which they opened.
+        if t.get("see") and t.get("watch"):
+            doc = (REPO / t["see"]).read_text(encoding="utf-8")
+            for w in t["watch"]:
+                if w["url"] not in doc:
+                    raise ValueError(
+                        f"glossary: {t['term']!r} links {w['url']} but "
+                        f"{t['see']} does not -- keep the two in step")
     return g
 
 

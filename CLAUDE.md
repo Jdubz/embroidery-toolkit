@@ -338,6 +338,12 @@ $env:PYTHONPATH = "D:\Development\Embroidery\tools"
   hashes are what tie a `.pes` to the tooling that made it. Fixing a bug in
   `satin_params.py` marks every design that used it stale, automatically. Add a
   script to that list when it can change output.
+- **Never `git checkout` a file to undo an edit.** Done twice in one session,
+  and both times it discarded a session's worth of uncommitted work rather than
+  the one line intended — `box-bound.json` lost 7 steps, `glossary.json` lost
+  every reference. The file being edited is almost never at `HEAD`. **Copy it to
+  the scratchpad first and restore from the copy**, which is also what makes a
+  "prove the check fires" experiment safe.
 - **The built player is only a template until a browser parses it — so parse
   it.** `node tools/tests/run_page_tests.js` after `pattern_player.py`. One bad
   token kills the whole `<script>` block and the page renders **completely
