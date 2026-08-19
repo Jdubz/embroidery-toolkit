@@ -94,7 +94,26 @@ two together do more than either.
 
 ---
 
-## The lapped panel — no opening is cut
+## Setting a zip into a panel — no opening is cut
+
+The technique this construction uses everywhere. Two pieces of shell join to the
+tape from each side, so the zipper *becomes* a strip of the panel rather than
+being let into one.
+
+**Sew it face down and fold it back.** Lay the strip face down on the zip with
+its raw edge along the tape, sew a seam with the zipper foot, then fold the
+strip back away from the coil and topstitch through the fold. The raw edge
+finishes **between the strip and the tape**, so nothing raw shows on a bag that
+is going to be turned. A narrow reveal of tape stays visible beside the coil,
+which is deliberate: the fold has to clear the coil or the foot rides up on it.
+
+*An earlier version of this note lapped the strip ON TOP of the tape and
+topstitched it, which leaves the raw edge exposed. That is the right method for
+a bag whose seams are meant to show — bound, technical, marine work — and the
+wrong one here. It put eight raw edges on the outside of a bag whose whole point
+is that none show.*
+
+## The old lapped panel, for reference
 
 The technique this construction uses everywhere. Two pieces of shell lap onto
 the tape from each side and are topstitched down. The zipper *becomes* a strip

@@ -89,6 +89,10 @@ SCHEMA_VERSION = "1.0"
 #: Binding wraps the flange and adds its own thickness to the projection. Small,
 #: but it is the difference between a 12" bag measuring 12" and measuring 12 1/8.
 TURN_IN = F(1, 16)
+#: How much zipper tape shows beside the coil once a strip is folded back off
+#: it. Not a style choice: the fold has to clear the coil or the foot rides on
+#: it, and a quarter inch is the usual figure.
+ZIP_REVEAL_IN = F(1, 4)
 #: How far artwork and hardware stay clear of a seam. A placement margin only:
 #: nothing structural depends on it, and it exists so a design is not stitched
 #: into a seam allowance.
@@ -376,8 +380,13 @@ class PanelPocket:
         #: the full height.
         self.starts = F(str(spec.get("zip_starts_in", 0)))
         self.run = self.along - self.starts
-        self.upper = self.zip - self.coil / 2 + self.lap
-        self.lower = self.span - (self.zip + self.coil / 2) + self.lap
+        # Same standard install as the zipper panel: sewn face down to the
+        # tape and folded back, so the cut piece is what shows, less the tape
+        # reveal, plus what the seam eats.
+        self.reveal = ZIP_REVEAL_IN
+        self.upper = self.zip - self.coil / 2 - self.reveal + self.lap
+        self.lower = (self.span - (self.zip + self.coil / 2)
+                      - self.reveal + self.lap)
         #: How far the cavity reaches past the opening, and how much panel is
         #: left on the near side once the seam allowance and the lap are gone --
         #: the band anything tacked to the near piece has to live in.
@@ -561,8 +570,11 @@ class BoxBag:
         # opening and has to survive being lapped over at both ends; the gusset
         # is the piece that gets fitted and trimmed, so it is cut to the figure
         # the ring needs and nothing more.
-        self.zip_cut = self.zip_face + 2 * self.lap
-        self.gusset_cut = self.gusset_face
+        # Plain seams at both joins, so BOTH pieces carry their own allowance.
+        # Under the old lapped join exactly one of them could, and getting that
+        # wrong made the ring an inch long on every bag in the family.
+        self.zip_cut = self.zip_face + 2 * self.sa
+        self.gusset_cut = self.gusset_face + 2 * self.sa
 
         # Zipper strips. The coil sits off-centre so the webbing can run the
         # face centreline unbroken; centre it in the space forward of the web.
@@ -571,8 +583,14 @@ class BoxBag:
         self.web_lo = self.gusset_w / 2 - self.web / 2
         self.coil_c = (round_to((self.sa + self.web_lo) / 2, 8) if self.has_chassis
                        else round_to(self.gusset_w / 2, 16))
-        self.strip_front = self.coil_c - self.coil / 2 + self.lap
-        self.strip_rear = self.gusset_w - (self.coil_c + self.coil / 2) + self.lap
+        # Sewn face down to the tape and folded back, so the cut strip is the
+        # cloth that will SHOW, less the tape reveal, plus the allowance the
+        # seam eats. `lap` is what the seam consumes.
+        self.reveal = ZIP_REVEAL_IN
+        self.strip_front = (self.coil_c - self.coil / 2
+                            - self.reveal + self.lap)
+        self.strip_rear = (self.gusset_w - (self.coil_c + self.coil / 2)
+                           - self.reveal + self.lap)
 
         # A divided slip pocket lying flat against a panel's interior. Its sides
         # and bottom are caught in that panel's own binding -- already
@@ -781,7 +799,7 @@ class BoxBag:
         g = {
             "w": self.W, "h": self.H, "d": self.D,
             "sa": self.sa, "clip_depth": self.clip_depth,
-            "relief_clips": F(self.relief_clips),
+            "relief_clips": F(self.relief_clips), "reveal": self.reveal,
             "seam_margin": SEAM_MARGIN_IN,
             "turn": TURN_IN,
             "face_w": self.face_w, "face_h": self.face_h, "face_d": self.face_d,
@@ -1673,14 +1691,20 @@ class BoxBag:
         # pass -- exactly the worthless-check shape SCHEMA.md warns about, and
         # it sat here while the two pieces were both cut long and the ring came
         # out 2 x lap over. Test what gets CUT, against what gets lapped away.
-        closes = self.gusset_cut + self.zip_cut - 2 * self.lap
+        # Plain seams now: each of the two joins eats an allowance from
+        # BOTH pieces, so four in all.
+        closes = self.gusset_cut + self.zip_cut - 4 * self.sa
         ck(closes == self.ring, "the cut pieces close the ring",
            f"gusset {frac(self.gusset_cut)} + zip panel {frac(self.zip_cut)} "
            f"- 2 laps of {frac(self.lap)} = {frac(closes)}"
            + ("" if closes == self.ring
               else f", but the panels need {frac(self.ring)}"))
 
-        finished = (self.strip_front - self.lap) + self.coil + (self.strip_rear - self.lap)
+        # Each strip shows its cut width less the seam, plus the tape
+        # reveal beside the coil that the fold does not cover.
+        finished = ((self.strip_front - self.lap + self.reveal)
+                    + self.coil
+                    + (self.strip_rear - self.lap + self.reveal))
         ck(finished == self.gusset_w, "zipper panel width matches the gusset",
            f"{frac(finished)} vs {frac(self.gusset_w)}")
 
@@ -1732,7 +1756,8 @@ class BoxBag:
             # The same reassembly test the gusset's zipper panel gets, and for
             # the same reason: two strips lapped onto a tape either add back up
             # to the piece they replaced or the panel comes out the wrong size.
-            rebuilt = (pk.upper - pk.lap) + pk.coil + (pk.lower - pk.lap)
+            rebuilt = ((pk.upper - pk.lap + pk.reveal) + pk.coil
+                       + (pk.lower - pk.lap + pk.reveal))
             ck(rebuilt == pk.span, f"{face} pocket reassembles to the panel",
                f"{frac(rebuilt)} vs {frac(pk.span)} "
                + ("(height, zip across)" if pk.axis == "top"

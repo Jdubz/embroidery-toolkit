@@ -1087,12 +1087,15 @@ function figSeam(p, spec){
   const g = p.geometry;
   /* Step 1 shows both halves; the turning step shows only what it
      produces, so the two are not the same picture. */
-  const only = (spec || {}).stage === "turned";
+  const stage = (spec || {}).stage || "both";
+  const only = stage === "turned";
+  const sewnOnly = stage === "sewn";
   const W = 620, s = fig(`0 0 ${W} 300`,
     `Section through a turned seam: two pieces face to face, stitched one seam `
     + `allowance in, then folded apart so the allowance finishes inside.`);
   caption(s, 30, 22, only ? "WHAT TURNING PRODUCES"
-                          : "TURNED SEAM — BEFORE AND AFTER");
+                   : sewnOnly ? "RIGHT SIDES TOGETHER, ALLOWANCE OUT"
+                             : "TURNED SEAM — BEFORE AND AFTER");
 
   const t = 13, X = 70, L = 330, SA = 120;
   let y = 78;
@@ -1117,6 +1120,7 @@ function figSeam(p, spec){
   }
 
   /* --- turned: the allowance folds inside --- */
+  if (!sewnOnly){
   y = only ? 120 : 210;
   s.add("path", {d:`M${X},${y-t} h${L} a${t},${t} 0 0 1 0,${2*t} h${-L} z`,
                  fill:"var(--shell)"});
@@ -1131,6 +1135,7 @@ function figSeam(p, spec){
   s.add("text", {x:X+L+16, y:y+4, "font-family":"var(--f-data)",
                  "font-size":11, fill:"var(--stitch)"}, "= the finished edge");
   caption(s, X, y-t-30, "TURNED RIGHT SIDE OUT");
+  }
 
   s.add("text", {x:30, y:288, "font-family":"var(--f-data)", "font-size":11,
                  fill:"var(--muted)"},

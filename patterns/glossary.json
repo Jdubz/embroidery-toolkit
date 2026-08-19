@@ -12,8 +12,8 @@
         "laps"
       ],
       "group": "joins",
-      "short": "Two pieces overlapped by a stated amount and topstitched, rather than seamed edge to edge.",
-      "body": "The flat join this construction uses wherever a seam would be too thick to bind. One piece lies ON TOP of the other by the lap distance and two rows of topstitching hold it. There is no allowance turned under and nothing to press.\n\n**The arithmetic catches people out.** Two strips lapped by ½\" cover their combined length LESS ½\", not less an inch — the lap is shared. So only ONE of the pair may be cut with that allowance on it, and in this family it is always the zipper panel; the gusset is trimmed to the bare figure.",
+      "short": "Two pieces overlapped and topstitched, with the raw edges left showing.",
+      "body": "**This family no longer uses it.** It is the right join for a bag whose seams are meant to show — bound, technical and marine work — and the wrong one for a bag that is turned, because it leaves a raw edge on the outside.\n\nWhat replaced it: the strip is sewn to the tape FACE DOWN and folded back off the coil, so the raw edge finishes between the strip and the tape. Same amount of cloth consumed; nothing showing.\n\nThe word survives in the geometry as the amount a join eats.",
       "see": "patterns/techniques/zippers.md",
       "watch": [
         {

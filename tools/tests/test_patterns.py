@@ -95,7 +95,8 @@ for _n, _b in BAGS.items():
 
 t = BAGS["StadiumTote_12x12x4"]
 check("StadiumTote zip panel reassembles to the gusset width",
-      (t.strip_front - t.lap) + t.coil + (t.strip_rear - t.lap) == t.gusset_w,
+      (t.strip_front - t.lap + t.reveal) + t.coil
+      + (t.strip_rear - t.lap + t.reveal) == t.gusset_w,
       f"{B.frac(t.gusset_w)}")
 
 # --- the lap allowance belongs to ONE piece ---------------------------------
@@ -106,15 +107,22 @@ check("StadiumTote zip panel reassembles to the gusset width",
 # DEFINES gusset_face and could never fail. SCHEMA.md's own rule: a check has
 # to be able to fail.
 for _n, _b in BAGS.items():
+    # Plain seams at both joins, so BOTH pieces carry their own allowance --
+    # four in all. The old lapped join let exactly one of them, and getting
+    # that wrong made the ring an inch long on every bag in the family. The
+    # asymmetry is gone with the lap.
     check(f"{_n}: the cut pieces close the ring",
-          _b.gusset_cut + _b.zip_cut - 2 * _b.lap == _b.ring,
+          _b.gusset_cut + _b.zip_cut - 4 * _b.sa == _b.ring,
           f"gusset {B.frac(_b.gusset_cut)} + zip {B.frac(_b.zip_cut)} "
-          f"- 2 laps of {B.frac(_b.lap)} vs ring {B.frac(_b.ring)}")
-    check(f"{_n}: only the zipper panel carries lap allowance",
-          _b.zip_cut == _b.zip_face + 2 * _b.lap and _b.gusset_cut == _b.gusset_face)
+          f"- 4 allowances of {B.frac(_b.sa)} vs ring {B.frac(_b.ring)}")
+    check(f"{_n}: both ring pieces carry their own allowance",
+          _b.zip_cut == _b.zip_face + 2 * _b.sa
+          and _b.gusset_cut == _b.gusset_face + 2 * _b.sa)
+    # Nothing raw shows: every zip strip is folded back off its own seam.
+    check(f"{_n}: the strips fold back off the coil, leaving a tape reveal",
+          _b.reveal > 0 and _b.strip_front > _b.lap,
+          f"{B.frac(_b.reveal)} of tape beside the coil")
 
-check("StadiumTote zip panel reassembles to the gusset width",
-      (t.strip_front - t.lap) + t.coil + (t.strip_rear - t.lap) == t.gusset_w)
 # --- the visible cloth is NOT the stitch-line box -------------------------
 # `face` is what the ring follows and the panel is cut from. The binding's
 # Turned, so the finished edge IS the stitch line and `face` is simply the
@@ -214,7 +222,8 @@ check("BeltPouch has no chassis", not BAGS["BeltPouch_4x6"].has_chassis)
 # 15/16, which is frac()'s missing separator, not the geometry.
 check("BeltPouch's strips really are symmetrical",
       BAGS["BeltPouch_4x6"].strip_front == BAGS["BeltPouch_4x6"].strip_rear
-      == BAGS["BeltPouch_4x6"].gusset_w / 2 - BAGS["BeltPouch_4x6"].coil / 2 + BAGS["BeltPouch_4x6"].lap,
+      == BAGS["BeltPouch_4x6"].gusset_w / 2 - BAGS["BeltPouch_4x6"].coil / 2
+         - BAGS["BeltPouch_4x6"].reveal + BAGS["BeltPouch_4x6"].lap,
       B.frac(BAGS["BeltPouch_4x6"].strip_front))
 
 
@@ -455,7 +464,8 @@ check("no bag without a back pocket splits its panel",
 for _n, _b in BAGS.items():
     for _f, _pk in _b.pockets.items():
         check(f"{_n}/{_f}: the two outer pieces reassemble to the panel",
-              (_pk.upper - _pk.lap) + _pk.coil + (_pk.lower - _pk.lap) == _pk.span,
+              (_pk.upper - _pk.lap + _pk.reveal) + _pk.coil
+              + (_pk.lower - _pk.lap + _pk.reveal) == _pk.span,
               f"{B.frac(_pk.upper)} + {B.frac(_pk.lower)} vs {B.frac(_pk.span)}")
         check(f"{_n}/{_f}: span is the dimension the zip crosses",
               _pk.span == (_b.panel_h if _pk.axis == "top" else _b.panel_w))
@@ -463,12 +473,14 @@ for _n, _b in BAGS.items():
 # did, and a literal would only have told us that it moved.
 _pt = h.pockets["front"]
 check("horizontal: the two pieces plus the coil rebuild the panel",
-      (_pt.upper - _pt.lap) + _pt.coil + (_pt.lower - _pt.lap) == _pt.span
+      (_pt.upper - _pt.lap + _pt.reveal) + _pt.coil
+      + (_pt.lower - _pt.lap + _pt.reveal) == _pt.span
       == h.panel_h,
       f"{B.frac(_pt.upper)} + {B.frac(_pt.lower)} over {B.frac(_pt.span)}")
 _pd = h.pockets["back"]
 check("vertical: the same identity, across the panel instead",
-      (_pd.upper - _pd.lap) + _pd.coil + (_pd.lower - _pd.lap) == _pd.span
+      (_pd.upper - _pd.lap + _pd.reveal) + _pd.coil
+      + (_pd.lower - _pd.lap + _pd.reveal) == _pd.span
       == h.panel_w,
       f"{B.frac(_pd.upper)} + {B.frac(_pd.lower)} over {B.frac(_pd.span)}")
 check("...and the vertical one reaches further, because it runs the long way",
@@ -1195,8 +1207,13 @@ check("the exemptions are declared, not assumed",
 # the most confusing thing in the build and was pure prose.
 _ring = [st["title"] for st in _steps
          if any(f.get("kind") == "ring" for f in st.get("figures", []))]
-check("every step that touches the ring is drawn",
-      len(_ring) == 3, str(_ring))
+# Three ring drawings: cut flat, closed, and the panel going in. The last one
+# is a SEAM figure now, not a ring one -- the step is about sewing right sides
+# together, and the drawing has to say that rather than show the ring again.
+check("every stage of the ring is drawn",
+      len(_ring) == 2 and any(f.get("stage") == "sewn"
+          for st in h.assembly(CONS) for f in st.get("figures", [])),
+      str(_ring))
 
 section("technique notes, and the steps that link to them")
 
