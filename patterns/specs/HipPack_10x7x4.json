@@ -1,7 +1,7 @@
 {
   "name": "HipPack_10x7x4",
   "title": "Hip Pack 10 × 7 × 4",
-  "construction": "box-bound",
+  "construction": "box-turned",
   "description": "Everyday hip pack in 600D waterproof canvas, bound in its own cloth — black on black, no contrast anywhere, and a rounded bottom. It threads onto a 1\" belt you already own through two keepers, so it slides round the body and the buckle moves off the hip bone; D-rings at the upper corners take a shoulder strap for crossbody wear, and both stay rigged at once. Front and back panels are built identically — an inner layer that is the compartment wall, an outer one cut in two and lapped onto a zipper tape, and a sealed pocket in the cavity between. A divided slip pocket inside the front takes small items. No slit is cut anywhere, no zip is in any load path, and the two bottom corners are curves rather than mitres.",
   "finished_in": {
     "w": 10,
@@ -53,7 +53,7 @@
   "divider": {
     "face": "front",
     "height_in": 3.5,
-    "attach": "binding",
+    "attach": "seam",
     "channels_in": [
       2.5,
       7.5
@@ -195,6 +195,11 @@
       "kind": "note",
       "title": "Standard coil, not reverse — what actually changes",
       "body": "The pattern was written for reverse coil and is built with standard, which is what was in the drawer. **One instruction inverts and nothing else does.**\n\n| | Reverse | **Standard (built)** |\n|---|---|---|\n| Lay the chain | coil DOWN | **coil UP** |\n| Outside shows | flat tape | the spiral |\n| Closed opening reads as | a seam | a zip |\n| Water | sheds off the tape | sits in the spiral |\n| Chain size, cut list, laps, stops | — | **unchanged** |\n\nIt is the one instruction with no undo. Lap onto the wrong face and the finished bag has its pull on the INSIDE with both rows sewn; unpicking means re-cutting the strips, because the needle holes stay. `closure.coil` is declared for exactly that reason, and the assembly step now says coil-UP rather than coil-DOWN.\n\n**Two consequences worth knowing, neither fatal.** The back pocket's placket was carrying half the hiding and now carries all of it — a visible spiral is what makes a back zip obvious, so set the flap carefully. And an upward-facing spiral collects grit and holds water where a reverse one sheds, which on a waterproof shell makes the main top zip the wettest line on the bag.\n\n*One thing the sources corrected while this was being checked:* the CHAIN is the same for standard and reverse use — **the SLIDER is what creates the reverse look.** So \"I only have standard coil\" is really \"I have standard sliders\", and the two are not interchangeable: a reverse slider on standard chain rides the wrong face and drags."
+    },
+    {
+      "kind": "note",
+      "title": "No liner, and the reason is that this construction already did the liner's job",
+      "body": "A liner exists to solve problems this bag does not have. Taken one at a time:\n\n| Why bags are lined | Here |\n|---|---|\n| **Hide the seam allowances** — much the commonest reason | **Already solved.** This is a bound-flange bag: the allowances point OUTWARD and are wrapped in binding. There is no raw allowance anywhere inside |\n| The shell ravels, so inside edges shed | 600D PU-coated does not ravel |\n| Give a floppy shell some body | 0.45 mm coated canvas at 4\" deep has body |\n| A smooth face against the contents | **The coating IS the inside face** — slicker than most liner cottons |\n| Somewhere to hang interior pockets without stitching the outside | The divider is caught in the panel's own binding; the two panel pockets are sealed cavities between two layers |\n| A light interior so you can find things | Real, and the only argument with weight |\n| Hide the back of embroidery | Real, and see below |\n\n**And a liner would not fix the embroidery anyway.** Five designs; the two on the panels already back onto their own pocket cavities and are hidden. The three that show their reverse in the main compartment — the asterisk (bottom), Rae Rae (left), Ti Ti (right) — are all on the **gusset**, so a liner caught in the panel bindings would not cover any of them. Covering them means a FULL liner: a second complete ring plus two more panels, doubling the piece count of a 2.81 L bag to hide three patches totalling under 30 cm².\n\nThickness is not the objection, and it is worth saying so rather than reaching for it. A fourth layer in the front panel's binding takes the mitre from **3.60 mm to 4.05 mm**, against the 6 mm this machine works to. It would sew. It is simply not worth the pieces.\n\n**What to do instead, for the two real problems:**\n\n- *Dark interior.* Cut the **divider** from a light cloth. It is already in the design, it is full width, and it is the piece you are looking at when the bag is open — a liner's visibility benefit for one piece and no new construction. The cost is that the bag stops being one cloth, which is a real property to give up; decide it on looks.\n- *Embroidery backs.* Tear-away comes away and a bobbin-side back is not rough enough to matter against most contents. If it does, tack a scrap of the shell over each of the three — three small patches, versus a whole second bag.\n\n**When a bag in this family SHOULD get one:** if the shell ravels (a liner or bound seams, pick one), if it is a turned-seam design rather than a bound one, or if the interior is on show — the StadiumTote's clear vinyl means its contents are the interior, which is the opposite problem."
     },
     {
       "kind": "note",

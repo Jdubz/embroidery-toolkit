@@ -1,7 +1,7 @@
 {
   "name": "BeltPouch_4x6",
   "title": "Belt Pouch 4½ × 6½ × 2",
-  "construction": "box-bound",
+  "construction": "box-turned",
   "description": "A pouch on a fixed loop, carried by a belt you already own. Fits a large phone, cards and keys. At 4½ × 6½ it also happens to match the stadium small-bag allowance carried alongside a clear bag — a bonus, not a driver. The smallest bag in the family and the only one with no chassis, because the load path is belt → loop → back panel and never crosses the gusset.",
   "finished_in": {
     "w": 4.5,

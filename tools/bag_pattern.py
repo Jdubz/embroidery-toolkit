@@ -89,6 +89,10 @@ SCHEMA_VERSION = "1.0"
 #: Binding wraps the flange and adds its own thickness to the projection. Small,
 #: but it is the difference between a 12" bag measuring 12" and measuring 12 1/8.
 TURN_IN = F(1, 16)
+#: How far artwork and hardware stay clear of a seam. A placement margin only:
+#: nothing structural depends on it, and it exists so a design is not stitched
+#: into a seam allowance.
+SEAM_MARGIN_IN = F(3, 8)
 
 #: Materials. All four columns matter dimensionally, which is why they are one
 #: table rather than several -- add a row rather than guessing.
@@ -411,17 +415,16 @@ class BoxBag:
         f = spec["finished_in"]
         self.W, self.H, self.D = F(str(f["w"])), F(str(f["h"])), F(str(f["d"]))
         self.sa = F(str(spec.get("seam_allowance_in", "0.375")))
-        self.show = F(str(spec.get("binding_show_in", "0.5")))
+        # Turned: no binding, so no strip to size and no second material.
         self.shell = spec.get("shell", "cordura-1000d")
         self.win_mat = spec.get("window_material", "vinyl-20ga")
-        b = spec.get("binding", {})
-        self.bind_mat = b.get("material", self.shell)
+        self.bind_mat = self.shell     # kept only for the "one cloth" flag
         self.shell_mm, self.shell_frays = mat(self.shell)["mm"], mat(self.shell)["frays"]
-        self.bind_mm, self.bind_frays = mat(self.bind_mat)["mm"], mat(self.bind_mat)["frays"]
+        self.bind_mm, self.bind_frays = self.shell_mm, self.shell_frays
         self.shell_melts = bool(mat(self.shell).get("melt_seal"))
         # Fraying binding must be folded under on its outer edge: four layers
         # at every seam instead of two, and 3/4" more strip width.
-        self.double_fold = self.bind_frays
+        self.double_fold = False       # nothing to fold: no binding
         self.windows = bool(spec.get("windows"))
         win_mm = mat(self.win_mat)["mm"] if self.windows else self.shell_mm
         self.sandwich_mm = win_mm + self.shell_mm
@@ -435,7 +438,7 @@ class BoxBag:
         self.panel_layers = {}
         for f in ("front", "back"):
             n = 1 + (1 if f in pk else 0)
-            if div and div.get("face", "front") == f                     and div.get("attach", "binding") == "binding":
+            if div and div.get("face", "front") == f                     and div.get("attach", "seam") == "seam":
                 n += 1
             self.panel_layers[f] = n
 
@@ -446,19 +449,16 @@ class BoxBag:
         # ceil, not round: a strip that has to reach round a sandwich and back
         # is either long enough or it is not, and rounding to nearest is wrong
         # half the time in the direction that cannot be recovered.
-        self.bind_cut = ceil_to(2 * self.show
-                                + F(str(round(worst / MM_PER_IN, 4)))
-                                + F(1, 16)
-                                + (F(3, 4) if self.double_fold else 0), 8)
-        # Plain bound seam, and the mitred corner where the binding doubles.
-        layers = 4 if self.double_fold else 2
-        self.bind_layers = layers
-        self.seam_mm = self.sandwich_mm + layers * self.bind_mm
-        self.corner_mm = self.seam_mm + layers * self.bind_mm
-        self.panel_seam_mm = {f: s + layers * self.bind_mm
-                              for f, s in self.panel_sandwich_mm.items()}
-        self.panel_corner_mm = {f: v + layers * self.bind_mm
-                                for f, v in self.panel_seam_mm.items()}
+        # A turned seam is the pieces and nothing else -- no binding doubling
+        # it, and no mitre doubling it again. That is the single biggest
+        # reduction the change buys: the worst seam on the bag was 3.60 mm
+        # bound and is 1.80 mm turned.
+        self.bind_layers = 0
+        self.seam_mm = self.sandwich_mm
+        self.corner_mm = self.seam_mm
+        self.panel_seam_mm = dict(self.panel_sandwich_mm)
+        self.panel_corner_mm = dict(self.panel_sandwich_mm)
+
         z = spec.get("closure", {})
         self.coil = F(str(z.get("coil_in", "0.25")))
         self.lap = F(str(z.get("lap_in", "0.5")))
@@ -499,59 +499,58 @@ class BoxBag:
         # because the flat floor is 2 x corner_r shorter than the face.
         self.stiffener = bool(spec.get("stiffener"))
 
-        self.flange = self.sa + TURN_IN
-
-        # `face` is the STITCH-LINE box: the rectangle the ring follows, the
-        # panel is cut from and the interior is bounded by. It is NOT the cloth
-        # you can see. The binding's inner edge lands at `show` from the
-        # finished edge, and `show` is one `turn` further in than the stitch
-        # line, so the binding laps OVER the stitching by that much -- which it
-        # has to, or the line holding it would sit on its very edge.
+        # ---- TURNED construction -------------------------------------
+        # Panels and gusset are sewn RIGHT SIDES TOGETHER and the bag is turned
+        # through the zip, so the allowances finish INSIDE and the finished edge
+        # IS the stitch line. That makes the geometry the ordinary one every bag
+        # tutorial uses:  cut = finished + 2 x allowance.
         #
-        # The two were conflated for a long time because they are numerically
-        # equal by accident: flange = sa + turn and show - turn = sa + turn only
-        # while sa = show - 2*turn, which the defaults happen to satisfy. Every
-        # figure sized against "the visible face" was an eighth of an inch
-        # optimistic, and on the gusset that is 54 mm quoted for 50.8 mm of
-        # cloth -- enough to put a 51.6 mm name under the binding.
-        self.face_w = self.W - 2 * self.flange
-        self.face_h = self.H - 2 * self.flange
-        self.face_d = self.D - 2 * self.flange
-        self.visible_w = self.W - 2 * self.show
-        self.visible_h = self.H - 2 * self.show
-        self.visible_d = self.D - 2 * self.show
+        # (It replaced a bound-flange scheme whose allowances pointed outward
+        # and were wrapped in binding. That put a rib round the bag, cost 7/16"
+        # per edge of interior, and was reached for on a waterproofing argument
+        # this shell does not support -- it is water RESISTANT, not waterproof.
+        # Turned is the standard construction for a pack this size and it is
+        # what the family uses now.)
+        #
+        # 3/8" is the usual bag-work allowance and what the sources here quote;
+        # it is also small enough to keep bulk down at the curves.
+        self.face_w = self.W
+        self.face_h = self.H
+        self.face_d = self.D
 
-        # Cuts: face plus the allowance that becomes the flange.
-        self.panel_w = self.face_w + 2 * self.sa
-        self.panel_h = self.face_h + 2 * self.sa
-        self.gusset_w = self.face_d + 2 * self.sa
+        # Keep embroidery and hardware off the seam. Nothing structural depends
+        # on this -- it is a placement margin, not a construction dimension.
+        self.visible_w = self.W - 2 * SEAM_MARGIN_IN
+        self.visible_h = self.H - 2 * SEAM_MARGIN_IN
+        self.visible_d = self.D - 2 * SEAM_MARGIN_IN
 
-        # Rounded corners. A gusset following a curve needs NO clip and the
-        # binding needs NO mitre -- the two hardest operations on the bag, and
-        # a rounded corner deletes both. The gusset itself does not care: a band
-        # standing on a curved edge is a developable surface, so a flat strip
-        # follows it with no easing at all. The binding does care, and has to be
-        # cut on the bias, because it bends the hard way round that edge.
+        # Cuts: finished plus an allowance on every edge.
+        self.panel_w = self.W + 2 * self.sa
+        self.panel_h = self.H + 2 * self.sa
+        self.gusset_w = self.D + 2 * self.sa
+
+        # Rounded corners help a turned bag rather than a bound one: a curve
+        # turns out cleanly where a square corner needs its allowance trimmed
+        # across the point to sit flat, and there is no mitre either way now.
         cs = spec.get("corners", {})
         self.corner_r = F(str(cs.get("bottom_in", 0)))
         self.curved_corners = 2 if self.corner_r > 0 else 0
         self.square_corners = 4 - self.curved_corners
-        self.bind_bias = self.curved_corners > 0
         # At the cut edge the same corner is one seam allowance further out.
         self.corner_cut_r = self.corner_r + self.sa if self.corner_r else F(0)
         self.corner_saved = round_to(self.curved_corners * self.corner_r
                                      * CORNER_SAVING, 16)
-        # The gusset's allowance has to splay round a convex curve exactly as it
-        # does at a square corner -- distributed instead of all at one point.
-        # Space the snips a seam allowance apart, the usual rule for relieving
-        # a curve, so each opens by a fraction of the shortfall.
+        # Relief clips let the gusset's allowance splay round a convex curve.
+        # Practitioner rule, and the reason the depth is not arbitrary: snip to
+        # 1/8" SHORT of the stitch line, spaced about a seam allowance apart.
+        self.clip_depth = self.sa - F(1, 8)
         self.relief_clips = (math.ceil(float(self.corner_r) * math.pi / 2
                                        / float(self.sa)) if self.corner_r else 0)
         self.corner_cut_saved = round_to(self.curved_corners * self.corner_cut_r
                                          * CORNER_SAVING, 16)
 
         # The ring follows the stitch line, not the raw edge.
-        self.ring = 2 * (self.face_w + self.face_h) - self.corner_saved
+        self.ring = 2 * (self.W + self.H) - self.corner_saved
         self.zip_face = self.face_w                    # zipper spans the top
         self.gusset_face = self.ring - self.zip_face
         # EXACTLY ONE of the two pieces carries the lap allowance. Two strips
@@ -590,9 +589,9 @@ class BoxBag:
             # second costs three straight runs and saves a bound edge, a layer
             # in the worst seam on the bag, and any argument with a rounded
             # corner it would otherwise have to be cut around.
-            self.div_attach = div.get("attach", "binding")
+            self.div_attach = div.get("attach", "seam")
             self.div_inset = F(str(div.get("inset_in", "0.25")))
-            if self.div_attach == "binding":
+            if self.div_attach == "seam":
                 self.div_w = self.panel_w
                 self.div_depth = self.div_h - self.sa
                 self.div_clear = self.panel_h - self.div_h - self.sa
@@ -616,24 +615,20 @@ class BoxBag:
         # rather than derive it, a check simply refused the configuration.
         self.div_r = F(0)
         if div and self.corner_r and self.div_face in ("front", "back"):
+            # Caught in the seam, it is cut to the panel and takes the panel's
+            # own cut curve; topstitched clear of it, the curve moves in by the
+            # inset.
             self.div_r = (max(F(0), self.corner_r - self.div_inset)
                           if self.div_attach == "topstitch" else self.corner_cut_r)
 
-        # Chassis loop and binding.
+        # Chassis loop. There is no binding to compute any more: a turned bag
+        # finishes its own edges, which is most of why it is the simpler build.
         self.loop = self.ring + self.overlap
-        self.binding = (2 * (2 * self.panel_w + 2 * self.panel_h)
-                        - 2 * self.corner_cut_saved)
-        if self.has_divider and self.div_attach == "binding":
-            self.binding += self.panel_w          # its own bound top edge
-        self.binding_buy = round_to(self.binding * F(6, 5)
-                                    * (BIAS_WASTE if self.bind_bias else 1), 4)
-        # A square of side S yields about S^2 / w inches of continuous bias, so
-        # the side you need is the square root of the strip's own area. Derived
-        # here rather than formatted into a takeoff line, so a test can assert
-        # on the number instead of parsing it back out of a sentence.
-        self.bias_square = (ceil_to(F(str(round((float(self.binding_buy)
-                                                 * float(self.bind_cut)) ** 0.5, 4))), 2)
-                            if self.bind_bias else F(0))
+        # How much seam there is to sew, which is what a turned bag costs
+        # instead. Two panel perimeters, plus the divider's hemmed top.
+        self.seam_run = 2 * self.ring
+        if self.has_divider:
+            self.seam_run += self.panel_w
 
         # Belt keepers. The keeper wraps the belt and both ends tack to the
         # panel, so its cut length is twice the belt width plus the wrap; its
@@ -741,7 +736,7 @@ class BoxBag:
             # are different operations with different figures, and one step
             # cannot describe both -- it used to try, and described only the
             # second while the schema still offered the first.
-            "has_bound_divider": self.has_divider and self.div_attach == "binding",
+            "has_seamed_divider": self.has_divider and self.div_attach == "seam",
             "has_stiffener": self.stiffener,
             # How a piece is CUT, and whether the binding is a second material
             # at all. A bag bound in its own shell buys no tape and reaches for
@@ -785,7 +780,9 @@ class BoxBag:
         """Every derived figure, flat, keyed by the name a step may use."""
         g = {
             "w": self.W, "h": self.H, "d": self.D,
-            "sa": self.sa, "flange": self.flange, "show": self.show,
+            "sa": self.sa, "clip_depth": self.clip_depth,
+            "relief_clips": F(self.relief_clips),
+            "seam_margin": SEAM_MARGIN_IN,
             "turn": TURN_IN,
             "face_w": self.face_w, "face_h": self.face_h, "face_d": self.face_d,
             "visible_w": self.visible_w, "visible_h": self.visible_h,
@@ -797,8 +794,7 @@ class BoxBag:
             "ring": self.ring, "zip_face": self.zip_face, "zip_cut": self.zip_cut,
             "coil": self.coil, "lap": self.lap, "coil_c": self.coil_c,
             "strip_front": self.strip_front, "strip_rear": self.strip_rear,
-            "bind_cut": self.bind_cut,
-            "binding_len": self.binding, "binding_buy": self.binding_buy,
+            "seam_run": self.seam_run,
         }
         if self.has_chassis:
             g.update({"web": self.web, "overlap": self.overlap, "loop": self.loop,
@@ -883,7 +879,7 @@ class BoxBag:
 
     def channel_edge(self) -> F:
         """Where the divider's side edge sits in face_size coordinates."""
-        return self.flange + (self.div_inset
+        return self.sa + (self.div_inset
                               if self.div_attach == "topstitch" else F(0))
 
     @property
@@ -1032,14 +1028,6 @@ class BoxBag:
                 else "DOUBLE fold -- outer edge turned under")
         # One row, however many strips -- they are all the same length, and
         # seven identical lines is a cut list nobody reads to the end of.
-        strips = self.binding_strips()
-        out.append(row("Binding strip", len(strips), self.bind_cut, strips[0],
-                       self.bind_mat,
-                       fold + (f"; cut on the BIAS off a {frac(self.bias_square)} "
-                               "square — the diagonal is the limit on a strip, "
-                               "not the roll width — and pieced with 45° joins "
-                               f"into the {self.binding_joins()} joins of the "
-                               "finished run" if self.bind_bias else "")))
         if self.has_divider:
             n = len(self.div_channels)
             out.append(row("Divider pocket", 1, self.div_w, self.div_h, self.shell,
@@ -1075,37 +1063,6 @@ class BoxBag:
                            p.get("material", self.shell), p.get("note", "")))
         return out
 
-    def binding_strips(self) -> list[F]:
-        """The buy length, split into strips the material can actually yield.
-
-        On the straight grain the limit is the roll width. On the BIAS it is
-        the square's diagonal, which is a much shorter number and the only one
-        this repo has ever exercised wrongly: splitting 93 1/4" of bias against
-        a 60" roll drew two 47" strips off a 10 1/2" square whose longest
-        possible continuous run is 14 3/4". A cut list that asks for a piece
-        the takeoff cannot buy is a cut list you find out about at the mat.
-        """
-        if mat(self.bind_mat).get("by_length"):
-            return [self.binding_buy]
-        if self.bind_bias:
-            longest = floor_to(F(str(round(float(self.bias_square)
-                                           * 2 ** 0.5, 4))), 4)
-        else:
-            longest = F(mat(self.bind_mat).get("roll_in", DEFAULT_ROLL_IN))
-        n = max(1, math.ceil(float(self.binding_buy) / float(longest)))
-        return [ceil_to(self.binding_buy / n, 4)] * n
-
-    def binding_joins(self) -> int:
-        """45 degree joins in the finished binding.
-
-        Two runs to make -- one per panel -- so n strips need (n - 2) joins to
-        piece them into two, plus the 2 that close each run round its panel.
-        Straight grain needs no piecing and lands on 2; bias off a square is
-        where this stops being a formality.
-        """
-        return max(2, len(self.binding_strips()))
-
-    # -- nesting -----------------------------------------------------------
     def layouts(self) -> list[dict]:
         """One shelf-nested layout per material that is sold on a roll.
 
@@ -1122,8 +1079,6 @@ class BoxBag:
             # in a shelf nest as long rectangles along the roll would be a
             # drawing of something you cannot cut -- they come off a square,
             # and the takeoff prices them that way instead.
-            if self.bind_bias and r["piece"] == "Binding strip":
-                continue
             w, l = F(str(r["w"]["in"])), F(str(r["l"]["in"]))
             long_, short = (l, w) if l >= w else (w, l)
             rad = F(str(r.get("corner_r", {}).get("in", 0)))
@@ -1157,42 +1112,18 @@ class BoxBag:
         # shell it is still the same cloth off the same cut. Splitting one
         # fabric across two takeoff lines and drawing only one of them is how
         # you under-buy, and it reads as "the binding is not in the cut list".
-        extra = (self.bias_square if self.bind_bias
-                 and self.bind_mat == self.shell else F(0))
+        extra = F(0)
         for lay in self.layouts():
             buy = F(str(lay["buy"]["in"]))
             note = (f"{lay['used']['text']} nests the pieces; "
                     f"about {float(buy) / 36.0:.2f} yd with margin")
             if extra and lay["material"] == self.shell:
                 buy = round_to(buy + extra, 2)
-                note = (f"{lay['used']['text']} nests the pieces, plus a "
-                        f"{frac(extra)} square alongside them for the bias "
-                        "binding — same cloth, same cut, but taken on the "
-                        "diagonal, so it is not in the nesting drawing. "
-                        f"About {float(buy) / 36.0:.2f} yd with margin")
+                note = (f"{lay['used']['text']} nests the pieces; "
+                        f"about {float(buy) / 36.0:.2f} yd with margin")
             out.append({"item": f"{lay['material']}, {lay['roll_width_in']:g}\" wide",
                         "qty": f"{frac(buy)} of length",
                         "note": note})
-        if mat(self.bind_mat).get("by_length"):
-            out.append({"item": f"{self.bind_mat}, {frac(self.bind_cut)} wide",
-                        "qty": frac(self.binding_buy),
-                        "note": f"{frac(self.binding)} needed; the rest covers "
-                                "mitres and joins"})
-        elif self.bind_bias:
-            # A square of side S yields about S^2 / w inches of continuous bias,
-            # so the side you need is the square root of the strip's own area.
-            out.append({"item": f"{self.bind_mat}, BIAS binding"
-                                + (" (out of the length above)" if extra else ""),
-                        "qty": f"a {frac(self.bias_square)} square",
-                        "note": f"{frac(self.binding)} needed, {frac(self.binding_buy)} "
-                                f"cut ({frac(self.bind_cut)} wide) once bias waste and "
-                                "45° piecing are counted"
-                                + (", and it is the same cloth as the shell — the "
-                                   "square is already counted in the length above, "
-                                   "not bought separately. " if extra else ". ")
-                                + "Cut on the diagonal, so it is not in the nesting "
-                                  "drawing — that lays pieces along the roll and a "
-                                  "bias strip does not run that way"})
         web_total = F(0)
         parts = []
         if self.has_chassis:
@@ -1266,18 +1197,18 @@ class BoxBag:
         # number when the real one is half a millimetre thicker.
         if any(n == 1 for n in self.panel_layers.values()):
             rows.append(("Plain bound seam",
-                         f"panel + gusset + {self.bind_layers} x binding",
+                         "panel + gusset, right sides together",
                          self.seam_mm))
             rows.append(("Mitred corner", "binding doubles", self.corner_mm))
         for face in ("front", "back"):
             n = self.panel_layers[face]
             if n > 1:
                 rows.append((f"Bound seam, {face} panel",
-                             f"{n} x panel + gusset + {self.bind_layers} x binding",
+                             f"{n} x panel + gusset",
                              self.panel_seam_mm[face]))
                 rows.append((f"Mitred corner, {face} panel", "binding doubles",
                              self.panel_seam_mm[face]
-                             + self.bind_layers * self.bind_mm))
+                             ))
         # Every square corner at the TOP of a panel is also a gusset lap join --
         # the construction says so outright ("Both joins land at the top
         # corners, which is also where the binding will mitre") -- so the
@@ -1371,47 +1302,19 @@ class BoxBag:
         """
         rows = []
         perims = 2                                   # front and back panels
-        mitres = self.square_corners * perims
         curves = self.curved_corners * perims
-        bound = 4 * perims + (1 if self.has_divider and self.div_attach == "binding"
-                              else 0)
-        rows.append({"item": "Bound edges", "count": bound,
-                     "note": f"{perims} panel perimeters"
-                             + (" + the divider's top" if bound > 4 * perims else "")})
-        # NOT peak_mm(). That is the worst stack ANYWHERE on the bag, which on
-        # a bag with D-ring tabs is the tack and not the mitre; quoting it here
-        # both named the wrong number and asserted something untrue about the
-        # mitre. Quote the mitre's own figure, and say which of them a gusset
-        # lap join doubles again -- always the 2 top corners of each panel,
-        # because that is where the zipper panel meets the gusset.
-        worst_mitre = max([self.corner_mm] + list(self.panel_corner_mm.values()))
-        rows.append({"item": "Mitred corners", "count": mitres,
-                     "note": f"{worst_mitre:.1f} mm of stack, every one hand-wheeled; "
-                             f"4 of them sit on a gusset lap join and go to "
-                             f"{worst_mitre + self.shell_mm:.1f} mm"
-                             + (f". {curves} more are rounded, and a curve needs "
-                                "no mitre at all" if curves else "")})
+        rows.append({"item": "Panel seams", "count": perims,
+                     "note": f"{frac(self.ring)} each, right sides together at "
+                             f"{frac(self.sa)} — then the bag turns through the zip"})
         if curves:
-            rows.append({"item": "Rounded corners", "count": curves,
-                         "note": f"radius {frac(self.corner_r)} at the stitch line — "
-                                 "no mitre, no clip, and the gusset runs straight "
-                                 "through"})
-        rows.append({"item": "Binding to sew", "count": frac(self.binding),
-                     "note": f"{frac(self.bind_cut)} strip"
-                             + (f", cut on the BIAS and pieced from "
-                                f"{len(self.binding_strips())} lengths"
-                                if self.bind_bias else ", straight grain")
-                             + f", {self.binding_joins()} joins in all, and it is "
-                               "the seam that shows — put every one mid-edge"})
-        rows.append({"item": "Gusset corner clips", "count": mitres,
-                     "note": "cut to the stitch line at each SQUARE corner, or the "
-                             "gusset cannot turn it"})
-        if curves:
-            rows.append({"item": "Gusset relief clips", "count": self.relief_clips * curves,
-                         "note": f"{self.relief_clips} along each arc. A flat strip's "
-                                 "raw edge has to reach 25% further than its own "
-                                 "stitch line round a convex curve, and nothing but "
-                                 "relief lets it — shallow snips, not a deep clip"})
+            rows.append({"item": "Relief clips", "count": self.relief_clips * curves,
+                         "note": f"{self.relief_clips} per curve, each cut to "
+                                 f"{frac(self.clip_depth)} — an eighth SHORT of the "
+                                 "stitch line, or the stitching pulls out"})
+        if self.square_corners:
+            rows.append({"item": "Corners to trim", "count": self.square_corners * perims,
+                         "note": "allowance cut back across the point so it turns out "
+                                 "flat instead of bunching"})
         nzip = 1 + len(self.pockets)
         rows.append({"item": "Zippers", "count": nzip,
                      "note": f"{2 * nzip} laps at two rows each = {4 * nzip} rows on "
@@ -1626,14 +1529,14 @@ class BoxBag:
                          "is not usable depth"})
         # Padding, and why there is none. The seam is the reason, and it is
         # arithmetic rather than an opinion.
-        pad = max(self.sandwich_mm, *self.panel_sandwich_mm.values())             + self.bind_layers * self.bind_mm + 2 * 6.0
+        pad = max(self.sandwich_mm, *self.panel_sandwich_mm.values())             + 2 * 6.0
         rows.append({
-            "measure": "Bound seam if the back panel were padded",
+            "measure": "Seam if the back panel were padded",
             "value": f"{pad:.1f} mm",
             "basis": f"6 mm of EVA is the usual back-panel figure. Through this "
-                     f"construction's bound seam that is {pad:.1f} mm against a "
+                     f"construction's seam that is {pad:.1f} mm against a "
                      f"{STACK_STOP_MM:g} mm stop — a pad here has to float clear "
-                     "of the binding or not exist"})
+                     "of the seam or not exist"})
         return rows
 
     # -- the 3D model ------------------------------------------------------
@@ -1650,20 +1553,22 @@ class BoxBag:
         # point of the coil sitting off-centre is a relationship between two
         # numbers this class already holds.
         feats.append({"kind": "zip", "derived": True, "face": "top",
-                      "u": float(self.flange), "v": float(TURN_IN + self.coil_c
-                                                          - self.coil / 2),
+                      "u": 0.0, "v": float(self.coil_c - self.sa
+                                             - self.coil / 2),
                       "w": float(self.zip_face), "h": float(self.coil),
                       "label": f"coil, {frac(self.coil_c)} from the cut edge"})
         for face, pk in sorted(self.pockets.items()):
             if pk.axis == "top":
-                z = {"u": float(self.flange),
-                     "v": float(TURN_IN + pk.zip - pk.coil / 2),
+                z = {"u": 0.0,
+                     "v": float(pk.zip - self.sa - pk.coil / 2),
                      "w": float(self.face_w), "h": float(pk.coil)}
                 where = "down from the top"
             else:
-                z = {"u": float(TURN_IN + pk.zip - pk.coil / 2),
-                     "v": float(TURN_IN + pk.starts),
-                     "w": float(pk.coil), "h": float(pk.run)}
+                _fw, _fh = self.face_size(face)
+                _v = float(pk.starts - self.sa)
+                z = {"u": float(pk.zip - self.sa - pk.coil / 2),
+                     "v": _v,
+                     "w": float(pk.coil), "h": float(_fh) - _v}
                 where = "in from the side"
             feats.append({"kind": "zip", "derived": True, "face": face,
                           **z, "label": f"{face} pocket, {frac(pk.zip)} {where} "
@@ -1671,15 +1576,17 @@ class BoxBag:
             if pk.placket:
                 # Drawn where it hangs, over the coil, on the far side of it.
                 if pk.axis == "top":
-                    pf = {"u": float(self.flange),
-                          "v": float(TURN_IN + pk.zip - pk.coil / 2),
+                    pf = {"u": 0.0,
+                          "v": float(pk.zip - self.sa - pk.coil / 2),
                           "w": float(self.face_w),
                           "h": float(pk.coil + pk.placket["show"])}
                 else:
-                    pf = {"u": float(TURN_IN + pk.zip - pk.coil / 2),
-                          "v": float(TURN_IN + pk.starts),
+                    _fw, _fh = self.face_size(face)
+                    _v = float(pk.starts - self.sa)
+                    pf = {"u": float(pk.zip - self.sa - pk.coil / 2),
+                          "v": _v,
                           "w": float(pk.coil + pk.placket["show"]),
-                          "h": float(pk.run)}
+                          "h": float(_fh) - _v}
                 # NOT kind "patch". `patch` is POINT-like -- the player draws
                 # it as a fixed 1 x 1 inch square centred on u,v, and
                 # NOMINAL_IN measures it the same way -- so a 1 x 5 1/8 inch
@@ -1704,12 +1611,14 @@ class BoxBag:
             # used to draw the bound version whatever the spec said.
             fw, fh = self.face_size(self.div_face)
             if self.div_attach == "topstitch":
-                inset = self.flange + self.div_inset
+                inset = self.sa + self.div_inset
                 du, dw, dh = inset, self.div_w, self.div_h
                 dv = fh - inset - self.div_h
             else:
-                du, dw, dh = TURN_IN, self.panel_w, self.div_h + TURN_IN
-                dv = fh - TURN_IN - self.div_h
+                # Caught in the panel seam, so on the face it shows the
+                # FINISHED width -- the allowance is inside.
+                du, dw, dh = F(0), fw, self.div_h - self.sa
+                dv = fh - dh
             feats.append({"kind": "pocket", "derived": True, "face": self.div_face,
                           "u": float(du), "v": float(dv),
                           "w": float(dw), "h": float(dh),
@@ -1722,13 +1631,12 @@ class BoxBag:
         return {
             "faces": {f: {"w": dim(self.face_size(f)[0]),
                           "h": dim(self.face_size(f)[1])} for f in FACES},
-            "binding_show": dim(self.show),
-            "flange": dim(self.flange),
+            "seam_allowance": dim(self.sa),
             # The faces here are FINISHED sizes, so the radius the preview has
             # to draw is the finished outline's -- the stitch line's radius one
             # flange further out. corner_cut_r is a cutting figure and belongs
             # in the cut list, which is where it already is.
-            "corner_radius": dim(self.corner_r + self.flange if self.corner_r
+            "corner_radius": dim(self.corner_r if self.corner_r
                                  else F(0)),
             "features": feats,
         }
@@ -1776,40 +1684,33 @@ class BoxBag:
            "faces are positive",
            f"{frac(self.face_w)} x {frac(self.face_h)} x {frac(self.face_d)}")
 
-        # The binding has to lap OVER the stitch line, not stop at it: the one
-        # line of stitching that holds the whole seam runs through the binding,
-        # and a line at its very edge is a line that misses. `show` is the
-        # binding on the face; `flange` is the finished edge to the stitch
-        # line. The difference is the lap, and it must be positive.
-        lap_over = self.show - self.flange
-        ck(lap_over > 0, "the binding laps over the stitch line",
-           f"{frac(lap_over)} of binding inboard of the stitching — sew "
-           f"{frac(lap_over)} in from its inner edge to land on {frac(self.sa)}"
-           if lap_over > 0 else
-           f"the binding stops {frac(-lap_over)} SHORT of the stitch line, so "
-           "the seam would be sewn off its edge")
+        # A turned bag has no binding to check. What it does have is a seam
+        # allowance that must survive being clipped: relief cuts stop 1/8"
+        # short of the stitch line, so an allowance under 1/4" leaves nothing
+        # to clip into and the curve cannot splay.
+        ck(self.sa >= F(1, 4), "the seam allowance can take a relief clip",
+           f"{frac(self.sa)} allowance, clipped to {frac(self.clip_depth)} — "
+           f"a snip that stops 1/8\" short of the stitch line")
+        ck(self.visible_w > 0 and self.visible_h > 0,
+           "artwork clears the seam",
+           f"{frac(self.visible_w)} x {frac(self.visible_h)} inside a "
+           f"{frac(SEAM_MARGIN_IN)} margin")
 
-        ck(self.visible_w > 0 and self.visible_h > 0 and self.visible_d > 0,
-           "visible cloth, between the bindings",
-           f"{frac(self.visible_w)} x {frac(self.visible_h)} x "
-           f"{frac(self.visible_d)} — NOT the face, which is the stitch-line "
-           f"box and is {frac(2 * lap_over)} bigger each way")
-
-        worst_seam = max(self.seam_mm, *self.panel_seam_mm.values())
-        worst_corner = worst_seam + self.bind_layers * self.bind_mm
+        # A turned seam is only the pieces meeting in it, so the worst point on
+        # the bag is wherever the most layers coincide -- no binding doubling
+        # it and no mitre doubling it again.
+        worst_seam = max(self.panel_seam_mm.values())
         thick = [f"{f} at {k} layers" for f, k in sorted(self.panel_layers.items())
                  if k > 1]
         where = f" ({', '.join(thick)})" if thick else ""
-        ck(worst_seam <= STACK_WARN_MM, "plain bound seam is drivable",
+        ck(worst_seam <= STACK_WARN_MM, "the worst seam is drivable",
            f"{worst_seam:.1f} mm{where} (warn above {STACK_WARN_MM:g})")
-        ck(worst_corner <= STACK_WARN_MM + 1, "mitred corner is drivable",
-           f"{worst_corner:.1f} mm{where} -- hand-wheel anything over {STACK_WARN_MM:g}")
         if self.shell_frays:
             ck(True, "shell frays: raw edges need folding",
                "zip laps, rib edges, pocket tops, gusset joins")
 
         ck(self.coil_c - self.coil / 2 - self.sa >= F(1, 4),
-           "coil clears the binding flange",
+           "coil clears the seam",
            f"{frac(self.coil_c - self.coil / 2 - self.sa)} of visible shell outboard")
 
         if self.has_chassis:
@@ -1833,7 +1734,7 @@ class BoxBag:
                + ("(height, zip across)" if pk.axis == "top"
                   else "(width, zip down)"))
             near = min(pk.zip, pk.span - pk.zip) - pk.coil / 2
-            ck(near - self.sa >= F(1, 4), f"{face} pocket coil clears the binding",
+            ck(near - self.sa >= F(1, 4), f"{face} pocket coil clears the seam",
                f"{frac(near - self.sa)} of visible shell to the nearest edge")
             ck(pk.reach >= 2, f"{face} pocket is deep enough to hold anything",
                f"{frac(pk.reach)} "
@@ -1878,42 +1779,41 @@ class BoxBag:
                "an assembly step each. Declared, not accidental")
 
         if self.corner_r:
-            ok_r = self.corner_r >= self.show
-            ck(ok_r, "the corner radius can take a binding",
-               f"{frac(self.corner_r)} radius against a {frac(self.show)} show"
-               if ok_r else
-               f"{frac(self.corner_r)} is tighter than the {frac(self.show)} the "
-               "binding shows, so it cannot lie round the curve")
+            # A turned corner wants a radius it can actually turn out. Below
+            # about a seam allowance the allowance bunches inside the curve and
+            # the corner comes out lumpy however carefully it is clipped.
+            ok_r = self.corner_r >= self.sa
+            ck(ok_r, "the corner radius turns out cleanly",
+               f"{frac(self.corner_r)} radius against a {frac(self.sa)} "
+               "allowance" + ("" if ok_r else " — the allowance will bunch "
+                              "inside the curve"))
             lim = min(self.face_w, self.face_h) / 2
             ck(self.corner_r <= lim, "the corner radius leaves a straight run",
                f"{frac(self.corner_r)} of a {frac(lim)} maximum — beyond half the "
                "shorter face the curves meet and there is no flat edge left")
-            # The EXTRA is (pi/2) x show and has nothing to do with the
-            # radius -- both arcs grow together. What the radius changes is
-            # the length it is spread over, so a tighter corner asks the bias
-            # for the same inch in less room. That is the lever when a stiff
-            # bias will not ease: open the radius, not the strip.
-            ease = round_to(self.show * F(31416, 20000), 16)
-            rate = round(100 * float(self.show) / float(self.corner_r))
-            ck(self.bind_bias, "a curved corner is bound on the bias",
-               "straight grain has no give, and the binding's outer edge has to "
-               f"travel {frac(ease)} further than its stitch line round each "
-               f"quarter turn — the same {frac(ease)} at any radius, but here "
-               f"spread over {frac(round_to(self.corner_r * F(31416, 20000), 16))} "
-               f"of arc, so {rate}% of it. Open the radius to thin that out; "
-               "widening the strip does not help")
+            # Round a convex curve the gusset's raw edge has to reach further
+            # than its own stitch line, and relief clips are what let it. The
+            # shortfall is (pi/2) x the seam allowance per quarter turn -- the
+            # same at any radius, but a tighter corner asks for it in less room,
+            # which is why the clips are spaced about an allowance apart.
+            reach = round_to(self.sa * F(31416, 20000), 16)
+            arc = round_to(self.corner_r * F(31416, 20000), 16)
+            ck(self.relief_clips >= 3, "the curve gets enough relief clips",
+               f"{self.relief_clips} clips over {frac(arc)} of arc, each cut to "
+               f"{frac(self.clip_depth)} — between them they open the {frac(reach)} "
+               "the raw edge is short by")
 
         if self.has_divider:
-            # A divider caught in the binding has to be cut round any rounded
-            # corner it reaches into; topstitched clear of the seam, it does not.
+            # A divider caught in the panel seam has to be cut round any rounded
+            # corner it reaches into; topstitched clear of it, it does not.
             # NOT a refusal. Cutting a piece round the corner template is
             # something this pattern already does four times over, and reusing
             # a seam that is being sewn anyway beats adding three straight runs
             # to avoid it. What has to be true is that the divider's corners
             # MATCH the panel's -- cut it square and it overhangs the curve
-            # into the binding, which is the one place it must not be.
+            # into the seam, which is the one place it must not be.
             if self.corner_r:
-                want = (self.corner_cut_r if self.div_attach == "binding"
+                want = (self.corner_cut_r if self.div_attach == "seam"
                         else max(F(0), self.corner_r - self.div_inset))
                 ck(self.div_r == want,
                    "the divider's corners follow the panel's",
@@ -2170,7 +2070,7 @@ class BoxBag:
             # own inner edge, which is one `turn` inboard of the stitch line --
             # so a placement judged against the flange passes while sitting up
             # to that much underneath the binding.
-            fl = float(self.show)
+            fl = float(self.sa)
             u, v, w, h = rect
             if u < fl - 1e-6 or u + w > fw - fl + 1e-6:
                 under.append(f"{ft.get('kind')} on {ft['face']}")
@@ -2181,7 +2081,7 @@ class BoxBag:
                 under.append(f"{ft.get('kind')} on {ft['face']}")
         ck(not under, "nothing that gets tacked sits under the binding",
            ", ".join(sorted(set(under))) if under else
-           f"all clear of the {frac(self.flange)} flange")
+           f"all clear of the {frac(self.sa)} seam allowance")
 
         bad = []
         for ft in self.model3d()["features"]:
@@ -2313,17 +2213,15 @@ class BoxBag:
         a(f"{self.name}")
         a("=" * len(self.name))
         a(f"  finished overall   {frac(self.W)} W x {frac(self.D)} D x {frac(self.H)} H")
-        a(f"  face (stitch line)  {frac(self.face_w)} x {frac(self.face_h)}"
-          f"   depth {frac(self.face_d)}   <- what the ring follows and the panel is cut from")
-        a(f"  visible cloth       {frac(self.visible_w)} x {frac(self.visible_h)}"
-          f"   depth {frac(self.visible_d)}   <- between the bindings; size artwork to THIS")
-        a(f"  seam allowance {frac(self.sa)}   flange {frac(self.flange)}"
-          f"   binding shows {frac(self.show)}")
+        a(f"  finished / stitch line  {frac(self.face_w)} x {frac(self.face_h)}"
+          f"   depth {frac(self.face_d)}   <- turned, so the finished edge IS the seam")
+        a(f"  artwork field       {frac(self.visible_w)} x {frac(self.visible_h)}"
+          f"   depth {frac(self.visible_d)}   <- {frac(SEAM_MARGIN_IN)} clear of every seam")
+        a(f"  seam allowance {frac(self.sa)}   relief clips cut to {frac(self.clip_depth)}"
+          f"   ({self.relief_clips} per curve)")
         if self.corner_r:
             a(f"  bottom corners round at {frac(self.corner_r)}"
-              f" ({frac(self.corner_cut_r)} at the cut edge)"
-              f" — {self.curved_corners * 2} fewer mitres, {self.curved_corners * 2}"
-              " fewer clips, bias binding")
+              f" ({frac(self.corner_cut_r)} at the cut edge)")
         a("")
         a(f"  PANELS ({self.win_mat if win else shell})")
         if self.pockets:
@@ -2345,15 +2243,11 @@ class BoxBag:
         a(f"    zip strip, rear    1 @  {frac(self.strip_rear)} x {frac(self.zip_cut)}")
         a(f"    coil sits {frac(self.coil_c)} from the panel's cut edge")
         a("")
-        a(f"  BINDING ({shell})")
-        fold = "DOUBLE fold" if self.double_fold else "single fold"
-        layers = 4 if self.double_fold else 2
-        a(f"    material           {self.bind_mat}  ({fold}, {layers} layers/seam)")
-        extra = " + 3/4 to fold under" if self.double_fold else ""
-        worst = max(self.sandwich_mm, *self.panel_sandwich_mm.values())
-        a(f"    strip width        {frac(self.bind_cut)}   (2 x show + "
-          f"{worst:.2f} mm sandwich + turn{extra})")
-        a(f"    length needed      {frac(self.binding)}  -> buy {frac(self.binding_buy)}")
+        a(f"  SEAMS")
+        a(f"    allowance          {frac(self.sa)} on every edge, sewn right sides together")
+        a(f"    to sew             {frac(self.seam_run)} of panel seam, then turned through the zip")
+        worst = max(self.panel_seam_mm.values())
+        a(f"    worst stack        {worst:.2f} mm   (no binding, no mitre)")
         a("")
         a("  CARRY")
         if self.has_chassis:
@@ -2365,7 +2259,7 @@ class BoxBag:
             a(f"    D-ring tabs        {n} @  {frac(F(4))}")
             if self.flags["has_ring_anchor"]:
                 a(f"    ring anchors ({shell})  {n} @  {frac(self.gusset_w)}"
-                  f" x {frac(RING_ANCHOR_W_IN)}   (across the gusset, ends in the bindings)")
+                  f" x {frac(RING_ANCHOR_W_IN)}   (across the gusset, ends in the seams)")
         if self.wearer and self.has_sling:
             if self.makes_strap:
                 a(f"    sling strap        1 @  {frac(self.sling_cut)}"
@@ -2449,14 +2343,9 @@ class BoxBag:
 
         materials = [{"role": "shell", "material": self.shell,
                       "thickness_mm": self.shell_mm, "frays": self.shell_frays,
-                      "note": ""},
-                     {"role": "binding", "material": self.bind_mat,
-                      "thickness_mm": self.bind_mm, "frays": self.bind_frays,
-                      "note": ("DOUBLE fold -- it frays, so its outer edge turns "
-                               "under and every seam carries four layers"
-                               if self.double_fold else
-                               "single fold -- it does not fray, so the outer "
-                               "edge stays raw")}]
+                      "note": "turned construction: every edge finishes inside "
+                              "its own seam, so there is no second material and "
+                              "no edge finish to buy"}]
         if self.windows:
             materials.append({"role": "window", "material": self.win_mat,
                               "thickness_mm": mat(self.win_mat)["mm"],
@@ -2518,8 +2407,8 @@ class BoxBag:
 
 def load(path: Path) -> BoxBag:
     spec = json.loads(path.read_text(encoding="utf-8"))
-    if spec.get("construction") != "box-bound":
-        raise ValueError(f"{path.name}: construction must be 'box-bound'")
+    if spec.get("construction") != "box-turned":
+        raise ValueError(f"{path.name}: construction must be 'box-turned'")
     if spec.get("name") != path.stem:
         raise ValueError(f"{path.name}: name must match the filename")
     return BoxBag(spec)

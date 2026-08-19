@@ -340,6 +340,100 @@ a strap, ring or handle is going to land on top of it.
   starting point; the strip width in particular depends on materials you have and
   I do not.
 
+## Why bound, and not turned
+
+This is the biggest decision in the family and it was never written down. A
+turned bag hides its allowances inside and comes out with a soft, smooth
+outline; a bound bag wears them on the outside as a rib. The rib is a look, and
+it is fair to ask for the reasoning before committing to it.
+
+*Corrected after checking it against practice, 2026-08-18. An earlier version
+of this section said the cloth settled the question — that a coated shell
+cannot be pressed, so a turned bag "looks worse than a bound one, not better".
+**That was overclaimed.** Turned construction is not only viable in coated
+fabric, it is the more common choice for a hip pack this size: the
+[bikepacking.com fanny pack](https://bikepacking.com/gear/make-your-own-fanny-pack/)
+is sewn inside out and turned through the open zipper, with binding optional
+and applied afterwards. People turn coated nylon and Xpac routinely, finger-
+pressing and topstitching where a cotton would be ironed. The honest position is
+below.*
+
+**Both are in real use, and the split is by category rather than by quality.**
+Turned is the default for soft MYOG hip packs; bound-and-exposed is the standard
+for technical and heavy soft goods — Cordura packs, marine and sailmakers' work,
+anything in the Sailrite curriculum. The trade the sources actually describe is
+stiffness: *when a seam is too stiff to fell, it gets bound instead.* At 0.45 mm
+coated canvas over four layers this bag sits at that boundary rather than
+clearly on one side of it.
+
+Durability does not discriminate. A maker who has built hundreds of bags each
+way reports **no field failures with either**, though french seams do better
+than binding in a shop water test.
+
+So the reasons here are real but not decisive, and they are these:
+
+| | |
+|---|---|
+| **The last seam is blind** | A ring plus two panels, turned, means the second panel is attached from INSIDE the bag, round a curve, through the zip opening, with the whole bag in the machine's throat. Every bound seam is sewn flat, from outside, in full view |
+| **Needle holes are permanent** | Unpicking is not available in a coated cloth. A seam you can see while you sew it is worth a great deal when there is no second attempt |
+| **Turning creases the coating** | Forcing stiff coated fabric through a 9" opening puts folds in it, and coated fabrics crease permanently |
+
+And one that is merely convenient: a bound seam is self-finishing and structural
+in a single pass, where a turned one is a seam, plus a finish, plus a topstitch.
+
+**What a turned bag would buy** — and it is worth stating, because nothing else
+here does: a soft, smooth outline with no rib; ⅞" back on every dimension; less
+sewing; and no binding skill required, which is the skill this construction
+leans on hardest. **What it would cost:** a blind final seam, no unpicking in a
+cloth that keeps its holes, and every cut dimension changed — a turned panel is
+`finished + 2 × allowance`, a bound one is `finished − 2 × turn`. It is a
+different pattern, not a setting.
+
+### Is the rib ugly?
+
+It is a recognised idiom rather than an unfinished edge — it is how technical
+soft goods are made: military pouches, medical bags, tool rolls, sailmakers'
+work, most of Cordura gear. It reads *technical* when it is even and *homemade*
+when it is not, and evenness is the whole of it.
+
+**This family is unusually forgiving about it, by design.** The bottom corners
+are ROUNDED, and a curve needs no mitre — the strip simply eases round. So the
+corners you actually look at are the easy ones, and the only four mitres on the
+bag are at the top, where the gusset lap joins already thicken the seam and
+where a hand-wheel is called for anyway.
+
+What decides whether it looks good:
+
+- **Even width.** Guide off the RAW EDGE, never off the binding's own folded
+  edge — a run that drifts is the single most visible fault there is.
+- **Joins mid-edge**, never at a corner and never in a curve.
+- **One thread top and bobbin**, so the seam reads the same from both faces.
+- **Not too wide.** ½" of show on a 10" face is 5% of the width each side,
+  which is at the generous end. ⅜" is available and reads finer — see below.
+
+### If you want a slimmer rib
+
+`seam_allowance_in` and `binding_show_in` are declared, and the flange is
+`allowance + turn`. Narrowing both slims the rib and gives the volume back:
+
+| allowance / show | rib | binding cut | visible face | interior |
+|---|---|---|---|---|
+| **⅜" / ½"** *(as drawn)* | 7/16" | 1¼" | 9" | 2.81 L |
+| 5/16" / 7/16" | ⅜" | 1⅛" | 9⅛" | 3.03 L |
+| ¼" / ⅜" | 5/16" | 1" | 9¼" | 3.25 L |
+
+All three pass every check. ⅜" is kept as the drawn value because it is the
+conservative choice for a seam the whole bag hangs from, and because a narrower
+binding is harder to sew evenly, not easier — there is less strip to catch. Go
+to 5/16" if the rib bothers you; think twice before ¼" on a load-bearing seam.
+
+**None of this is settled by argument.** Step 1 of every build in this family is
+*test on scrap*, and the reason is exactly this question: bind a curved corner
+and a mitred one in the real cloth, look at them, and decide before you cut a
+panel. Twenty minutes answers what a paragraph cannot.
+
+---
+
 ## Watch it done
 
 Found and link-checked 2026-08-18.

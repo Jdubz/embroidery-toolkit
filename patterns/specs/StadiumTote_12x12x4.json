@@ -1,7 +1,7 @@
 {
   "name": "StadiumTote_12x12x4",
   "title": "Stadium Tote 12 × 12 × 4",
-  "construction": "box-bound",
+  "construction": "box-turned",
   "description": "Clear-window stadium tote, and the reference build — every figure here was hand-computed first, which is what validates the generator. Two clear vinyl panels as windows; the entire gusset ring in 12 oz denim, bound in nylon tape. A single unbroken webbing loop runs the whole circumference INSIDE the gusset and carries every load: the six D-rings tack through to it from outside, so nothing weight-bearing touches the PVC and the gusset exterior stays clean enough to embroider.",
   "finished_in": {
     "w": 11.875,
