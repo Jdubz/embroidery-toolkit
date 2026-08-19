@@ -231,6 +231,13 @@
   .md .dgm{margin:22px 0 0; padding:16px; background:var(--sheet);
            border:1px solid var(--rule)}
   .md .dgm svg{display:block; width:100%; height:auto; max-width:640px; margin:0 auto}
+  .term{background:none; border:0; padding:0 1px; margin:0; cursor:help;
+        font:inherit; color:var(--stitch);
+        border-bottom:1px dotted var(--stitch)}
+  .term:hover{background:var(--stitch); color:var(--sheet)}
+  .termshort{font-size:15px; font-weight:600}
+  .termaka{font-family:var(--f-data); font-size:11px; color:var(--muted);
+           margin:-6px 0 12px}
   .stepfig{margin:14px 0 4px; padding:12px; background:var(--sheet);
            border:1px solid var(--rule)}
   .stepfig svg{display:block; width:100%; height:auto; margin:0 auto}
@@ -606,7 +613,7 @@ $("#xray").addEventListener("change", e => $("#box").classList.toggle("xray", e.
 $("#tags").addEventListener("change", e => $("#box").classList.toggle("noTags", !e.target.checked));
 
 /* ---------------- panels ------------------------------------------------- */
-const TABS = ["Overview", "Comfort", "Materials", "Cut list", "Assembly", "Checks"];
+const TABS = ["Overview", "Comfort", "Materials", "Cut list", "Assembly", "Glossary", "Checks"];
 
 function tableOf(head, rows){
   const wrap = el("div", "scroll"), t = el("table");
@@ -618,7 +625,9 @@ function tableOf(head, rows){
     const x = el("tr");
     r.forEach(c => {
       const td = el("td", c && c.cls || null);
-      td.textContent = (c && c.t !== undefined) ? c.t : (c == null ? "" : c);
+      /* A cell may be a live node -- the glossary puts a button in one. */
+      if (c && c.node) td.appendChild(c.node);
+      else td.textContent = (c && c.t !== undefined) ? c.t : (c == null ? "" : c);
       x.appendChild(td);
     });
     tb.appendChild(x);
@@ -937,7 +946,17 @@ function cards(items, kind, docs){
     c.appendChild(k);
     const b = el("div");
     b.appendChild(el("h3", null, n.title));
-    if (n.body) b.appendChild(el("p", null, n.body));
+    if (n.body){
+      /* One paragraph per blank line, and the first use of each glossary term
+         becomes a link. A table of definitions nobody opens is prose. */
+      String(n.body).split("
+
+").forEach(par => {
+        const p = el("p");
+        p.appendChild(kind === "step" ? glossed(par) : document.createTextNode(par));
+        b.appendChild(p);
+      });
+    }
     if (n.stitch) b.appendChild(el("div", "stitchnote", "▸ " + n.stitch));
     /* Figures come before the technique links: a drawing of what this step
        means is worth more than a button offering one. */
@@ -1007,6 +1026,40 @@ function nestSvg(lay){
 
 function panelFor(name, p){
   const d = el("div", "panel");
+  if (name === "Glossary"){
+    const terms = LIB.glossary || [];
+    d.appendChild(el("p", "lede",
+      "Every word the patterns use as if you already knew it. These are linked "
+      + "from the first place each one appears in the assembly steps, so you "
+      + "should rarely need this page — it is here for when you do."));
+    /* Grouped by what you are DOING when you meet the word, not
+       alphabetically: "which foot" and "which stitch" are different questions
+       and an A-Z interleaves them. */
+    const GROUPS = ["geometry", "parts", "joins", "stitches", "shaping",
+                    "zippers", "materials", "tools", "embroidery", "hardware",
+                    "faults"];
+    const byGroup = new Map();
+    terms.forEach(t => {
+      if (!byGroup.has(t.group)) byGroup.set(t.group, []);
+      byGroup.get(t.group).push(t);
+    });
+    const order = GROUPS.filter(g => byGroup.has(g))
+      .concat([...byGroup.keys()].filter(g => !GROUPS.includes(g)));
+    order.forEach(g => {
+      d.appendChild(el("h2", null, g[0].toUpperCase() + g.slice(1)));
+      d.appendChild(tableOf(["Term", "What it means"],
+        byGroup.get(g).map(t => {
+          const b = el("button", "term", t.term);
+          b.onclick = () => openTerm(t);
+          const cell = el("span");
+          cell.appendChild(b);
+          if ((t.aka || []).length)
+            cell.appendChild(el("span", "termaka", "  " + t.aka.join(", ")));
+          return [{node: cell}, {t: t.short, cls: "sub"}];
+        })));
+    });
+    return d;
+  }
   if (name === "Overview"){
     d.appendChild(el("p", "lede", p.description));
     if (p.open_questions.length){
@@ -1191,6 +1244,91 @@ function panelFor(name, p){
 }
 
 /* ---------------- reader ------------------------------------------------- */
+/* ---- the glossary ------------------------------------------------------
+   A glossary nobody opens is prose with a table of contents. So the terms
+   are DATA, and the first use of each one in a step body becomes a link to
+   its entry -- which is the only version of a glossary anybody reads.
+   Longest name first, so "reverse coil" wins over "coil".
+------------------------------------------------------------------------ */
+let GLOSS = null, GLOSS_RE = null;
+function glossIndex(){
+  if (GLOSS) return GLOSS;
+  GLOSS = new Map();
+  const names = [];
+  (LIB.glossary || []).forEach(t => {
+    [t.term].concat(t.aka || []).forEach(n => {
+      GLOSS.set(n.toLowerCase(), t); names.push(n);
+    });
+  });
+  names.sort((a, b) => b.length - a.length);
+  const esc = s => s.replace(/[.*+?^${}()|[\]\]/g, "\$&");
+  /* Word boundaries on both ends, so "tack" does not fire inside
+     "bar-tack" -- which is a separate entry and the one that should win. */
+  GLOSS_RE = names.length
+    ? new RegExp("\b(" + names.map(esc).join("|") + ")\b", "gi") : null;
+  return GLOSS;
+}
+/* Turn a plain paragraph into nodes, linking the FIRST use of each term. */
+function glossed(text){
+  glossIndex();
+  const frag = document.createDocumentFragment();
+  if (!GLOSS_RE || !text){ frag.appendChild(document.createTextNode(text || "")); return frag; }
+  const used = new Set();
+  let last = 0, m;
+  GLOSS_RE.lastIndex = 0;
+  while ((m = GLOSS_RE.exec(text)) !== null){
+    const key = m[1].toLowerCase(), entry = GLOSS.get(key);
+    if (!entry || used.has(entry.term)){ continue; }
+    used.add(entry.term);
+    if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+    const b = el("button", "term", m[1]);
+    b.title = entry.short;
+    b.onclick = e => { e.stopPropagation(); openTerm(entry); };
+    frag.appendChild(b);
+    last = m.index + m[1].length;
+  }
+  frag.appendChild(document.createTextNode(text.slice(last)));
+  return frag;
+}
+function openTerm(t){
+  const body = $("#readerBody");
+  $("#readerTitle").textContent = t.term;
+  body.innerHTML = "";
+  const kick = el("div", "kick k-technique", t.group);
+  body.appendChild(kick);
+  body.appendChild(el("p", "termshort", t.short));
+  (t.aka || []).length && body.appendChild(
+    el("div", "termaka", "also written: " + t.aka.join(", ")));
+  /* [[cross refs]] jump to the other entry rather than dead-ending. */
+  (t.body || "").split("\n\n").forEach(par => {
+    const p = el("p");
+    let last = 0, m;
+    const re = /\[\[([^\]]+)\]\]/g;
+    while ((m = re.exec(par)) !== null){
+      p.appendChild(document.createTextNode(par.slice(last, m.index)));
+      const other = glossIndex().get(m[1].toLowerCase());
+      if (other){
+        const b = el("button", "term", m[1]);
+        b.onclick = () => openTerm(other);
+        p.appendChild(b);
+      } else p.appendChild(document.createTextNode(m[1]));
+      last = m.index + m[0].length;
+    }
+    p.appendChild(document.createTextNode(par.slice(last)));
+    body.appendChild(p);
+  });
+  if (t.see){
+    const doc = (LIB.help || []).find(d => d.path === t.see);
+    if (doc){
+      const btn = el("button", "seebtn", "◆  " + doc.title);
+      btn.onclick = () => openDoc(doc);
+      body.appendChild(btn);
+    }
+  }
+  $("#reader").hidden = false;
+  $("#readerClose").focus();
+}
+
 function openDoc(doc){
   $("#readerTitle").textContent = doc.title + " — " + doc.path;
   $("#readerBody").innerHTML = markdown(LIB.docs[doc.path] || "*Not available.*");

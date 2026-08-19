@@ -1143,6 +1143,60 @@ check("...and every stated length matches the derived buy",
       f"hardware {_hwlen} vs schedule "
       f"{sorted(int(r['buy'].rstrip(chr(34))) for r in _zs)}")
 
+section("the glossary: terminology is defined, not assumed")
+_G = B.load_glossary()
+_terms = _G["terms"]
+_names = {t["term"].lower() for t in _terms}
+check("the glossary is data, not prose", len(_terms) >= 40 and
+      all({"term", "group", "short", "body"} <= set(t) for t in _terms))
+check("every term is grouped by what you are DOING when you meet it",
+      {t["group"] for t in _terms} <= {"geometry", "parts", "joins", "stitches",
+      "shaping", "zippers", "materials", "tools", "embroidery", "hardware",
+      "faults"}, str(sorted({t["group"] for t in _terms})))
+check("the words this construction cannot be read without are all in it",
+      {"lap join", "bar-tack", "topstitch", "placket", "box-x", "flange",
+       "stitch line", "mitre", "binding", "gusset"} <= _names,
+      str(sorted({"lap join", "bar-tack", "topstitch", "placket", "box-x",
+                  "flange", "stitch line", "mitre", "binding", "gusset"} - _names)))
+check("no name is claimed by two entries",
+      len([n for t in _terms for n in [t["term"]] + list(t.get("aka", []))])
+      == len({n.lower() for t in _terms for n in [t["term"]] + list(t.get("aka", []))}),
+      "the page would link it to whichever came first")
+check("every 'see' points at a note that exists",
+      all((B.REPO / t["see"]).is_file() for t in _terms if t.get("see")))
+_xref = [(t["term"], m) for t in _terms
+         for m in __import__("re").findall(r"\[\[([^\]]+)\]\]", t.get("body", ""))]
+check("every cross-reference resolves to another term",
+      all(m.lower() in _names or any(m.lower() == a.lower()
+          for x in _terms for a in x.get("aka", [])) for _, m in _xref),
+      str([m for _, m in _xref if m.lower() not in _names][:3]))
+# Inflections are DECLARED per term, not guessed with a suffix rule: a step
+# says "clipping the corners", and a blanket -ing rule would also match
+# "ringing" against "ring".
+check("inflected forms are declared where a step uses them",
+      all(any(f.lower() in {a.lower() for a in t.get("aka", [])}
+              for t in _terms if t["term"] == base)
+          for base, f in (("clip", "clipping"), ("topstitch", "topstitched"),
+                          ("binding", "bound"), ("mitre", "mitred"),
+                          ("relief clip", "relieve"))))
+_bad = None
+try:
+    B.load_glossary.cache_clear()
+    _orig = B.GLOSSARY.read_text(encoding="utf-8")
+    B.GLOSSARY.write_text(_orig.replace('"term": "placket"', '"term": "gusset"', 1),
+                          encoding="utf-8")
+    B.load_glossary()
+except ValueError as e:
+    _bad = str(e)
+finally:
+    B.GLOSSARY.write_text(_orig, encoding="utf-8")
+    B.load_glossary.cache_clear()
+check("...and a duplicate name is refused rather than shadowed",
+      _bad is not None and "twice" in (_bad or ""), _bad or "no error raised")
+check("the glossary rides on the package so the page can link from it",
+      len(h.package(SPECS["HipPack_10x7x4"], CONS, CONS_PATH, "later")["glossary"])
+      == len(_terms))
+
 section("every step is drawn, not just described")
 # A step describes an operation in space. Prose alone asks the reader to build
 # the picture from words, which is exactly where a build goes wrong.

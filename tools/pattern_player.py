@@ -118,14 +118,19 @@ def library(pkgs: list[dict]) -> dict:
                 help_docs.append({k: v for k, v in d.items() if k != "body"})
     help_docs.sort(key=lambda d: (KIND_ORDER[d["kind"]], d["title"]))
 
+    # The glossary is identical on every package -- shared vocabulary, not a
+    # property of any one bag. Hoist it the same way doc bodies are hoisted.
+    glossary = next((p["glossary"] for p in ordered if p.get("glossary")), [])
+
     thin = []
     for p in ordered:
         q = dict(p)
         q["docs"] = [{k: v for k, v in d.items() if k != "body"} for d in p["docs"]]
+        q.pop("glossary", None)
         thin.append(q)
 
     return {"schema_version": SCHEMA_VERSION, "patterns": thin,
-            "help": help_docs, "docs": bodies}
+            "help": help_docs, "docs": bodies, "glossary": glossary}
 
 
 def build(pkgs: list[dict]) -> Path:

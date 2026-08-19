@@ -1,0 +1,447 @@
+{
+  "glossary": "sewing",
+  "title": "What the words mean",
+  "summary": "Every term the patterns use as if you already knew it. Grouped by what you are doing when you meet it. `see` names the technique note that teaches the operation; the definition here is what you need to read the step.",
+  "terms": [
+    {
+      "term": "lap join",
+      "aka": [
+        "lap",
+        "lapped",
+        "lapping",
+        "laps"
+      ],
+      "group": "joins",
+      "short": "Two pieces overlapped by a stated amount and topstitched, rather than seamed edge to edge.",
+      "body": "The flat join this construction uses wherever a seam would be too thick to bind. One piece lies ON TOP of the other by the lap distance and two rows of topstitching hold it. There is no allowance turned under and nothing to press.\n\n**The arithmetic catches people out.** Two strips lapped by ½\" cover their combined length LESS ½\", not less an inch — the lap is shared. So only ONE of the pair may be cut with that allowance on it, and in this family it is always the zipper panel; the gusset is trimmed to the bare figure.",
+      "see": "patterns/techniques/zippers.md"
+    },
+    {
+      "term": "topstitch",
+      "group": "stitches",
+      "short": "A line of straight stitching sewn from the RIGHT side, meant to be seen.",
+      "body": "It does two jobs at once and the patterns rely on both: it holds layers together, and it is a design line. Because it shows, it is sewn with heavier thread, a longer stitch (3.0–3.5 mm here) and a guide rather than by eye.\n\nDistinct from [[edgestitch]], which is the same operation crowded right up against a fold or seam. When a step says \"two rows\", the first is structural and the second stops the upper layer curling away.",
+      "aka": [
+        "topstitched",
+        "topstitching",
+        "topstitches"
+      ]
+    },
+    {
+      "term": "bar-tack",
+      "aka": [
+        "bar tack",
+        "tack",
+        "bar-tacked",
+        "bar-tacking",
+        "tacks",
+        "tacked"
+      ],
+      "group": "stitches",
+      "short": "A dense zigzag worked back and forth over a short distance to lock something in place.",
+      "body": "A commercial machine has a programmed bar-tack. **This one does not**, so it is worked by hand: zigzag about 3 mm wide at 0.4 mm length, five or six passes back and forth over the same ground.\n\nTwo uses here, and they are unrelated. Across a zipper coil it becomes the new **stop** that keeps the slider on the chain. Anywhere else it is a strength tack. See [[box-X]] for the version used on webbing.",
+      "see": "patterns/techniques/zippers.md"
+    },
+    {
+      "term": "box-X",
+      "aka": [
+        "box x",
+        "boxed X",
+        "box-X'd"
+      ],
+      "group": "stitches",
+      "short": "A stitched rectangle with both diagonals inside it — the standard tack for webbing under load.",
+      "body": "It spreads the load over an area instead of a line. Sewn as one continuous path, which means one edge of the box gets retraced; that is correct, not a mistake.\n\nEvery box-X on this bag is a thick stack and wants hand-wheeling rather than the foot pedal.",
+      "see": "patterns/techniques/webbing-hardware.md"
+    },
+    {
+      "term": "placket",
+      "group": "parts",
+      "short": "A flap of cloth that covers a zip or an opening so it does not read as a line across the panel.",
+      "body": "In garments a placket is the strip that carries a button band. Here it is the simplest version: a rectangle caught along one edge in a seam being sewn anyway, hanging free over the coil.\n\nIt costs one cut piece and NO new seam — the ½\" caught in it is caught by the same two rows that lap the near piece onto the zipper tape. On a waterproof shell it is also a rain cover over the most perforated line on the bag.",
+      "see": "patterns/techniques/panel-pocket.md",
+      "aka": [
+        "plackets"
+      ]
+    },
+    {
+      "term": "gusset",
+      "group": "parts",
+      "short": "The strip that runs round the bag's perimeter and gives it depth.",
+      "body": "A bag with no gusset is flat. Here the gusset plus the zipper panel form one continuous **ring** that the front and back panels are bound to. Its cut width is the bag's depth plus a flange at each side.",
+      "aka": [
+        "gussets"
+      ]
+    },
+    {
+      "term": "ring",
+      "group": "parts",
+      "short": "The closed loop of gusset + zipper panel that the two panels are bound into.",
+      "body": "Cut long and trimmed to fit, because its true length depends on the lap you actually achieve and on how hard the binding pulls. Its target is the stitch-line perimeter of a panel: 2 × (face width + face height)."
+    },
+    {
+      "term": "flange",
+      "group": "geometry",
+      "short": "The seam allowance sticking OUT of the bag, which the binding then wraps.",
+      "body": "This is the whole reason a bound bag's panels are cut *smaller* than the bag they make. In a turned seam the allowance is consumed on the inside; here it points outward and becomes part of the finished dimension.\n\n`flange = seam allowance + turn` — the distance from the finished edge in to the [[stitch line]].",
+      "aka": [
+        "flanges"
+      ]
+    },
+    {
+      "term": "stitch line",
+      "group": "geometry",
+      "short": "Where the needle actually goes. Every figure in these patterns is measured from it.",
+      "body": "Not the cut edge and not the edge of the binding. The `face` dimensions are the stitch-line box, and the usable interior is measured from it.\n\n**Guide off the RAW EDGE, not off the binding's inner edge.** The binding laps past the stitching, so guiding on its edge lands the needle 1/16\" shy — and a run that drifts comes out short of the panels it has to wrap.",
+      "see": "patterns/techniques/binding.md"
+    },
+    {
+      "term": "turn",
+      "group": "geometry",
+      "short": "How far the binding folds round past the raw edges — 1/16\" here.",
+      "body": "Small and consequential: it is the entire difference between the panel you cut and the bag you get. `panel = finished − 2 × turn`."
+    },
+    {
+      "term": "show",
+      "group": "geometry",
+      "short": "How much binding is visible on each face of the finished bag.",
+      "body": "Distinct from [[flange]], and they are not the same number. `visible cloth = overall − 2 × show` is what artwork must be sized to; `face = overall − 2 × flange` is the stitch-line box. Reading one for the other is a mistake this repo has made and corrected."
+    },
+    {
+      "term": "face",
+      "group": "geometry",
+      "short": "The stitch-line box — NOT the cloth you can see.",
+      "body": "The interior volume is computed from it. What you can see is `visible`, an eighth of an inch smaller each way."
+    },
+    {
+      "term": "binding",
+      "group": "joins",
+      "short": "A strip wrapped over a raw edge and stitched through, finishing it and joining it in one pass.",
+      "body": "**Single fold** where the shell does not ravel: two layers at the seam. **Double fold** where it does, with the outer edge turned under: four layers, and on a mitred corner that is the difference between sewable and not.\n\nCut on the BIAS wherever it has to go round a curve; straight grain will not ease.",
+      "see": "patterns/techniques/binding.md",
+      "aka": [
+        "bind",
+        "bound",
+        "binds"
+      ]
+    },
+    {
+      "term": "bias",
+      "group": "materials",
+      "short": "45° to the weave — the direction cloth stretches.",
+      "body": "A binding strip cut on the bias eases round a curve; one cut on the straight grain ripples or drags. The cost is that a bias strip comes off the DIAGONAL of a square, so its length is capped by the square's size rather than by the roll width, and long runs are pieced with 45° joins."
+    },
+    {
+      "term": "mitre",
+      "aka": [
+        "miter",
+        "mitred",
+        "mitring",
+        "mitres",
+        "mitered",
+        "mitering"
+      ],
+      "group": "joins",
+      "short": "The folded corner that lets one continuous binding strip turn a square corner.",
+      "body": "Sew to the stitch-line intersection and STOP. Fold the binding straight back on itself so a 45° diagonal appears, fold it forward down the next edge, then resume. The binding doubles at that fold, which makes the mitre the thickest seam on most of these bags.\n\nA ROUNDED corner needs no mitre at all — the strip eases round it.",
+      "see": "patterns/techniques/binding.md"
+    },
+    {
+      "term": "clip",
+      "group": "shaping",
+      "short": "A single cut into the seam allowance, to the stitch line, so it can splay at a corner.",
+      "body": "One clip per square corner. Distinct from a [[relief clip]]: a clip lets an allowance open at a point, relief lets it open continuously round a curve.\n\nAlso the noun for the sprung plastic clamps used instead of pins — **never pins on a coated shell**, because a pin hole is permanent and it is a hole in the waterproofing.",
+      "aka": [
+        "clips",
+        "clipped",
+        "clipping"
+      ]
+    },
+    {
+      "term": "relief clip",
+      "group": "shaping",
+      "short": "Shallow snips spaced along a curve so a flat strip's raw edge can reach further than its stitch line.",
+      "body": "Round a convex curve the raw edge has about 25% further to travel than the stitch line does. Relieve it with several shallow snips a seam allowance apart — **not** one deep cut, which becomes a weak point.",
+      "aka": [
+        "relieve",
+        "relieved",
+        "relieving",
+        "relief"
+      ]
+    },
+    {
+      "term": "ease",
+      "group": "shaping",
+      "short": "Persuading a longer edge to fit a shorter one without a pleat.",
+      "body": "What bias binding does round a curve. If you find yourself pulling hard, the strip is on the straight grain or the curve needs relief.",
+      "aka": [
+        "eased",
+        "easing",
+        "eases"
+      ]
+    },
+    {
+      "term": "raw edge",
+      "group": "materials",
+      "short": "A cut edge with nothing done to it.",
+      "body": "Whether that is acceptable depends on the cloth, and on two INDEPENDENT properties: whether it **ravels** and whether it **melt-seals**. 600D coated polyester does not ravel and does melt; waxed cotton ravels and does not melt; vinyl does neither."
+    },
+    {
+      "term": "ravel",
+      "aka": [
+        "fray",
+        "ravels",
+        "ravelling",
+        "frays",
+        "fraying",
+        "frayed"
+      ],
+      "group": "materials",
+      "short": "Yarns working loose from a cut edge over time.",
+      "body": "The single property that decides whether this family needs a second material. A shell that ravels cannot bind itself at single fold, so it needs binding tape bought separately — and four layers a seam instead of two."
+    },
+    {
+      "term": "melt-seal",
+      "group": "materials",
+      "short": "A synthetic edge fused by heat so it cannot ravel.",
+      "body": "Independent of ravelling: a coated cotton neither ravels nor melts. A hot knife does it in one pass, but on a COATED face it can leave a hard bead — test on a scrap, and note that nothing in this family actually requires a sealed edge.",
+      "aka": [
+        "melt-seals",
+        "melt-sealed",
+        "melt-sealing"
+      ]
+    },
+    {
+      "term": "right side",
+      "aka": [
+        "wrong side"
+      ],
+      "group": "materials",
+      "short": "The face of the cloth meant to be seen, and its reverse.",
+      "body": "Matters more than usual here because a single-fold binding shows on BOTH faces of the bag. Cut every piece — binding strips included — with the right side facing the same way, or one strip will not match the strip beside it."
+    },
+    {
+      "term": "grain",
+      "group": "materials",
+      "short": "The direction of the woven yarns.",
+      "body": "Straight grain is stable; [[bias]] stretches. Cut long pieces along the grain so they do not grow in use."
+    },
+    {
+      "term": "basting tape",
+      "group": "tools",
+      "short": "Narrow double-sided tape that holds a lap exactly while you sew it.",
+      "body": "The right answer wherever pins would leave holes and clips cannot hold a lap flat — which is every zipper lap in this family. A lap that shifts a sixteenth shows for the life of the bag."
+    },
+    {
+      "term": "walking foot",
+      "group": "tools",
+      "short": "A foot that feeds the top layer as well as the bottom.",
+      "body": "Without one, the feed dogs drag the underside along while the presser foot holds the top still, and thick or coated layers shift against each other. Used for binding and for anything multi-layer."
+    },
+    {
+      "term": "zipper foot",
+      "group": "tools",
+      "short": "A narrow foot that lets the needle run close beside the coil.",
+      "body": "A standard foot cannot get near enough. The stitch line belongs on the TAPE — never through the coil."
+    },
+    {
+      "term": "hand-wheel",
+      "group": "tools",
+      "short": "Turning the machine's wheel by hand, one stitch at a time, instead of using the pedal.",
+      "body": "For any stack thick enough that the needle might deflect or break — every mitred corner and every box-X here. You feel the resistance before the needle does something you cannot undo.",
+      "aka": [
+        "hand-wheeled",
+        "hand-wheeling"
+      ]
+    },
+    {
+      "term": "feed dog",
+      "group": "tools",
+      "short": "The toothed bars under the needle plate that pull cloth through.",
+      "body": "They only ever grip the BOTTOM layer, which is why a [[walking foot]] exists and why the top layer creeps on a long seam."
+    },
+    {
+      "term": "pucker",
+      "group": "faults",
+      "short": "A ripple or gather along a seam that should be flat.",
+      "body": "Usually one of: tension too tight, a curve that was not relieved, easing a strip that had no bias, or two corners cut to slightly different radii.",
+      "aka": [
+        "puckers",
+        "puckered"
+      ]
+    },
+    {
+      "term": "float",
+      "group": "faults",
+      "short": "A length of thread lying loose across the work, unattached.",
+      "body": "In embroidery it is the travel thread between two stitched areas, cut off by hand afterwards. This machine does not trim within a colour, so every jump becomes a float you snip.",
+      "aka": [
+        "floats"
+      ]
+    },
+    {
+      "term": "channel",
+      "group": "parts",
+      "short": "One compartment of a divider, made by a line of topstitching through divider and panel.",
+      "body": "Two lines of stitching make three channels. Their widths are measured across the usable width, which depends on whether the divider is caught in the binding or topstitched clear of it.",
+      "aka": [
+        "channels"
+      ]
+    },
+    {
+      "term": "keeper",
+      "aka": [
+        "belt keeper",
+        "belt loop",
+        "keepers"
+      ],
+      "group": "parts",
+      "short": "A cloth tunnel tacked to the back panel that a belt threads through.",
+      "body": "Fold it round a scrap of the ACTUAL belt to get the tunnel size right, then box-X both ends. Both ends — one tack per keeper is an undercount that has shipped here.",
+      "see": "patterns/techniques/webbing-hardware.md"
+    },
+    {
+      "term": "chassis",
+      "group": "parts",
+      "short": "A continuous webbing loop running the bag's whole girth, so straps pull on webbing rather than on cloth.",
+      "body": "A belt pouch carried by its belt needs none. Below about 2½\" of depth there is no room for one beside the zipper anyway."
+    },
+    {
+      "term": "rib",
+      "group": "parts",
+      "short": "A narrow strip topstitched down both long edges, used to divide or to reinforce.",
+      "body": "Distinct from a [[channel]] line, which is stitching alone with no added strip.",
+      "aka": [
+        "ribs"
+      ]
+    },
+    {
+      "term": "tri-glide",
+      "group": "hardware",
+      "short": "A three-bar slide that locks webbing by friction so a strap can be adjusted.",
+      "body": "Threading is the whole trick: over the top bar, UNDER the middle bar, back over the top bar. Passed straight through, it slips.",
+      "see": "patterns/techniques/webbing-hardware.md"
+    },
+    {
+      "term": "coil",
+      "group": "zippers",
+      "short": "A zipper whose teeth are a monofilament spiral sewn to the tape.",
+      "body": "Self-healing where a moulded tooth shears off, and it turns a corner. **#5** is the chain width in millimetres — the right size for a bag opening.",
+      "see": "patterns/techniques/zippers.md",
+      "aka": [
+        "coils"
+      ]
+    },
+    {
+      "term": "reverse coil",
+      "group": "zippers",
+      "short": "The same chain made up with the coil on the BACK, so the outside shows flat tape.",
+      "body": "Costs nothing extra and sheds water better. Two consequences: the chain goes on the bench coil-DOWN or the finished pull ends up inside, and a reverse slider is a DIFFERENT PART from a standard one.\n\nNot waterproof — water-shedding.",
+      "see": "patterns/techniques/zippers.md"
+    },
+    {
+      "term": "slider",
+      "group": "zippers",
+      "short": "The part that opens and closes the chain, threaded on from a cut end.",
+      "body": "It zips BEHIND itself, which is why two sliders close a run only when their noses point outward and their tails meet. Both go on before either end is stopped; there is no adding one afterwards.",
+      "aka": [
+        "sliders"
+      ]
+    },
+    {
+      "term": "stop",
+      "group": "zippers",
+      "short": "What keeps the slider from running off the end of the chain.",
+      "body": "Bought zippers have metal ones. Cut to length, you make your own with a [[bar-tack]] — and trim 1\" beyond it, never flush. Where a zip end is bound over, the stop must sit INSIDE the stitch line so the binding never has to wrap a lump.",
+      "aka": [
+        "stops"
+      ]
+    },
+    {
+      "term": "tape",
+      "group": "zippers",
+      "short": "The woven band each side of the coil. It is what you sew through.",
+      "body": "About ½\" each side. Denser than the shell, so tension often needs easing off — find that out on scrap."
+    },
+    {
+      "term": "hoop",
+      "group": "embroidery",
+      "short": "The two-part ring that clamps fabric taut for the embroidery machine.",
+      "body": "**On a coated or waterproof shell, do not hoop the piece even if it fits** — the ring compresses the coating and the mark can be permanent. Most pieces here are too small to hoop anyway. Both problems have one answer: embroider an oversized blank floated on hooped [[stabilizer]], and cut the piece out of it afterwards.",
+      "aka": [
+        "hooped",
+        "hooping",
+        "hoops"
+      ]
+    },
+    {
+      "term": "stabilizer",
+      "aka": [
+        "tear-away",
+        "sticky-back"
+      ],
+      "group": "embroidery",
+      "short": "Backing that supports fabric while it is stitched.",
+      "body": "**Sticky-back tear-away** is the one used here: hooped by itself, its paper scored and peeled, the blank pressed down and BASTED to it. Use one you can baste rather than iron — a coated shell will not take a fusible, and heat is what most waterproof finishes cannot survive."
+    },
+    {
+      "term": "underlay",
+      "group": "embroidery",
+      "short": "Stitching laid down first, under a satin or fill, to give the top stitches something to sit on.",
+      "body": "Without it a satin sinks into the weave and bobbin thread shows along the rails. Banded by column width: centre-walk up to 2 mm, plus contour to 3.5 mm, plus zigzag beyond."
+    },
+    {
+      "term": "satin",
+      "group": "embroidery",
+      "short": "Dense parallel stitches spanning a narrow shape — the standard for lettering and outlines.",
+      "body": "A satin is a fill rotated 90°, and it is judged against the same density. Below about 1 mm wide it will not hold; above about 8 mm it snags."
+    },
+    {
+      "term": "pull compensation",
+      "group": "embroidery",
+      "short": "Growing each colour slightly so neighbours overlap instead of leaving bare cloth between them.",
+      "body": "About 0.2 mm per side here. It has a cost that is easy to miss: it takes 0.2 mm per side off every KNOCKOUT too, so a gap drawn at 1.4 mm closes to 1.0 mm."
+    },
+    {
+      "term": "welt",
+      "group": "joins",
+      "short": "A pocket opening cut INTO a panel and faced with bound lips.",
+      "body": "Named here only to say this family never does it. The hardest operation in bag making, it puts a slit across the grain where the load runs, and it cannot be practised on scrap — because the practice piece is the panel. Every pocket here is built by lapping onto tape instead, so nothing is ever cut open."
+    },
+    {
+      "term": "backstitch",
+      "group": "stitches",
+      "short": "A few stitches sewn in reverse to lock the start or end of a seam.",
+      "body": "On a seam whose ends will be caught in binding, it is unnecessary — the binding locks them. On a free end it is not optional.",
+      "aka": [
+        "backstitched",
+        "backstitching"
+      ]
+    },
+    {
+      "term": "edgestitch",
+      "group": "stitches",
+      "short": "Topstitching crowded right against a fold or seam, about 1/16\" out.",
+      "body": "Distinct from [[topstitch]] only in distance, but the guide is different: you run the fold against the foot rather than measuring.",
+      "aka": [
+        "edgestitched",
+        "edgestitching"
+      ]
+    },
+    {
+      "term": "stiffener",
+      "group": "parts",
+      "short": "A loose panel dropped into the base to stop it sagging.",
+      "body": "Loose, not sewn in, so it can come out to wash the bag. None of the current patterns declares one.",
+      "aka": [
+        "stiffeners"
+      ]
+    },
+    {
+      "term": "wear strip",
+      "group": "parts",
+      "short": "An extra layer on the outside of the base, where the bag is set down.",
+      "body": "Sacrificial. Cheaper to replace than the panel it protects."
+    }
+  ]
+}

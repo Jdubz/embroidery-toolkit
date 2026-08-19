@@ -62,6 +62,7 @@ Assembly steps are parameterised two ways, both deliberately dumb:
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import json
 import math
@@ -73,6 +74,9 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 SPECS = REPO / "patterns" / "specs"
 CONSTRUCTIONS = REPO / "patterns" / "constructions"
+#: The vocabulary the patterns use as if you already knew it. Shared by every
+#: bag, so it is hoisted into the library once rather than inlined four times.
+GLOSSARY = REPO / "patterns" / "glossary.json"
 PACKAGES = REPO / "build" / "patterns"
 
 SCHEMA_VERSION = "1.0"
@@ -2465,6 +2469,7 @@ class BoxBag:
             "takeoff": self.takeoff(),
             "hardware": self.spec.get("hardware", []),
             "zipper_schedule": self.zipper_schedule(),
+            "glossary": load_glossary()["terms"],
             "assembly": self.assembly(construction),
             "stitch_schedule": self.applicable(construction, "stitch_schedule"),
             "tools": self.applicable(construction, "tools"),
@@ -2502,6 +2507,33 @@ def load(path: Path) -> BoxBag:
     if spec.get("name") != path.stem:
         raise ValueError(f"{path.name}: name must match the filename")
     return BoxBag(spec)
+
+
+@functools.lru_cache(maxsize=1)
+def load_glossary() -> dict:
+    """The shared vocabulary, validated on the way in.
+
+    A glossary is prose, and prose gets skipped -- so this one is DATA. The
+    page links the first use of each term in every step to its entry, which is
+    the only version of a glossary anybody reads. That only works if the terms
+    are well-formed, so a malformed entry is an error here rather than a term
+    that silently never links.
+    """
+    g = json.loads(GLOSSARY.read_text(encoding="utf-8"))
+    seen = set()
+    for t in g.get("terms", []):
+        for k in ("term", "group", "short", "body"):
+            if not str(t.get(k, "")).strip():
+                raise ValueError(f"glossary: {t.get('term')!r} has no {k!r}")
+        for name in [t["term"]] + list(t.get("aka", [])):
+            if name.lower() in seen:
+                raise ValueError(f"glossary: {name!r} is defined twice -- "
+                                 "the page would link it to whichever came first")
+            seen.add(name.lower())
+        if t.get("see") and not (REPO / t["see"]).is_file():
+            raise ValueError(f"glossary: {t['term']!r} points at a missing "
+                             f"{t['see']!r}")
+    return g
 
 
 def load_construction(name: str) -> tuple[dict | None, Path]:
