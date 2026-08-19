@@ -8,15 +8,22 @@ const OPEN = '<script type="application/json" id="library">';
 const s0 = built.indexOf(OPEN), s1 = built.indexOf("<" + "/script>", s0);
 const LIB = JSON.parse(built.slice(s0 + OPEN.length, s1).split("\u003c").join("<"));
 
+/* Run the PAGE's own matcher, not a copy of it.
+   The first version of this file reimplemented the regex, so it went on
+   passing while the shipped page could not even parse -- exactly the shape of
+   bug it existed to catch. Lift glossIndex/GLOSS_RE straight out of the page
+   and drive those. */
+const src = fs.readFileSync("tools/pattern_player.html", "utf8");
+const a = src.indexOf("let GLOSS = null, GLOSS_RE = null;");
+const b = src.indexOf("function glossed(text)");
+if (a < 0 || b < 0){ console.error("GLOSSARY: could not locate the matcher"); process.exit(2); }
+const page = new Function("LIB",
+  src.slice(a, b) + "\nreturn {glossIndex, get RE(){ return GLOSS_RE; }};")(LIB);
+
 const terms = LIB.glossary || [];
-const names = [];
-const byName = new Map();
-terms.forEach(t => [t.term].concat(t.aka || []).forEach(n => {
-  names.push(n); byName.set(n.toLowerCase(), t);
-}));
-names.sort((a, b) => b.length - a.length);
-const esc = s => s.replace(new RegExp("[" + "\\.*+?^${}()|[\\]\\\\" + "]", "g"), "\\$&");
-const RE = new RegExp("\\b(" + names.map(esc).join("|") + ")\\b", "gi");
+const byName = page.glossIndex();
+const RE = page.RE;
+if (!RE){ console.error("GLOSSARY: the page built no regex"); process.exit(2); }
 
 /* every step body, across every bag */
 const bodies = [];

@@ -949,9 +949,7 @@ function cards(items, kind, docs){
     if (n.body){
       /* One paragraph per blank line, and the first use of each glossary term
          becomes a link. A table of definitions nobody opens is prose. */
-      String(n.body).split("
-
-").forEach(par => {
+      String(n.body).split("\n\n").forEach(par => {
         const p = el("p");
         p.appendChild(kind === "step" ? glossed(par) : document.createTextNode(par));
         b.appendChild(p);
@@ -1261,11 +1259,11 @@ function glossIndex(){
     });
   });
   names.sort((a, b) => b.length - a.length);
-  const esc = s => s.replace(/[.*+?^${}()|[\]\]/g, "\$&");
+  const esc = s => s.replace(/[\.*+?^${}()|[\]\\]/g, "\\$&");
   /* Word boundaries on both ends, so "tack" does not fire inside
      "bar-tack" -- which is a separate entry and the one that should win. */
   GLOSS_RE = names.length
-    ? new RegExp("\b(" + names.map(esc).join("|") + ")\b", "gi") : null;
+    ? new RegExp("\\b(" + names.map(esc).join("|") + ")\\b", "gi") : null;
   return GLOSS;
 }
 /* Turn a plain paragraph into nodes, linking the FIRST use of each term. */

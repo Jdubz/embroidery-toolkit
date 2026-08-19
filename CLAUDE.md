@@ -338,6 +338,24 @@ $env:PYTHONPATH = "D:\Development\Embroidery\tools"
   hashes are what tie a `.pes` to the tooling that made it. Fixing a bug in
   `satin_params.py` marks every design that used it stale, automatically. Add a
   script to that list when it can change output.
+- **The built player is only a template until a browser parses it — so parse
+  it.** `node tools/tests/run_page_tests.js` after `pattern_player.py`. One bad
+  token kills the whole `<script>` block and the page renders **completely
+  blank** while every Python check stays green; that shipped, and the only
+  symptom was `Uncaught SyntaxError` in a console. The suite also renders every
+  step figure and drives the glossary matcher.
+- **A test that reimplements the code it is testing tests nothing.** The first
+  glossary check built its own copy of the term regex, so it went on passing
+  while the page's own copy could not parse. Both the figure and glossary
+  suites now lift the shipped functions out of `pattern_player.html` and drive
+  those. Same rule as running a new check against a known-good file: the thing
+  under test has to be the thing that ships.
+- **Backslashes do not survive a bash heredoc here, even a quoted one.**
+  Observed repeatedly: `\\n"` written into a heredoc arrives as a real newline, and
+  `/[...\\]/` arrives as `/[...\]/`. It is silent, and it produced both a
+  broken regex and a string literal spanning two lines. **Write JS or regex
+  with the `Write` tool, or build the escapes from `chr(92)` in Python.** Never
+  hand-verify by eye — run the parser.
 - **Never round-trip a source file through PowerShell text I/O.** `Get-Content |
   Set-Content -Encoding utf8` reads UTF-8 as ANSI and re-encodes it, turning
   every em-dash into `â€"` across the file. Done to `cli.py` here; recovered
