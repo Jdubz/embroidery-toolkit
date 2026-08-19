@@ -62,6 +62,7 @@ Assembly steps are parameterised two ways, both deliberately dumb:
 from __future__ import annotations
 
 import argparse
+import base64
 import functools
 import hashlib
 import json
@@ -77,6 +78,10 @@ CONSTRUCTIONS = REPO / "patterns" / "constructions"
 #: The vocabulary the patterns use as if you already knew it. Shared by every
 #: bag, so it is hoisted into the library once rather than inlined four times.
 GLOSSARY = REPO / "patterns" / "glossary.json"
+#: Photographs of the physical parts. Embedded as data URIs because the
+#: published page's CSP blocks every external host, which makes licence a real
+#: constraint rather than a formality -- see load_photos().
+PHOTOS = REPO / "patterns" / "photos"
 PACKAGES = REPO / "build" / "patterns"
 
 SCHEMA_VERSION = "1.0"
@@ -2470,6 +2475,7 @@ class BoxBag:
             "hardware": self.spec.get("hardware", []),
             "zipper_schedule": self.zipper_schedule(),
             "glossary": load_glossary()["terms"],
+            "photos": load_photos()["items"],
             "assembly": self.assembly(construction),
             "stitch_schedule": self.applicable(construction, "stitch_schedule"),
             "tools": self.applicable(construction, "tools"),
@@ -2507,6 +2513,50 @@ def load(path: Path) -> BoxBag:
     if spec.get("name") != path.stem:
         raise ValueError(f"{path.name}: name must match the filename")
     return BoxBag(spec)
+
+
+#: Licences that may be EMBEDDED. Share-alike is deliberately absent: putting a
+#: CC BY-SA image inside the page arguably pulls share-alike onto the whole
+#: published artifact, and that is the user's decision rather than a default to
+#: inherit. Such an image gets linked from a technique note instead.
+EMBEDDABLE = ("CC0", "Public domain", "CC BY 2.0", "CC BY 3.0", "CC BY 4.0")
+
+
+@functools.lru_cache(maxsize=1)
+def load_photos() -> dict:
+    """Photographs, base64'd, with the credit that has to travel with them.
+
+    A diagram can show how a lap is put together; it cannot answer "what does a
+    coil actually look like". These do. Credit is part of the record, not a
+    footnote -- an image whose licence or source is unknown cannot be published
+    and is refused here rather than discovered later.
+    """
+    man = PHOTOS / "photos.json"
+    if not man.is_file():
+        return {"items": {}}
+    doc = json.loads(man.read_text(encoding="utf-8"))
+    out = {}
+    for it in doc.get("items", []):
+        for k in ("id", "file", "title", "caption", "licence", "source"):
+            if not str(it.get(k, "")).strip():
+                raise ValueError(f"photos: {it.get('id')!r} has no {k!r}")
+        if it["licence"] not in EMBEDDABLE:
+            raise ValueError(
+                f"photos: {it['id']!r} is {it['licence']!r}, which is not in "
+                f"EMBEDDABLE -- link it from a technique note instead of "
+                "embedding it")
+        f = PHOTOS / it["file"]
+        if not f.is_file():
+            raise ValueError(f"photos: {it['id']!r} names a missing {it['file']!r}")
+        if it["id"] in out:
+            raise ValueError(f"photos: {it['id']!r} is defined twice")
+        b = f.read_bytes()
+        out[it["id"]] = {k: it[k] for k in
+                         ("id", "title", "caption", "licence", "source")} | {
+            "author": it.get("author", "Unknown"),
+            "bytes": len(b),
+            "src": "data:image/jpeg;base64," + base64.b64encode(b).decode("ascii")}
+    return {"items": out, "policy": doc.get("licence_policy", "")}
 
 
 @functools.lru_cache(maxsize=1)
@@ -2566,6 +2616,11 @@ def load_glossary() -> dict:
                     raise ValueError(f"glossary: {t['term']!r} figure wants "
                                      f"{fg.get('id')!r}, which {fg['doc']} "
                                      "does not define")
+        # A photo is named by id so the same image is never embedded twice.
+        ph = t.get("photo")
+        if ph and ph not in load_photos()["items"]:
+            raise ValueError(f"glossary: {t['term']!r} wants photo {ph!r}, "
+                             "which patterns/photos/photos.json does not define")
         # Where a term names a technique note, its references must also appear
         # in that note's own "Watch it done" table, or the two drift and the
         # reader is told different things depending which they opened.

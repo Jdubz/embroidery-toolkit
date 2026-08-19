@@ -1252,7 +1252,8 @@ check("...and every embedded id exists in the note it names",
           for f in _fig.values() if "doc" in f))
 check("generated ones name a kind the page can actually draw",
       {f["kind"] for f in _fig.values() if "kind" in f}
-      <= {"ring", "zip-panel", "face", "pocket-pieces", "seam", "anchors", "logos"},
+      <= {"ring", "zip-panel", "face", "pocket-pieces", "seam", "anchors",
+          "logos", "reverse-coil"},
       str(sorted({f["kind"] for f in _fig.values() if "kind" in f})))
 _bad3 = None
 try:
@@ -1269,6 +1270,48 @@ finally:
 check("...and an id the note does not define is refused",
       _bad3 is not None and "does not define" in (_bad3 or ""),
       _bad3 or "no error raised")
+
+# Photographs. A diagram can show how a lap goes together; it cannot answer
+# "what does a coil actually look like". These are embedded as data URIs
+# because the published page's CSP blocks every external host -- which makes
+# licence a real constraint and credit part of the record.
+_ph = B.load_photos()["items"]
+check("every photo carries its licence, author and source",
+      all(p["licence"] and p["author"] and p["source"].startswith("https://")
+          for p in _ph.values()), str(sorted(_ph)))
+check("only freely embeddable licences are inlined",
+      all(p["licence"] in B.EMBEDDABLE for p in _ph.values()),
+      str({p["id"]: p["licence"] for p in _ph.values()}))
+# Share-alike is excluded ON PURPOSE, not by oversight: embedding CC BY-SA
+# arguably pulls share-alike onto the whole published page, and that is the
+# user's call. The best coil/moulded/metal photo on Commons is CC BY-SA and is
+# linked from the technique note instead.
+check("...and share-alike is not among them",
+      not any("SA" in x for x in B.EMBEDDABLE), str(B.EMBEDDABLE))
+check("each is embedded once, as a data URI",
+      all(p["src"].startswith("data:image/jpeg;base64,") for p in _ph.values()))
+check("the terms a photograph answers best carry one",
+      {"coil", "slider", "webbing"} <= {t["term"] for t in _terms if t.get("photo")},
+      str(sorted(t["term"] for t in _terms if t.get("photo"))))
+check("reverse coil is DRAWN, because no free photograph of it exists",
+      next(t for t in _terms if t["term"] == "reverse coil")
+      .get("figure", {}).get("kind") == "reverse-coil",
+      "Commons has coil-vs-moulded and nothing on reverse use")
+_bad4 = None
+try:
+    B.load_glossary.cache_clear(); B.load_photos.cache_clear()
+    _m = B.PHOTOS / "photos.json"
+    _o4 = _m.read_text(encoding="utf-8")
+    _m.write_text(_o4.replace('"licence": "CC0"', '"licence": "CC BY-SA 4.0"', 1),
+                  encoding="utf-8")
+    B.load_photos()
+except ValueError as e:
+    _bad4 = str(e)
+finally:
+    _m.write_text(_o4, encoding="utf-8")
+    B.load_photos.cache_clear(); B.load_glossary.cache_clear()
+check("...and a share-alike photo is refused rather than embedded",
+      _bad4 is not None and "EMBEDDABLE" in (_bad4 or ""), _bad4 or "no error")
 
 check("the glossary rides on the package so the page can link from it",
       len(h.package(SPECS["HipPack_10x7x4"], CONS, CONS_PATH, "later")["glossary"])

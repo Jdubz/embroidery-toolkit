@@ -460,6 +460,16 @@
       ]
     },
     {
+      "term": "webbing",
+      "aka": [
+        "strap"
+      ],
+      "group": "materials",
+      "short": "Flat woven tape, sold by the yard, with a finished edge on both long sides.",
+      "body": "Nothing like a strip of cloth cut to the same width: the long edges are selvedge, so a cut length needs only its two ENDS sealed. Nylon ravels the moment it is cut and is the one thing in this family that genuinely needs a hot knife or a lighter.\n\n1\" is the size everything here is built around — [[keeper]] tunnels, [[tri-glide]] and D-ring tabs alike.",
+      "photo": "webbing"
+    },
+    {
       "term": "tri-glide",
       "group": "hardware",
       "short": "A three-bar slide that locks webbing by friction so a strap can be adjusted.",
@@ -496,7 +506,8 @@
       "figure": {
         "doc": "patterns/techniques/zippers.md",
         "id": "lapped-panel"
-      }
+      },
+      "photo": "coil-vs-moulded"
     },
     {
       "term": "reverse coil",
@@ -510,7 +521,10 @@
           "title": "Concealed vs reverse-use coil — YKK",
           "url": "https://ykkamericas.com/what-is-the-difference-between-concealed-and-reverse-use-coil-zippers/"
         }
-      ]
+      ],
+      "figure": {
+        "kind": "reverse-coil"
+      }
     },
     {
       "term": "slider",
@@ -535,7 +549,8 @@
       "figure": {
         "doc": "patterns/techniques/zippers.md",
         "id": "two-sliders"
-      }
+      },
+      "photo": "slider"
     },
     {
       "term": "stop",

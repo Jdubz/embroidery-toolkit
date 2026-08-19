@@ -236,6 +236,13 @@
         border-bottom:1px dotted var(--stitch)}
   .term:hover{background:var(--stitch); color:var(--sheet)}
   .termshort{font-size:15px; font-weight:600}
+  .termphoto{margin:16px 0 18px; padding:0}
+  .termphoto img{display:block; width:100%; height:auto; border:1px solid var(--rule)}
+  .termphoto figcaption{margin-top:9px; font-size:13.5px; line-height:1.55;
+                        color:var(--ink)}
+  .credit{margin-top:7px; font-family:var(--f-data); font-size:10.5px;
+          color:var(--faint)}
+  .credit a{color:var(--faint)}
   .termfig{margin:16px 0 18px}
   .watchlab{display:block; margin:18px 0 8px}
   .watch{display:flex; flex-direction:column; gap:7px}
@@ -1113,10 +1120,88 @@ function figSeam(p){
   return s;
 }
 
+/* --- standard coil against reverse coil, both faces --------------------
+   There is no freely-licensed PHOTOGRAPH of this anywhere -- Commons has
+   coil-versus-moulded and nothing on reverse use -- and a photograph would
+   be the weaker answer regardless, because the whole distinction is a
+   COMPARISON of the two faces of the same chain. So it is drawn.
+*/
+function figReverseCoil(){
+  const W = 660, H = 300;
+  const s = fig(`0 0 ${W} ${H}`,
+    "Standard coil against reverse coil, seen from the outside and in section. "
+    + "Standard shows the spiral on the face you look at; reverse shows flat "
+    + "tape, with the spiral and the slider body underneath.");
+  caption(s, 24, 22, "THE SAME CHAIN, MADE UP THE OTHER WAY");
+
+  const cols = [
+    {x: 40,  lab: "STANDARD COIL", out: "spiral", col: "var(--coil)"},
+    {x: 360, lab: "REVERSE COIL",  out: "tape",   col: "var(--muted)"}
+  ];
+  cols.forEach(c => {
+    const w = 260, y = 54;
+    /* --- the outside face, as you would see it on the bag --- */
+    s.add("text", {x: c.x, y: y - 8, "font-family":"var(--f-label)",
+                   "font-size":10.5, "letter-spacing":1.4,
+                   fill: c.out === "tape" ? "var(--good)" : "var(--muted)"}, c.lab);
+    s.add("rect", {x: c.x, y, width: w, height: 58, fill:"var(--muted)",
+                   opacity:.35});
+    if (c.out === "spiral"){
+      s.add("rect", {x: c.x + w/2 - 13, y, width: 26, height: 58,
+                     fill:"var(--coil)"});
+      for (let i = 0; i < 9; i++)
+        s.add("path", {d:`M${c.x + w/2 - 13},${y + 4 + i*6} q13,-4 26,0`,
+                       stroke:"var(--shell)", "stroke-width":1.5, fill:"none",
+                       opacity:.65});
+      s.add("text", {x: c.x + w/2, y: y + 76, "text-anchor":"middle",
+                     "font-family":"var(--f-data)", "font-size":11,
+                     fill:"var(--ink)"}, "you see the spiral");
+    } else {
+      s.add("path", {d:`M${c.x + w/2},${y} v58`, stroke:"var(--shell-dim)",
+                     "stroke-width":2, opacity:.5});
+      s.add("text", {x: c.x + w/2, y: y + 76, "text-anchor":"middle",
+                     "font-family":"var(--f-data)", "font-size":11,
+                     fill:"var(--good)"}, "you see flat tape — it reads as a SEAM");
+    }
+    /* the slider, riding on whichever face is outward */
+    s.add("path", {d:`M${c.x + w/2 - 17},${y + 14} h34 v26 h-34 z`, fill:"none",
+                   stroke:"var(--metal)", "stroke-width":3});
+
+    /* --- section, cut across the chain --- */
+    const sy = 176;
+    s.add("text", {x: c.x, y: sy - 10, "font-family":"var(--f-label)",
+                   "font-size":10, "letter-spacing":1.4,
+                   fill:"var(--muted)"}, "SECTION");
+    s.add("rect", {x: c.x, y: sy, width: w, height: 12, fill:"var(--muted)",
+                   opacity:.45});                              /* tape */
+    const up = c.out === "spiral";
+    s.add("rect", {x: c.x + w/2 - 13, y: up ? sy - 16 : sy + 12, width: 26,
+                   height: 16, fill:"var(--coil)"});           /* coil */
+    s.add("path", {d:`M${c.x + w/2 - 20},${up ? sy - 30 : sy + 30} h40`,
+                   stroke:"var(--metal)", "stroke-width":4});  /* slider */
+    s.add("text", {x: c.x + w + 4, y: sy + 6, "text-anchor":"end",
+                   "font-family":"var(--f-data)", "font-size":10,
+                   fill:"var(--faint)"}, "outside is UP");
+    s.add("path", {d:`M${c.x},${sy - 40} h${w}`, stroke:"var(--faint)",
+                   "stroke-width":1, "stroke-dasharray":"4 4"});
+  });
+
+  s.add("text", {x: 24, y: 274, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--ink)"},
+        "Same chain, same #5 size, same price. What differs is which way up it "
+        + "is made — and the SLIDER, which is a different part.");
+  s.add("text", {x: 24, y: 292, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--cut)"},
+        "Lay it coil-DOWN on the bench, or the finished bag has its pull on the "
+        + "inside and both laps have to come out.");
+  return s;
+}
+
 /* --- dispatcher -------------------------------------------------------- */
 const FIG_KINDS = {ring:figRing, "zip-panel":figZipPanel, face:figFace,
                    "pocket-pieces":figPocketPieces, seam:figSeam,
-                   anchors:figAnchors, logos:figLogos};
+                   anchors:figAnchors, logos:figLogos,
+                   "reverse-coil":figReverseCoil};
 function buildFigure(spec, p){
   try {
     if (spec.doc){
@@ -1504,6 +1589,24 @@ function openTerm(t){
      places rather than two that can drift apart. A generated one is drawn for
      the bag currently open, which is the right answer: you are reading the
      word because you met it on that bag. */
+  /* A photograph of the actual part, where a diagram cannot answer "what does
+     that look like". Embedded as a data URI -- the page's CSP blocks every
+     external host -- so the credit travels with it and is not optional. */
+  const ph = t.photo && (LIB.photos || {})[t.photo];
+  if (ph){
+    const f = el("figure", "termphoto");
+    const img = el("img");
+    img.src = ph.src; img.alt = ph.title; img.loading = "lazy";
+    f.appendChild(img);
+    f.appendChild(el("figcaption", null, ph.caption));
+    const cr = el("div", "credit");
+    cr.appendChild(document.createTextNode(ph.title + " — " + ph.author + ", "));
+    const a = el("a", null, ph.licence);
+    a.href = ph.source; a.target = "_blank"; a.rel = "noopener noreferrer";
+    cr.appendChild(a);
+    f.appendChild(cr);
+    body.appendChild(f);
+  }
   if (t.figure){
     const gfx = buildFigure(t.figure, LIB.patterns[current]);
     if (gfx){

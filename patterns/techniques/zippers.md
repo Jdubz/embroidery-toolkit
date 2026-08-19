@@ -433,6 +433,14 @@ could confirm only as far as the title.
 | **[How to Shorten 5 Zipper Types & Make Stoppers](https://threadsmonthly.com/shorten-zips/)** *(article + video)* | The bar-tacked stop. Covers coil specifically, which most tutorials skip |
 | **[Melly Sews — How to Shorten a Zipper](https://mellysews.com/how-to-shorten-a-zipper/)** *(article + video)* | Same operation, clearer photographs |
 
+**Seeing the actual parts.** The glossary carries photographs of a coil chain
+beside a moulded one, a bare slider, and webbing — public domain and CC0, so
+they are embedded in the page itself. Two things could NOT be embedded and are
+linked instead:
+
+- **[Coil, plastic and metal zippers side by side](https://commons.wikimedia.org/wiki/File:Coil_plastic_and_metal_zippers.jpg)** — the best comparison photograph there is, but it is **CC BY-SA 4.0**. Embedding a share-alike image arguably pulls share-alike onto the whole published page, which is a decision for whoever publishes it rather than a default to inherit.
+- **Reverse coil has no free photograph at all.** Wikimedia has coil-versus-moulded and nothing on reverse use, so the glossary entry is a drawing of the two faces compared — which is the better answer anyway, because the whole distinction IS the comparison. For real photographs, YKK and Ripstop below both show one.
+
 **On reverse coil, read rather than watch.** The good sources are written, and
 the distinction is one sentence with a diagram rather than a manual skill:
 [YKK on concealed vs reverse-use coil](https://ykkamericas.com/what-is-the-difference-between-concealed-and-reverse-use-coil-zippers/),

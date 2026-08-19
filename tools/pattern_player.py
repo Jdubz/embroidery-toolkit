@@ -121,16 +121,21 @@ def library(pkgs: list[dict]) -> dict:
     # The glossary is identical on every package -- shared vocabulary, not a
     # property of any one bag. Hoist it the same way doc bodies are hoisted.
     glossary = next((p["glossary"] for p in ordered if p.get("glossary")), [])
+    # Photographs are base64 and by far the heaviest thing here. Hoisting them
+    # is not a tidiness point: inlined per pattern they would ship four times.
+    photos = next((p["photos"] for p in ordered if p.get("photos")), {})
 
     thin = []
     for p in ordered:
         q = dict(p)
         q["docs"] = [{k: v for k, v in d.items() if k != "body"} for d in p["docs"]]
         q.pop("glossary", None)
+        q.pop("photos", None)
         thin.append(q)
 
     return {"schema_version": SCHEMA_VERSION, "patterns": thin,
-            "help": help_docs, "docs": bodies, "glossary": glossary}
+            "help": help_docs, "docs": bodies, "glossary": glossary,
+            "photos": photos}
 
 
 def build(pkgs: list[dict]) -> Path:
