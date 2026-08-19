@@ -115,7 +115,7 @@
     {
       "n": 3,
       "title": "Cut, and leave the gusset long",
-      "body": "Rotary-cut everything, against a metal straightedge. The shell is synthetic and does not ravel, so no edge needs turning under and a hot knife is OPTIONAL rather than required — it will seal this cloth, but on a coated face it can leave a hard bead, so test on a scrap first. The only raw edge left on the finished bag is the divider's top; a pass with a knife or a lighter tidies it and nothing more depends on it. Clips only, never pins — a pin hole in a coated shell is permanent and it is a hole in the waterproofing. If the cloth has a right side, cut EVERY piece with it facing the same way, binding strips included: a single-fold binding shows on both faces of the bag, so a strip cut face-down puts the wrong side outward and it will not match the strip next to it. Cut the gusset at {gusset_cut_long} rather than its finished {gusset_cut} and leave it long until the ring is fitted — the ring's true length depends on the allowance you actually achieve and on how hard the binding pulls, which is why good patterns give more than the calculation and let you trim. Any piece that carries embroidery is cut OVERSIZED and trimmed to size after the machine is done with it — see the next step. Where the pattern rounds a corner, cut the panels round a template rather than by eye — the two panels and the outer lower pieces all share that radius, and a corner that disagrees with its neighbour shows up as a pucker in the binding.",
+      "body": "Rotary-cut everything, against a metal straightedge. The shell is synthetic and does not ravel, so no edge needs turning under and a hot knife is OPTIONAL rather than required — it will seal this cloth, but on a coated face it can leave a hard bead, so test on a scrap first. Raw edges DO survive to the finished bag and they are fine: every lap join shows one, clamped under two rows of topstitching within {lap}, and the placket's free edge hangs loose. Seal the placket's edge with a lighter if you like — it is the only one nothing holds. Leave the lap edges alone: a hot knife can leave a hard bead on a coated face, and a bead down the middle of a lap is a ridge the foot has to climb. Clips only, never pins — a pin hole in a coated shell is permanent and it is a hole in the waterproofing. If the cloth has a right side, cut EVERY piece with it facing the same way, binding strips included: a single-fold binding shows on both faces of the bag, so a strip cut face-down puts the wrong side outward and it will not match the strip next to it. Cut the gusset at {gusset_cut_long} rather than its finished {gusset_cut} and leave it long until the ring is fitted — the ring's true length depends on the allowance you actually achieve and on how hard the binding pulls, which is why good patterns give more than the calculation and let you trim. Any piece that carries embroidery is cut OVERSIZED and trimmed to size after the machine is done with it — see the next step. Where the pattern rounds a corner, cut the panels round a template rather than by eye — the two panels and the outer lower pieces all share that radius, and a corner that disagrees with its neighbour shows up as a pucker in the binding.",
       "see": [
         "patterns/techniques/webbing-hardware.md"
       ],
@@ -252,6 +252,40 @@
     },
     {
       "n": 11,
+      "title": "Lay the chain the right way up",
+      "when": [
+        "reverse_coil"
+      ],
+      "body": "**Reverse coil**, so the OUTSIDE of the bag shows flat tape and the spiral is underneath. Lay the chain **coil-DOWN** on the bench and lap the shell onto the tape from above.\n\nCheck it before the first row, because there is no undo: close the zip, put it on the bench the way the bag will hang, and look at it. If you can see the spiral, turn it over. Get this wrong and the finished bag has its pull on the INSIDE with both laps already sewn, and unpicking them means re-cutting the strips — the needle holes stay.\n\nA reverse slider is a different part from a standard one. Check the slider against the chain before you build anything round it.",
+      "see": [
+        "patterns/techniques/zippers.md"
+      ],
+      "figures": [
+        {
+          "kind": "reverse-coil",
+          "caption": "The two make-ups compared. Whichever you have, the rule is the same: the face you will SEE goes up, because the slider and its pull have to end up on that side."
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "title": "Lay the chain the right way up",
+      "when": [
+        "standard_coil"
+      ],
+      "body": "**Standard coil**, so the spiral is meant to be seen. Lay the chain **coil-UP**, facing you, and lap the shell onto the tape either side of it. This is the conventional way round and the simpler of the two — there is no hidden face to get backwards.\n\nCheck it anyway before the first row, because there is no undo: close the zip, put it on the bench the way the bag will hang, and look at it. You should see the spiral and the pull. If you are looking at flat tape, turn it over — the finished bag would have its pull on the INSIDE with both laps already sewn, and unpicking them means re-cutting the strips.\n\nTwo things follow from standard coil, neither of them a problem. The closed opening reads as a ZIP rather than as a seam, so on the back pocket the placket is doing all of the hiding rather than half of it — set it carefully. And an upward-facing spiral collects grit and holds water where a reverse one sheds; on a waterproof shell the main top zip is then the wettest line on the bag, so if it will live outdoors, park it under the flap of whatever it sits beside and keep it closed.",
+      "see": [
+        "patterns/techniques/zippers.md"
+      ],
+      "figures": [
+        {
+          "kind": "reverse-coil",
+          "caption": "The two make-ups compared. Whichever you have, the rule is the same: the face you will SEE goes up, because the slider and its pull have to end up on that side."
+        }
+      ]
+    },
+    {
+      "n": 13,
       "title": "Shorten the zipper and make a new stop",
       "stitch": "dense zigzag ~3 mm wide at 0.4 mm, 5–6 passes",
       "body": "Open it halfway, then bar-tack across the coil at the new length: this machine has no programmed bar-tack, so work a dense zigzag back and forth. Trim 1\" beyond it and cap each cut end with a scrap. A coil zipper cut without a new stop lets the slider run straight off the end, and there is no putting it back on.",
@@ -267,7 +301,7 @@
       ]
     },
     {
-      "n": 12,
+      "n": 14,
       "title": "Fit the ring and trim the gusset",
       "body": "Clip the ring round the back panel and trim the gusset to length — target {gusset_cut}, so that with a {lap} lap at each end onto the zipper panel the ring closes at {ring}. Two strips lapped by {lap} cover their combined length LESS {lap}, so only one of the pair may carry that allowance: the zipper panel does, and the gusset is trimmed to the bare figure. Cut long, fit, then trim — the ring's true length depends on the allowance you actually achieve and on how hard the binding pulls, which is why good patterns give more than the calculation and let you trim.",
       "figures": [
@@ -279,7 +313,7 @@
       ]
     },
     {
-      "n": 13,
+      "n": 15,
       "title": "Ring anchors onto the gusset interior",
       "when": [
         "has_ring_anchor"
@@ -297,7 +331,7 @@
       ]
     },
     {
-      "n": 14,
+      "n": 16,
       "title": "First lap join",
       "stitch": "straight, two rows, 3.0 mm",
       "body": "Lap one gusset end onto one end of the zipper panel by {lap} and topstitch two rows.",
@@ -310,7 +344,7 @@
       ]
     },
     {
-      "n": 15,
+      "n": 17,
       "title": "Close the chassis loop across the top face",
       "when": [
         "has_chassis"
@@ -330,7 +364,7 @@
       ]
     },
     {
-      "n": 16,
+      "n": 18,
       "title": "Second lap join",
       "stitch": "straight, two rows, 3.0 mm",
       "body": "Close the remaining gusset-to-zipper-panel lap, stitching through the webbing where it crosses so the join is reinforced. Both joins land at the top corners, which is also where the binding will mitre — hand-wheel them.",
@@ -343,7 +377,7 @@
       ]
     },
     {
-      "n": 17,
+      "n": 19,
       "title": "D-ring tabs, from the outside",
       "when": [
         "has_drings"
@@ -363,7 +397,7 @@
       ]
     },
     {
-      "n": 18,
+      "n": 20,
       "title": "Grab handle",
       "when": [
         "has_handle"
@@ -383,7 +417,7 @@
       ]
     },
     {
-      "n": 19,
+      "n": 21,
       "title": "Divider pocket onto the {divider_face} panel's interior",
       "when": [
         "has_divider"
@@ -406,7 +440,7 @@
       ]
     },
     {
-      "n": 20,
+      "n": 22,
       "title": "Divider pocket into the {divider_face} panel's binding",
       "when": [
         "has_divider",
@@ -427,7 +461,7 @@
       ]
     },
     {
-      "n": 21,
+      "n": 23,
       "title": "Pocketed panel, zip ACROSS — two layers, pocket between them",
       "when": [
         "has_top_zip"
@@ -452,7 +486,7 @@
       ]
     },
     {
-      "n": 22,
+      "n": 24,
       "title": "Pocketed panel, zip DOWN — two layers, pocket between them",
       "when": [
         "has_side_zip"
@@ -478,7 +512,7 @@
       ]
     },
     {
-      "n": 23,
+      "n": 25,
       "title": "Placket over the pocket zip",
       "when": [
         "has_placket"
@@ -499,7 +533,7 @@
       ]
     },
     {
-      "n": 24,
+      "n": 26,
       "title": "Belt keepers, through both layers of the back panel",
       "when": [
         "has_belt_loop",
@@ -526,7 +560,7 @@
       ]
     },
     {
-      "n": 25,
+      "n": 27,
       "title": "Belt keepers, and the anchor behind them",
       "when": [
         "has_belt_anchor"
@@ -547,7 +581,7 @@
       ]
     },
     {
-      "n": 26,
+      "n": 28,
       "title": "Belt keeper onto the back panel",
       "when": [
         "has_belt_loop"
@@ -569,7 +603,7 @@
       ]
     },
     {
-      "n": 27,
+      "n": 29,
       "title": "Build the back panel — applied pockets and ribs",
       "when": [
         "has_pockets"
@@ -587,7 +621,7 @@
       ]
     },
     {
-      "n": 28,
+      "n": 30,
       "title": "Back panel on, and bound",
       "stitch": "straight, 3.5 mm, {sa} from the panels' raw edges",
       "body": "Clip the gusset ring around the back panel, raw edges out, matching the gusset seams to the top corners. The gusset's allowance has to splay wherever the outline turns, and it splays two different ways. At each SQUARE corner cut ONE clip to the stitch line. Round each CURVE it has to splay continuously — a flat strip's raw edge must reach a quarter further than its own stitch line there — so relieve it with shallow snips a seam allowance apart, not one deep cut. Then bind the full perimeter in one line, mitring each square corner and easing the bias round each curve. **Sew at {sa} from the RAW EDGES, not at a distance from the binding's own edge.** Every figure in this pattern is measured from the stitch line, and the binding laps over it: it shows {show} on the face while the stitch line is {flange} in from the finished edge, so its inner edge sits {turn} PAST the stitching. Guiding on that edge at ⅛\" — which this step used to say — lands the needle at 5/16\", and a run that drifts to 5/16\" is exactly the failure step 1 tells you to measure for: the ring comes out short of the panels it has to wrap. Set an edge guide off the raw edge.\n\nSet the underside of the binding {turn} deeper than the top: you cannot see the back while you sew, and without that offset a line that looks perfect on top wanders off the binding underneath. Put every binding join mid-edge — never at a corner and never in a curve.",
@@ -607,7 +641,7 @@
       ]
     },
     {
-      "n": 29,
+      "n": 31,
       "title": "Front panel — open the zipper FIRST",
       "stitch": "straight, 3.5 mm, {sa} from the panels' raw edges",
       "body": "Same again, clipping the corners the same way. With the zipper closed you will not get the bag open afterwards, and a bound seam cannot be unpicked — the holes stay. This is the last chance to check the interior is finished.",
@@ -630,7 +664,7 @@
       ]
     },
     {
-      "n": 30,
+      "n": 32,
       "title": "Straps, belt and hardware",
       "unless": [
         "supplies_carry"
@@ -647,7 +681,7 @@
       ]
     },
     {
-      "n": 31,
+      "n": 33,
       "title": "Thread your belt, clip your strap",
       "when": [
         "supplies_carry"
@@ -667,7 +701,7 @@
       ]
     },
     {
-      "n": 32,
+      "n": 34,
       "title": "Base stiffener, loose",
       "body": "Cut it to the INTERIOR, {face_w} × {face_d}, not the exterior, and drop it in. Not sewn — it should come out when the bag is washed.",
       "when": [

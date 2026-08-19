@@ -200,7 +200,8 @@ FLAGS = ("has_chassis", "shell_frays", "double_fold", "has_windows",
          "has_panel_pocket", "has_divider", "has_bound_divider",
          "has_stiffener", "has_pockets", "shell_melts", "self_bound",
          "has_webbing", "supplies_carry",
-         "has_top_zip", "has_side_zip", "has_placket")
+         "has_top_zip", "has_side_zip", "has_placket",
+         "reverse_coil", "standard_coil")
 
 #: Feature kinds the player's renderer knows how to draw. A kind outside this
 #: set is a check failure rather than a silently missing detail.
@@ -465,6 +466,13 @@ class BoxBag:
         # that cannot be made later: both go on the chain before either end is
         # stopped, and the panel is then built round them. A pocket zip is
         # always one -- it is short, and it has a right way round.
+        # Standard or reverse COIL. It changes exactly one instruction -- which
+        # face of the chain goes up when you lap onto it -- and that instruction
+        # has no undo: get it wrong and the finished bag has its pull on the
+        # inside with both laps sewn. So it is declared rather than assumed.
+        self.coil_kind = str(z.get("coil", "reverse")).lower()
+        if self.coil_kind not in ("standard", "reverse"):
+            raise ValueError("closure.coil must be 'standard' or 'reverse'")
         self.main_sliders = int(z.get("sliders", 2))
         if self.main_sliders not in (1, 2):
             raise ValueError("closure.sliders must be 1 or 2")
@@ -755,6 +763,8 @@ class BoxBag:
             # One step cannot state both, and the aggregate tokens describe
             # whichever pocket sorted first -- so a single step would have
             # quoted the back's numbers at the front.
+            "reverse_coil": self.coil_kind == "reverse",
+            "standard_coil": self.coil_kind == "standard",
             "has_top_zip": any(p.axis == "top" for p in self.pockets.values()),
             "has_side_zip": any(p.axis == "side" for p in self.pockets.values()),
             "has_placket": any(p.placket for p in self.pockets.values()),

@@ -17,7 +17,8 @@
   "closure": {
     "coil_in": 0.25,
     "lap_in": 0.5,
-    "sliders": 2
+    "sliders": 2,
+    "coil": "standard"
   },
   "wearer": {
     "waist_in": [
@@ -154,24 +155,24 @@
   },
   "hardware": [
     {
-      "item": "#5 REVERSE-coil zipper, main",
+      "item": "#5 standard-coil zipper, main",
       "qty": "1 × 12\"",
-      "note": "opening is 9⅛\"; buy long and shorten it with a new bar-tacked stop. Reverse coil throughout the bag — it costs nothing, it is the same chain size, and on a waterproof shell the interlock facing inward sheds better"
+      "note": "opening is 9⅛\" — buy long and shorten it with a new bar-tacked stop. STANDARD coil throughout: the spiral faces outward, so the chain is laid coil-UP when you lap onto it. Reverse coil would shed water better and read as a seam rather than a zip, but it is not what is in the drawer, and the only thing that changes is which face goes up."
     },
     {
       "item": "#5 sliders, main zip",
       "qty": 2,
-      "note": "opening is 9⅛\"; buy long and shorten it with a new bar-tacked stop. Reverse coil throughout the bag — it costs nothing, it is the same chain size, and on a waterproof shell the interlock facing inward sheds better"
+      "note": "both go on the chain BEFORE either end is stopped — there is no adding one later. Standard sliders, to match standard chain: a reverse slider on standard chain rides the wrong face and drags"
     },
     {
-      "item": "#5 REVERSE-coil zipper, back pocket",
+      "item": "#5 standard-coil zipper, back pocket",
       "qty": "1 × 6\"",
-      "note": "runs DOWN the panel but only over its lower 3¾\" — it stops 2⅛\" from the top so the keeper band is clear, and above that the two outer pieces lap onto EACH OTHER instead of onto tape, so the seam is one continuous line and only the zipper is short. Bar-tack a new stop at the top of the run and another just inside the bottom seam line. Reverse coil: the coil sits inside and the outside shows flat tape"
+      "note": "runs DOWN the panel over its lower 3¾\" — it stops 2⅛\" from the top so the keeper band is clear, and above that the two outer pieces lap onto EACH OTHER instead of onto tape. Bar-tack a new stop at the top of the run and another just inside the bottom seam line. Standard coil: the spiral shows, so the PLACKET is doing all of the hiding here rather than half of it"
     },
     {
-      "item": "#5 REVERSE-coil zipper, front pocket",
+      "item": "#5 standard-coil zipper, front pocket",
       "qty": "1 × 12\"",
-      "note": "across the panel as before; reverse coil to match the back and the main zip, matte black tape and slider"
+      "note": "across the panel; standard coil to match the rest. The spiral is visible, which on the front is a look decision rather than a problem"
     },
     {
       "item": "1\" D-rings",
@@ -189,6 +190,11 @@
       "kind": "note",
       "title": "A 9⅞\" panel really does make a 10\" bag — the allowance points OUT",
       "body": "This looks wrong every time, so here is the whole chain. Everything you know about cutting says *panel = finished + two seam allowances*, which would make this piece 10¾\". **That rule is for a turned seam, where the allowance is consumed on the INSIDE and the bag ends up smaller than its pieces.** This bag has no turned seams. Every seam is a bound flange: panel and gusset meet wrong sides together, both allowances stick straight OUT of the bag, and the binding wraps that projecting rib.\n\nSo the allowance is not swallowed — **it is part of the finished bag.** Walk across one horizontal slice, left extremity to right:\n\n| | Runs | Width |\n|---|---|---|\n| binding folds round the raw edges | 0 → 1/16 | 1/16\" |\n| **left rib** — panel + gusset allowances, projecting | 1/16 → 7/16 | ⅜\" |\n| **the front face**, panel between its two stitch lines | 7/16 → 9 9/16 | **9⅛\"** |\n| **right rib**, the same thing mirrored | 9 9/16 → 9 15/16 | ⅜\" |\n| binding folds round again | 9 15/16 → 10 | 1/16\" |\n| | | **10\"** |\n\nThe panel is the ⅜ + 9⅛ + ⅜ that it lies through: **9⅞\"**. The bag is that plus the two 1/16\" the binding folds round. One line:\n\n> **panel = finished − 2 × turn.** Not finished + 2 × SA. The cut piece is an eighth of an inch *smaller* than the bag it makes, and that is correct.\n\nThree widths, and they are all different — this is what to quote when:\n\n| | | |\n|---|---|---|\n| **10\"** | overall | what a tape measure across the finished pack reads, ribs included |\n| **9⅛\"** | stitch-line box (`face`) | the usable cavity; what the interior volume is computed from |\n| **9\"** | visible cloth (`visible`) | what you can see between the two bindings — **size artwork to this** |\n| **9⅞\"** | panel cut | what you cut |\n\nThe ribs are why the interior is 9⅛ × 6⅛ × 3⅛ rather than 10 × 7 × 4: **a bound seam costs 7/16\" per edge, ⅞\" per dimension**, and that is the price of the exposed-seam construction. It is also why the resize went to depth first — see the growth note. If you would rather 10 × 7 × 4 meant the *cavity*, that is a real choice and a one-line spec change, but it makes a 10⅞ × 7⅞ × 4⅞ pack at 4.6 L, past the 3 L where the sag complaints start."
+    },
+    {
+      "kind": "note",
+      "title": "Standard coil, not reverse — what actually changes",
+      "body": "The pattern was written for reverse coil and is built with standard, which is what was in the drawer. **One instruction inverts and nothing else does.**\n\n| | Reverse | **Standard (built)** |\n|---|---|---|\n| Lay the chain | coil DOWN | **coil UP** |\n| Outside shows | flat tape | the spiral |\n| Closed opening reads as | a seam | a zip |\n| Water | sheds off the tape | sits in the spiral |\n| Chain size, cut list, laps, stops | — | **unchanged** |\n\nIt is the one instruction with no undo. Lap onto the wrong face and the finished bag has its pull on the INSIDE with both rows sewn; unpicking means re-cutting the strips, because the needle holes stay. `closure.coil` is declared for exactly that reason, and the assembly step now says coil-UP rather than coil-DOWN.\n\n**Two consequences worth knowing, neither fatal.** The back pocket's placket was carrying half the hiding and now carries all of it — a visible spiral is what makes a back zip obvious, so set the flap carefully. And an upward-facing spiral collects grit and holds water where a reverse one sheds, which on a waterproof shell makes the main top zip the wettest line on the bag.\n\n*One thing the sources corrected while this was being checked:* the CHAIN is the same for standard and reverse use — **the SLIDER is what creates the reverse look.** So \"I only have standard coil\" is really \"I have standard sliders\", and the two are not interchangeable: a reverse slider on standard chain rides the wrong face and drags."
     },
     {
       "kind": "note",

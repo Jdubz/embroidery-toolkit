@@ -59,11 +59,23 @@ reverse coil beats it for most bags.
 ### The two ways it changes what you do
 
 **1. The pull ends up on the wrong side if you build it the obvious way.** The
-face that shows flat tape is the OUTSIDE, so the slider body and the pull have
-to be on that same side. Lay the chain coil-DOWN on the bench and lap the shell
-onto the tape from above; if you have laid it coil-up out of habit, the finished
-bag has its pull on the inside and there is no fixing it without unpicking both
-laps.
+rule is the same for both make-ups and it is easy to state: **the face you will
+SEE goes up**, because the slider body and its pull have to end up on that side.
+
+| You have | Lay it | Outside shows |
+|---|---|---|
+| **Reverse coil** | coil **DOWN** | flat tape |
+| **Standard coil** | coil **UP** | the spiral |
+
+Reverse is the one people get backwards, because coil-up is the habit. But the
+failure is identical either way: lap onto the wrong face and the finished bag
+has its pull on the INSIDE, with both rows already sewn, and there is no fixing
+it without unpicking both laps — after which the needle holes stay and the
+strips have to be re-cut.
+
+**Which one a pattern expects is DECLARED**, in `closure.coil`, and the assembly
+step says coil-UP or coil-DOWN accordingly. It is declared rather than assumed
+precisely because it is the instruction with no undo.
 
 > **Check before the first row:** close the zip, put it on the bench the way the
 > bag will hang, and look at it. If you can see the spiral, turn it over.

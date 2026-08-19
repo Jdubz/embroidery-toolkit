@@ -188,10 +188,16 @@ def failed_named(bag: B.BoxBag, needle: str) -> bool:
     return any(not ok and needle in n for ok, n, _ in bag.checks())
 
 
-def _raises(fn) -> bool:
+def _raises(fn, kind=None) -> bool:
+    """Did it refuse, rather than quietly accept nonsense?
+
+    Defaults to TokenError, which is what every original caller meant. A
+    declaration that is malformed rather than merely unresolvable raises plain
+    ValueError, so that case passes the type in.
+    """
     try:
         fn()
-    except B.TokenError:
+    except (kind or B.TokenError):
         return True
     return False
 
@@ -1101,6 +1107,44 @@ check("...and it is the peak, ahead of the D-ring tack",
 
 
 # =====================================================================
+section("standard coil or reverse — the one instruction with no undo")
+check("the coil make-up is declared, not assumed",
+      h.spec["closure"]["coil"] == h.coil_kind == "standard")
+check("...and only the two real answers load",
+      _raises(lambda: variant("HipPack_10x7x4",
+                              closure={**h.spec["closure"], "coil": "nylon"}),
+              ValueError))
+_rev = variant("HipPack_10x7x4", closure={**h.spec["closure"], "coil": "reverse"})
+check("the flags are exclusive", h.flags["standard_coil"]
+      and not h.flags["reverse_coil"] and _rev.flags["reverse_coil"]
+      and not _rev.flags["standard_coil"])
+# Keyed by coil kind, NOT by b.name -- a variant keeps the base bag's name,
+# so keying on it silently collapses the two into one and the check passes
+# whatever the bodies say. It did exactly that on the first run.
+_lay = {b.coil_kind: next(st for st in b.assembly(CONS)
+                          if st["title"] == "Lay the chain the right way up")
+        for b in (h, _rev)}
+check("exactly one orientation step reaches a bag",
+      all(sum(1 for st in b.assembly(CONS)
+              if st["title"] == "Lay the chain the right way up") == 1
+          for b in (h, _rev)),
+      "both would be worse than neither — they say opposite things")
+check("standard says coil-UP and reverse says coil-DOWN",
+      "coil-UP" in _lay["standard"]["body"]
+      and "coil-DOWN" not in _lay["standard"]["body"]
+      and "coil-DOWN" in _lay["reverse"]["body"]
+      and "coil-UP" not in _lay["reverse"]["body"],
+      str(sorted(_lay)))
+# Everything else really is unchanged: the chain is the same part either way,
+# so a make-up switch must not move a single dimension.
+check("switching the make-up changes NO cut piece",
+      [(r["piece"], r["w"], r["l"]) for r in h.cut_list()]
+      == [(r["piece"], r["w"], r["l"]) for r in _rev.cut_list()],
+      "the chain is identical; only the slider and which face is up differ")
+check("...and no zipper length either",
+      [r["chain"] for r in h.zipper_schedule()]
+      == [r["chain"] for r in _rev.zipper_schedule()])
+
 section("the zipper schedule")
 # The technique note is deliberately dimensionless; every length lives here, so
 # this is the only thing standing between a resize and a wrong shopping list.
