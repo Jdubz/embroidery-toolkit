@@ -10,9 +10,10 @@
 const {execFileSync} = require("child_process");
 const path = require("path");
 
-/* Order matters: if the page does not parse, the other two are meaningless,
+/* Order matters: if the page does not parse, the rest are meaningless,
    so a failure here stops the run rather than burying the cause in noise. */
-const SUITES = ["test_page_parses.js", "test_figures.js", "test_glossary.js"];
+const SUITES = ["test_page_parses.js", "test_figures.js", "test_glossary.js",
+                "test_place.js"];
 
 let failed = 0;
 for (const s of SUITES) {

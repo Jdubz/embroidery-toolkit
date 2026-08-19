@@ -1674,6 +1674,72 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") $("#reader")
 let current = 0;
 let activeTab = 0;
 
+/* ---- where you were, kept across a refresh ---------------------------
+   Two stores, because neither alone is enough here.
+
+   The URL HASH is the source of truth: it survives a refresh, it survives
+   the artifact frame being reloaded by its host, and it makes a particular
+   bag's cut list a link you can send someone.
+
+   localStorage is the FALLBACK for a bare URL — open the page with no hash
+   and it puts you back where you were. It is wrapped in try/catch and never
+   trusted: this page is served inside a sandboxed frame, where touching
+   storage can throw SecurityError outright rather than returning null. A
+   feature that restores your place must not be able to take the page down.
+------------------------------------------------------------------------ */
+const KEY = "boxbound.place";
+const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-")
+                           .replace(/^-|-$/g, "");
+
+function safeStore(fn, dflt){
+  try { return fn(); } catch (e) { return dflt; }
+}
+function readHash(){
+  const h = (location.hash || "").replace(/^#/, "");
+  if (!h) return null;
+  const [pat, tab] = h.split("/");
+  return {pat, tab};
+}
+function resolvePlace(place){
+  /* Names, not indices. An index silently points at a different bag the
+     moment one is added, and the library is sorted smallest-first. */
+  if (!place) return null;
+  const i = LIB.patterns.findIndex(p => slug(p.name) === place.pat
+                                     || slug(p.title) === place.pat);
+  if (i < 0) return null;
+  const t = TABS.findIndex(x => slug(x) === place.tab);
+  return {current: i, activeTab: t < 0 ? 0 : t};
+}
+function restorePlace(){
+  const found = resolvePlace(readHash())
+             || resolvePlace(safeStore(() => JSON.parse(
+                  localStorage.getItem(KEY) || "null"), null));
+  if (!found) return;
+  current = found.current;
+  activeTab = found.activeTab;
+}
+function rememberPlace(){
+  const p = LIB.patterns[current];
+  if (!p) return;
+  const place = {pat: slug(p.name), tab: slug(TABS[activeTab] || "")};
+  const h = "#" + place.pat + "/" + place.tab;
+  /* replaceState rather than assigning location.hash: assigning pushes an
+     entry, so every tab click would need its own press of Back to escape.
+     It can throw on an opaque origin, hence the guard and the fallback. */
+  safeStore(() => history.replaceState(null, "", h), null)
+    ?? (location.hash === h ? null : safeStore(() => { location.hash = h; }, null));
+  safeStore(() => localStorage.setItem(KEY, JSON.stringify(place)), null);
+}
+/* Someone editing the hash by hand, or using Back after a real navigation. */
+window.addEventListener("hashchange", () => {
+  const found = resolvePlace(readHash());
+  if (!found) return;
+  if (found.current === current && found.activeTab === activeTab) return;
+  current = found.current;
+  activeTab = found.activeTab;
+  render();
+});
+
 function renderHelp(p){
   const ul = $("#helplist"); ul.innerHTML = "";
   const seen = new Set();
@@ -1699,6 +1765,11 @@ function renderHelp(p){
 function render(){
   const p = LIB.patterns[current];
   document.title = p.title + " — Pattern Player";
+  rememberPlace();
+  /* The picker was only ever WRITTEN to, never read back. Restoring a pattern
+     from the URL left it showing whichever bag happened to be first. */
+  const sel = $("#pick");
+  if (sel && sel.value !== String(current)) sel.value = String(current);
 
   const bad = p.checks.filter(c => !c.ok).length;
   const stats = $("#stats"); stats.innerHTML = "";
@@ -1767,6 +1838,7 @@ window.addEventListener("resize", () => {
   clearTimeout(rz);
   rz = setTimeout(() => { build(LIB.patterns[current]); apply(); }, 120);
 });
+restorePlace();
 render();
 })();
 </script>
