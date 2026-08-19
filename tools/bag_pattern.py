@@ -799,7 +799,7 @@ class BoxBag:
         g = {
             "w": self.W, "h": self.H, "d": self.D,
             "sa": self.sa, "clip_depth": self.clip_depth,
-            "relief_clips": F(self.relief_clips), "reveal": self.reveal,
+            "reveal": self.reveal,
             "seam_margin": SEAM_MARGIN_IN,
             "turn": TURN_IN,
             "face_w": self.face_w, "face_h": self.face_h, "face_d": self.face_d,
@@ -914,7 +914,11 @@ class BoxBag:
         panel's interior" on a bag with two doubled panels does not tell the
         person at the machine which panel.
         """
-        w = {"needle": mat(self.shell).get("needle", "jeans 100/16")}
+        # A COUNT is a word here too, not a dimension: `geometry` renders every
+        # value through frac(), which puts an inch mark on it, and "7 snips" came
+        # out as '7"' in the middle of a sentence.
+        w = {"needle": mat(self.shell).get("needle", "jeans 100/16"),
+             "relief_clips": str(self.relief_clips)}
         if self.has_divider:
             w["divider_face"] = self.div_face
         return w

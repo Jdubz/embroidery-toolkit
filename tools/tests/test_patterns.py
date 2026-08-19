@@ -878,6 +878,12 @@ check("...and none of them is invented -- each is a listed stack plus a layer",
 check("the divider step names its face",
       any(h.div_face in st["title"] for st in h.assembly(CONS)),
       "on a bag with two doubled panels, 'the panel' is not an instruction")
+# geometry renders every value through frac(), which puts an inch mark on it.
+# A COUNT is not a dimension: "7 snips per curve" came out as '7" snips'.
+check("a count renders as a count, not as a measurement",
+      h.resolve("{relief_clips} snips") == f"{h.relief_clips} snips"
+      and chr(34) not in h.resolve("{relief_clips}"),
+      h.resolve("{relief_clips} snips"))
 check("word tokens resolve without going through frac()",
       h.resolve("the {divider_face} panel") == f"the {h.div_face} panel"
       and "divider_face" not in h.geometry)
