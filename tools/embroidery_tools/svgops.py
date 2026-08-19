@@ -542,8 +542,13 @@ def widen_negative(doc, colour: str, to_min: float, tolerate: float = 5.0,
             f"width{warn}{clamp}")
 
 
-def _matched(doc, colour: str, band):
+def _matched(doc, colour: str, band, axis: int = 1):
     """[(region, [matching components], [the rest])] for a colour, by band.
+
+    `axis` is 1 for a band measured DOWN from the top and 0 for one measured
+    ACROSS from the left -- the same convention as `_split_by_band`. Two words
+    on ONE line can only be told apart across, which is what a horizontal band
+    is for.
 
     Component-level, like `_split_by_band` and for the same reason: a whole
     layer routinely lives in one <path>. Sour Puss Muffy draws its eight
@@ -554,7 +559,7 @@ def _matched(doc, colour: str, band):
     for r in doc.select(colour=G.norm(colour), kind="fill"):
         keep, rest = [], []
         for p in G.polys(r.geom):
-            if band is None or band[0] <= doc.centroid_mm(p)[1] <= band[1]:
+            if band is None or band[0] <= doc.centroid_mm(p)[axis] <= band[1]:
                 keep.append(p)
             else:
                 rest.append(p)
@@ -684,8 +689,9 @@ def scale(doc, colour: str, factor: float, band=None, about: str = "own", **_):
             f"{before:,.1f} -> {after:,.1f} mm2")
 
 
-@op("move", "move --colour X --dx N --dy N [--band A:B]   translate components")
-def move(doc, colour: str, dx: float = 0.0, dy: float = 0.0, band=None, **_):
+@op("move", "move --colour X --dx N --dy N [--band A:B] [--band-x A:B]   translate components")
+def move(doc, colour: str, dx: float = 0.0, dy: float = 0.0, band=None,
+         band_x=None, **_):
     """Translate selected components, and report what they now clear.
 
     Placement on a hand-drawn asset is a genuine design choice — where the
@@ -700,17 +706,28 @@ def move(doc, colour: str, dx: float = 0.0, dy: float = 0.0, band=None, **_):
     the right — so growing it symmetrically ran it off the near edge while a
     third of the crown stayed empty.
     """
-    groups = _matched(doc, colour, band)
+    if band and band_x:
+        raise SystemExit("move: give --band OR --band-x, not both -- a component "
+                         "is selected by one axis or the other")
+    axis, sel = (0, band_x) if band_x else (1, band)
+    groups = _matched(doc, colour, sel, axis)
     if not groups:
         raise SystemExit(f"move: nothing FILLED #{G.norm(colour)} matches"
-                         + (f" band {band[0]:g}:{band[1]:g} mm" if band else ""))
+                         + (f" band{'-x' if band_x else ''} "
+                            f"{sel[0]:g}:{sel[1]:g} mm" if sel else ""))
     n = sum(len(k) for _, k, _ in groups)
+    # Keep the MOVED geometry as we go rather than re-selecting afterwards. A
+    # move whose whole point is to leave the band -- stacking a second word
+    # under the first -- selects nothing on the way back, and the report then
+    # took the centroid of an empty geometry and crashed.
+    moved = []
     for r, keep, rest in groups:
         shifted = [shapely.affinity.translate(p, dx * doc.upm, dy * doc.upm)
                    for p in keep]
+        moved += shifted
         doc.set_fill_geom(r, unary_union(shifted + rest))
     doc.rescan()
-    blk = unary_union([p for _, k, _ in _matched(doc, colour, band) for p in k])
+    blk = unary_union(moved)
     near = []
     for c in sorted(doc.colours()):
         if c == G.norm(colour):

@@ -134,12 +134,12 @@
       {
         "kind": "logo",
         "face": "left",
-        "u": 1.7205,
+        "u": 1.3386,
         "v": 2.5,
-        "w": 0.5591,
-        "h": 2.874,
+        "w": 1.3228,
+        "h": 1.2047,
         "design": "RaeRae_on_black",
-        "label": "Rae Rae in white, 73.2 x 13.8 mm at a 13.5 mm cap — the design reads NORMALLY and is turned on the machine; on the bag it lies along the face, using 73.2 mm of the 76.2 mm below the D-ring"
+        "label": "Rae Rae in white on TWO lines, 33.6 x 30.6 mm at a 13.5 mm cap — the same cap as Ti Ti. Split from one line because 73.2 mm was too long for the space; stacked it needs 33.6 across a face that shows 101.6, so it no longer has to run the long way down the gusset. Reads NORMALLY; placed by hand at the machine."
       },
       {
         "kind": "logo",
@@ -410,8 +410,8 @@
         "name": "RaeRae_on_black",
         "panel": "left",
         "field_mm": [
-          14,
-          73
+          33.6,
+          30.6
         ]
       },
       {

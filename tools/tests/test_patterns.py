@@ -1056,6 +1056,36 @@ finally:
 check("...and an invented kind is refused", _bad5 is not None and "kind" in (_bad5 or ""),
       _bad5 or "no error raised")
 
+section("a placement states the design's real size, not a remembered one")
+# A logo placement carries w and h in inches, and the design's actual size is
+# recorded in build/manifest.json by the build that made it. Two copies of one
+# figure is the trap this repo keeps falling into: RaeRae was split onto two
+# lines and the placement went on saying 73.2 x 13.8 for a design that is now
+# 33.6 x 30.6.
+_man = json.loads((B.REPO / "build" / "manifest.json").read_text(encoding="utf-8"))
+_designs = _man.get("designs", _man)
+_pl = [f for b in BAGS.values()
+       for f in b.spec.get("features", {}).get("placements", [])
+       if f.get("kind") == "logo" and f.get("design")]
+check("every bag that declares a logo places it", _pl, "none found")
+_drift = []
+for f in _pl:
+    m = _designs.get(f["design"], {}).get("measured", {})
+    if not m:
+        continue
+    for key, got in (("width_mm", f["w"] * 25.4), ("height_mm", f["h"] * 25.4)):
+        if abs(m[key] - got) > 0.6:
+            _drift.append(f"{f['design']} {key}: placed {got:.1f}, built {m[key]:.1f}")
+check("a placement matches the design the build actually made", not _drift,
+      "; ".join(_drift[:3]))
+check("...and the label quotes that size too",
+      all(f"{_designs[f['design']]['measured']['width_mm']:g}" in f["label"]
+          for f in _pl if f["design"] in _designs
+          and _designs[f["design"]].get("measured")),
+      str([f["design"] for f in _pl
+           if f["design"] in _designs
+           and f"{_designs[f['design']]['measured']['width_mm']:g}" not in f["label"]]))
+
 section("the glossary: terminology is defined, not assumed")
 _G = B.load_glossary()
 _terms = _G["terms"]
