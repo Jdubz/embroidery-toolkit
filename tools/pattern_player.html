@@ -183,7 +183,10 @@
   .nest svg{display:block; width:100%; height:auto}
 
   /* ---------- help rail ---------- */
-  aside{position:sticky; top:150px; padding-top:26px}
+  /* Derived from the real header height at runtime (--hh). It used to be a
+     magic 150px, and the header is sticky and grows with the flag chips: any
+     bag whose chips wrapped to a second line pushed the rail underneath it. */
+  aside{position:sticky; top:calc(var(--hh, 150px) + 12px); padding-top:26px}
   aside h2{margin-top:0}
   .helplist{list-style:none; margin:0; padding:0}
   .helplist li{border-bottom:1px solid var(--rule-soft)}
@@ -216,6 +219,7 @@
   .md h4{font-family:var(--f-label); text-transform:uppercase; letter-spacing:.11em;
          font-size:11px; margin:20px 0 0; color:var(--muted)}
   .md p{margin:13px 0 0}
+  .md p:last-child{margin-bottom:2px}
   .md ul,.md ol{margin:12px 0 0; padding-left:22px}
   .md li{margin:5px 0}
   .md blockquote{margin:18px 0 0; padding:2px 0 2px 18px; border-left:3px solid var(--stitch);
@@ -258,7 +262,7 @@
   .k-photos{color:var(--amber)}
   .k-article{color:var(--muted)}
   .termaka{font-family:var(--f-data); font-size:11px; color:var(--muted);
-           margin:-6px 0 12px}
+           margin:4px 0 12px}
   .stepfig{margin:14px 0 4px; padding:12px; background:var(--sheet);
            border:1px solid var(--rule)}
   .stepfig svg{display:block; width:100%; height:auto; margin:0 auto}
@@ -718,7 +722,7 @@ function figRing(p, spec){
   if (stage === "join2"){
     /* Closed: draw it as the loop it now is, so "second lap join" cannot be
        mistaken for the first. */
-    const s = fig(`0 0 ${W} 300`,
+    const s = fig(`0 0 ${W} 330`,
       `The ring closed into a loop: the zipper panel across the top and the `
       + `gusset round the other three sides, with both lap joins at the top corners.`);
     caption(s, PAD, 24, "THE RING, CLOSED — BOTH JOINS AT THE TOP CORNERS");
@@ -731,7 +735,7 @@ function figRing(p, spec){
     s.add("text", {x:X + bw/2, y:Y - 18, "text-anchor":"middle",
                    "font-family":"var(--f-data)", "font-size":12,
                    fill:"var(--ink)"}, "zipper panel");
-    s.add("text", {x:X + bw/2, y:Y + bh + 34, "text-anchor":"middle",
+    s.add("text", {x:X + bw/2, y:Y + bh + 20, "text-anchor":"middle",
                    "font-family":"var(--f-data)", "font-size":12,
                    fill:"var(--ink)"}, "gusset");
     [[X - t/2, "join 1"], [X + bw + t/2, "join 2 — this one"]].forEach(([jx, lbl], i) => {
@@ -742,10 +746,14 @@ function figRing(p, spec){
                      "font-family":"var(--f-data)", "font-size":11,
                      fill:on ? "var(--cut)" : "var(--muted)"}, lbl);
     });
-    s.add("text", {x:PAD, y:288, "font-family":"var(--f-data)", "font-size":11,
+    /* Two short lines rather than one long one: at 11px a 90-character
+       sentence is wider than the drawing and lands on whatever is beneath it. */
+    s.add("text", {x:PAD, y:306, "font-family":"var(--f-data)", "font-size":11,
                    fill:"var(--muted)"},
-          `both joins land at the top corners, where the ring is thickest. `
-          + `Closed, the ring measures ${g.ring.text}.`);
+          "both joins land at the top corners, where the ring is thickest");
+    s.add("text", {x:PAD, y:322, "font-family":"var(--f-data)", "font-size":11,
+                   fill:"var(--muted)"},
+          `closed, it measures ${g.ring.text} at the stitch line`);
     return s;
   }
 
@@ -840,7 +848,7 @@ function figAnchors(p, spec){
         aw = G("ring_anchor_len"), n = spec.count || 2;
   const W = 660, PAD = 34, S = (W - 2*PAD) / gc;
   const y = 74, hh = Math.max(gw * S, 42);
-  const s = fig(`0 0 ${W} ${y + hh + 96}`,
+  const s = fig(`0 0 ${W} ${y + hh + 110}`,
     `The gusset laid flat inside face up, with a ${g.ring_anchor_len.text} anchor `
     + `strip across it at each D-ring position, topstitched along both long edges.`);
   caption(s, PAD, 24, "GUSSET, INSIDE FACE UP — DO THIS WHILE IT IS FLAT");
@@ -868,8 +876,10 @@ function figAnchors(p, spec){
         "two straight runs per strip, along its LONG edges — no box-X here");
   s.add("text", {x:PAD, y:y+hh+68, "font-family":"var(--f-data)", "font-size":11,
                  fill:"var(--muted)"},
-        `each strip runs the gusset's full ${g.gusset_w.text} width, so both ends `
-        + "finish flush with the panel edges and the panel seams catch them");
+        `each strip runs the gusset's full ${g.gusset_w.text} width`);
+  s.add("text", {x:PAD, y:y+hh+84, "font-family":"var(--f-data)", "font-size":11,
+                 fill:"var(--muted)"},
+        "so both ends finish inside the panel seams, which catch them");
   return s;
 }
 
@@ -1023,7 +1033,7 @@ function figFace(p, spec){
       s.add("rect", {x:X - 26, y:by - bh/2, width:w + 52, height:bh,
                      fill:"var(--web)", "fill-opacity":.75,
                      stroke:"var(--web)", "stroke-width":1.4});
-      s.add("text", {x:X + w + 30, y:by - bh/2 - 8, "text-anchor":"end",
+      s.add("text", {x:X + w + 30, y:by + bh/2 + 15, "text-anchor":"end",
                      "font-family":"var(--f-data)", "font-size":11,
                      fill:"var(--web)"},
             `your ${p.geometry.belt ? p.geometry.belt.text : ""} belt, threaded`);
@@ -1091,7 +1101,7 @@ function figSeam(p, spec){
   const stage = (spec || {}).stage || "both";
   const only = stage === "turned";
   const sewnOnly = stage === "sewn";
-  const W = 620, s = fig(`0 0 ${W} 300`,
+  const W = 620, s = fig(`0 0 ${W} 312`,
     `Section through a turned seam: two pieces face to face, stitched one seam `
     + `allowance in, then folded apart so the allowance finishes inside.`);
   caption(s, 30, 22, only ? "WHAT TURNING PRODUCES"
@@ -1099,7 +1109,7 @@ function figSeam(p, spec){
                              : "TURNED SEAM — BEFORE AND AFTER");
 
   const t = 13, X = 70, L = 330, SA = 120;
-  let y = 78;
+  let y = 96;
   /* --- as sewn: right sides together, allowance to the right --- */
   if (!only){
   s.add("rect", {x:X, y:y-t, width:L+SA, height:t, fill:"var(--shell)"});
@@ -1117,12 +1127,14 @@ function figSeam(p, spec){
                  "font-family":"var(--f-data)", "font-size":11,
                  fill:"var(--stitch)"}, "stitch line");
   dim1(s, X+L, y+t+34, X+L+SA, `${g.sa.text} allowance`, "var(--cut)");
-  caption(s, X, y-t-44, "RIGHT SIDES TOGETHER");
+  /* Only when BOTH halves are shown. Alone, the figure's own caption
+     already says which half this is, and the two landed on each other. */
+  if (!sewnOnly) caption(s, X, y-t-26, "RIGHT SIDES TOGETHER");
   }
 
   /* --- turned: the allowance folds inside --- */
   if (!sewnOnly){
-  y = only ? 120 : 210;
+  y = only ? 130 : 222;
   s.add("path", {d:`M${X},${y-t} h${L} a${t},${t} 0 0 1 0,${2*t} h${-L} z`,
                  fill:"var(--shell)"});
   s.add("rect", {x:X+L-SA*0.7, y:y-t-2, width:SA*0.7, height:4,
@@ -1135,10 +1147,10 @@ function figSeam(p, spec){
   s.add("circle", {cx:X+L, cy:y, r:5, fill:"var(--stitch)"});
   s.add("text", {x:X+L+16, y:y+4, "font-family":"var(--f-data)",
                  "font-size":11, fill:"var(--stitch)"}, "= the finished edge");
-  caption(s, X, y-t-30, "TURNED RIGHT SIDE OUT");
+  if (!only) caption(s, X, y-t-26, "TURNED RIGHT SIDE OUT");
   }
 
-  s.add("text", {x:30, y:288, "font-family":"var(--f-data)", "font-size":11,
+  s.add("text", {x:30, y:302, "font-family":"var(--f-data)", "font-size":11,
                  fill:"var(--muted)"},
         `so the panel is cut ${g.panel_w.text} to finish ${g.w.text} — `
         + `the finished size PLUS an allowance on every edge`);
@@ -1153,7 +1165,7 @@ function figSeam(p, spec){
 */
 function figReverseCoil(){
   const W = 660, H = 300;
-  const s = fig(`0 0 ${W} ${H}`,
+  const s = fig(`0 0 ${W} 322`,
     "Standard coil against reverse coil, seen from the outside and in section. "
     + "Standard shows the spiral on the face you look at; reverse shows flat "
     + "tape, with the spiral and the slider body underneath.");
@@ -1211,14 +1223,16 @@ function figReverseCoil(){
                    "stroke-width":1, "stroke-dasharray":"4 4"});
   });
 
-  s.add("text", {x: 24, y: 274, "font-family":"var(--f-data)", "font-size":11,
-                 fill:"var(--ink)"},
-        "Same chain, same #5 size, same price. What differs is which way up it "
-        + "is made — and the SLIDER, which is a different part.");
-  s.add("text", {x: 24, y: 292, "font-family":"var(--f-data)", "font-size":11,
-                 fill:"var(--cut)"},
-        "Lay it coil-DOWN on the bench, or the finished bag has its pull on the "
-        + "inside and both laps have to come out.");
+  /* Four short lines rather than two long ones. The viewBox scales to its
+     container, so a label wider than the drawing is cut off mid-word. */
+  [["var(--ink)", "Same chain, same #5 size, same price."],
+   ["var(--ink)", "What differs is which way up it is made — and the SLIDER."],
+   ["var(--cut)", "Lay it the wrong way up and the finished bag has its pull"],
+   ["var(--cut)", "on the INSIDE, with both seams already sewn."]
+  ].forEach(([col, line], i) => {
+    s.add("text", {x: 24, y: 258 + i * 15, "font-family":"var(--f-data)",
+                   "font-size":11, fill:col}, line);
+  });
   return s;
 }
 
@@ -1876,6 +1890,15 @@ LIB.patterns.forEach((p, i) => {
   o.value = String(i); pick.appendChild(o);
 });
 pick.addEventListener("change", e => { current = +e.target.value; activeTab = 0; render(); });
+/* The masthead is sticky and its height is not fixed -- the flag chips wrap.
+   Anything that sits below it has to know how tall it actually is. */
+function syncHeaderHeight(){
+  const h = document.querySelector("header");
+  if (h) document.documentElement.style.setProperty("--hh", h.offsetHeight + "px");
+}
+window.addEventListener("load", syncHeaderHeight);
+window.addEventListener("resize", syncHeaderHeight);
+
 let rz = 0;
 window.addEventListener("resize", () => {
   clearTimeout(rz);
@@ -1883,5 +1906,6 @@ window.addEventListener("resize", () => {
 });
 restorePlace();
 render();
+syncHeaderHeight();
 })();
 </script>
