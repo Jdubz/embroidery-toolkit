@@ -810,6 +810,196 @@ def space_out(doc, colour: str, gap: float, band=None, line_gap: float | None = 
             + "\n".join(lines))
 
 
+def _fit_circle(pts, rounds: int = 8):
+    """Robust circle through `pts`, as (cx, cy, r, rms, weights).
+
+    Algebraic (Kasa) fit -- the circle equation is linear in (2cx, 2cy, r^2 -
+    cx^2 - cy^2), so each round is one lstsq rather than an iterative geometric
+    solve -- wrapped in iteratively reweighted least squares.
+
+    **The reweighting is not polish, it is the difference between right and
+    wrong.** On a short arc the radius is weakly determined: it comes from the
+    sagitta, and sagitta is a small difference between large numbers. One point
+    off the curve therefore moves it enormously, and a letter sitting off the
+    baseline is exactly such a point -- which is to say the noise this fit has
+    to survive is the very thing the op exists to preserve. Measured on a test
+    arc of seven letters at radius 300 with ONE of them 5 units high: plain
+    least squares returns radius 264, and the 3 degrees of tangent error that
+    buys leaves every letter visibly askew after unrolling.
+
+    Tukey biweight, so a letter well off the baseline stops voting on the curve
+    without being discarded on a threshold anybody had to pick.
+    """
+    x = np.array([p[0] for p in pts], dtype=float)
+    y = np.array([p[1] for p in pts], dtype=float)
+    A = np.column_stack([x, y, np.ones(len(x))])
+    b = x ** 2 + y ** 2
+    w = np.ones(len(x))
+    cx = cy = r = 0.0
+    for _ in range(rounds):
+        sw = np.sqrt(w)[:, None]
+        sol, *_ = np.linalg.lstsq(A * sw, b * sw[:, 0], rcond=None)
+        cx, cy = sol[0] / 2.0, sol[1] / 2.0
+        r = float(np.sqrt(max(sol[2] + cx * cx + cy * cy, 0.0)))
+        res = np.hypot(x - cx, y - cy) - r
+        mad = float(np.median(np.abs(res - np.median(res))))
+        if mad <= 1e-12:
+            break                      # already exact on all but ties; nothing to reweight
+        u = res / (4.685 * 1.4826 * mad)
+        w = np.where(np.abs(u) < 1.0, (1.0 - u ** 2) ** 2, 0.0)
+        if not w.any():
+            w = np.ones(len(x))
+            break
+    res = np.hypot(x - cx, y - cy) - r
+    rms = float(np.sqrt(np.average(res ** 2, weights=np.maximum(w, 1e-9))))
+    return float(cx), float(cy), r, rms, w
+
+
+@op("flatten-arc",
+    "flatten-arc --colour X [--band A:B]   set arced lettering on a straight baseline")
+def flatten_arc(doc, colour: str, band=None, band_x=None, **_):
+    """Unroll lettering that was drawn on an arc onto a straight baseline.
+
+    Text on an arc is not text that has been bent -- each glyph is **rotated**
+    to the tangent as well as displaced, which is why nothing built out of
+    `move` can undo it. HOT PISS lifted from the Hot Piss Muffy sticker rotates
+    its seven letters over 44 degrees end to end; translating them to a common
+    baseline and leaving the rotation gives a fan, not a line.
+
+    So the arc is measured and unrolled. A circle is fitted through the
+    component centroids, each component is turned by its own tangent angle, and
+    its centroid is placed at (arc length along the fit, signed distance from
+    the fit). Unrolling rather than re-typesetting is what keeps this the SAME
+    lettering: the spacing that survives is the spacing measured ALONG the
+    baseline, which is the spacing the artist drew, and each letter keeps its
+    own offset from the baseline, so a hand-drawn glyph that sat high still sits
+    high. A flatten that snapped every letter to one baseline would throw that
+    away and read as a font, which is the thing this artwork is not.
+
+    The fit goes through CENTROIDS, not through the baseline, and that is fine
+    on purpose: a centroid arc is concentric with the baseline arc, so the
+    tangent angle at each letter -- the only thing rotation depends on -- is
+    identical. Arc length is then taken on the centroid circle, which is the
+    circle whose spacing is being preserved.
+
+    **Re-measure the extent afterwards; do not assume which way it moved.** The
+    obvious expectation is that unrolling widens the block, since an arc is
+    longer than its chord. It does not, because the two effects cancel and
+    neither is small: the spacing gains the arc-length difference, and the end
+    letters lose the horizontal footprint their tangent rotation gave them.
+    Measured on HOT PISS, which turns its end letters 18 degrees, the block goes
+    58.8 x 13.4 -> 58.6 x 8.7 mm -- width within half a percent, height down by
+    a third. So a design sized by `--artwork-mm`, which scales on WIDTH, keeps
+    its cap height here (5.8-6.2 mm before and after) while its bounding box
+    changes shape entirely. On lettering that turns further, or is spaced
+    differently, the cancellation will not be this close.
+    """
+    axis = 0 if band_x is not None else 1
+    sel = band_x if band_x is not None else band
+    groups = _matched(doc, colour, sel, axis=axis)
+    if not groups:
+        raise SystemExit(f"flatten-arc: nothing FILLED #{G.norm(colour)} matches"
+                         + (f" band {sel[0]:g}:{sel[1]:g} mm" if sel else ""))
+    comps = [(r, p) for r, keep, _ in groups for p in keep]
+    if len(comps) < 3:
+        raise SystemExit(f"flatten-arc: {len(comps)} component(s) is not an arc; "
+                         "three centroids are the minimum a circle can be fitted "
+                         "through. Use `move` to place one or two.")
+
+    cents = [(p.centroid.x, p.centroid.y) for _, p in comps]
+    cx, cy, R, rms, wts = _fit_circle(cents)
+
+    # Refuse a fit that says "straight". A nearly-collinear set still returns a
+    # circle -- an enormous one, through whatever noise there is -- and unrolling
+    # against it is arithmetic on rounding error. Sag is the honest measure:
+    # how far the middle of the run departs from the chord between its ends.
+    xs = np.array([c[0] for c in cents])
+    ys = np.array([c[1] for c in cents])
+    order = np.argsort(xs)
+    (x0, y0), (x1, y1) = cents[order[0]], cents[order[-1]]
+    chord = np.hypot(x1 - x0, y1 - y0)
+    sag = float(np.max(np.abs((x1 - x0) * (ys - y0) - (y1 - y0) * (xs - x0))
+                       / max(chord, 1e-9)))
+    if doc.mm(sag) < 0.5:
+        raise SystemExit(
+            f"flatten-arc: #{G.norm(colour)} is already flat -- its "
+            f"{len(comps)} components sag {doc.mm(sag):.2f} mm off the chord, "
+            "under the 0.5 mm this refuses below. Fitting a circle to a straight "
+            "row returns an arbitrary huge radius and unrolling it is noise.")
+
+    # Which way is up. The radial direction that agrees with the ORIGINAL up is
+    # the one to straighten; deciding it by whether the centre came out above or
+    # below the text would be the same test written less directly, and would get
+    # a frown-shaped arc backwards.
+    rad = np.array([[c[0] - cx, c[1] - cy] for c in cents], dtype=float)
+    rlen = np.hypot(rad[:, 0], rad[:, 1])
+    outward_is_up = float(np.mean(-rad[:, 1] / rlen)) > 0
+    sign = 1.0 if outward_is_up else -1.0
+
+    # Unwrap ALONG THE ROW, not in whatever order the components were parsed in:
+    # np.unwrap reads its input as a sequence, so feeding it document order can
+    # inject a 2*pi step between two letters that are merely adjacent in the file.
+    thetas = np.arctan2(rad[:, 1], rad[:, 0])
+    thetas[order] = np.unwrap(thetas[order])
+    # Arc length must increase left to right whichever way the arc curves.
+    along = 1.0 if thetas[order[-1]] >= thetas[order[0]] else -1.0
+
+    before = unary_union([p for _, p in comps])
+    placed, turns = [], []
+    for i, (_, p) in enumerate(comps):
+        # Rotate the letter's own up-direction onto (0,-1), the page's up.
+        up_angle = np.arctan2(sign * rad[i, 1], sign * rad[i, 0])
+        a = -np.pi / 2.0 - up_angle
+        turns.append(np.degrees(a))
+        q = shapely.affinity.rotate(p, a, origin="centroid", use_radians=True)
+        s = along * R * (thetas[i] - thetas[order[0]])
+        n = sign * (rlen[i] - R)
+        tgt = (x0 + s, y0 - n)
+        placed.append(shapely.affinity.translate(
+            q, tgt[0] - q.centroid.x, tgt[1] - q.centroid.y))
+
+    # Same guard as `scale`, and for the same reason: a union that fuses two
+    # letters is not reversible, and every later op then addresses one blob and
+    # silently does nothing. Unrolling should never fuse -- it preserves the
+    # along-baseline spacing exactly -- so if it does, the fit is wrong.
+    if len(G.polys(unary_union(placed))) < len(placed):
+        raise SystemExit(
+            f"flatten-arc: unrolling fused {len(placed)} components of "
+            f"#{G.norm(colour)} into {len(G.polys(unary_union(placed)))}. That "
+            "means the fitted arc does not describe this lettering -- check "
+            "that the band selected the letters and nothing else.")
+
+    # Keep the block where it was, so this is a shape change and not a move.
+    merged = unary_union(placed)
+    dx = before.centroid.x - merged.centroid.x
+    dy = before.centroid.y - merged.centroid.y
+    placed = [shapely.affinity.translate(p, dx, dy) for p in placed]
+
+    done: dict[int, list] = {}
+    for (r, _), q in zip(comps, placed):
+        done.setdefault(id(r), []).append(q)
+    for r, _, rest in groups:
+        doc.set_fill_geom(r, unary_union(done.get(id(r), []) + rest))
+    doc.rescan()
+
+    w0 = (before.bounds[2] - before.bounds[0]) / doc.upm
+    h0 = (before.bounds[3] - before.bounds[1]) / doc.upm
+    now = unary_union([p for _, k, _ in _matched(doc, colour, sel, axis=axis)
+                       for p in k])
+    w1 = (now.bounds[2] - now.bounds[0]) / doc.upm
+    h1 = (now.bounds[3] - now.bounds[1]) / doc.upm
+    sweep = abs(np.degrees(thetas.max() - thetas.min()))
+    return (f"flattened {len(comps)} component(s) of #{G.norm(colour)}: "
+            f"radius {doc.mm(R):,.1f} mm, sweep {sweep:.1f} deg, "
+            f"sag {doc.mm(sag):.2f} mm\n"
+            f"    per-letter turn {min(turns):+.1f} to {max(turns):+.1f} deg; "
+            f"centroid fit rms {doc.mm(rms):.2f} mm over "
+            f"{int((wts > 0.5).sum())}/{len(comps)} letters (the rest sit off the "
+            f"baseline and keep their own offset)\n"
+            f"    extent {w0:.1f} x {h0:.1f} -> {w1:.1f} x {h1:.1f} mm "
+            f"— check the cap height against this, not against the bounding box")
+
+
 def _radial_band(geom, cx: float, cy: float, theta_deg: float, reach: float):
     """(inner, outer) radius of the OUTERMOST stretch of `geom` along a ray."""
     t = np.radians(theta_deg)
@@ -923,7 +1113,7 @@ def bridge_arc(doc, colour: str, start: float, end: float, centre: str | None = 
             f"{doc.mm(clear):.1f} mm clear of everything else; holes {holes_before} -> {holes_after}")
 
 
-@op("pockets", "pockets --adjacent X --emit C [--min-width N]   stitch enclosed bare cloth beside X in C")
+@op("pockets","pockets --adjacent X --emit C [--min-width N]   stitch enclosed bare cloth beside X in C")
 def pockets(doc, adjacent: str, emit: str, lid_above: float | None = None,
             min_width: float = MIN_W, **_):
     ink_c, thread_c = G.norm(adjacent), G.norm(emit)

@@ -1995,10 +1995,92 @@ check("svgops: move translates by exactly what it was asked",
 # A positional op must report what it did, or a silent miss stays silent.
 check("svgops: move reports where it landed", "now at" in msg, msg)
 
+# --- flatten-arc ------------------------------------------------------------ #
+# Built the way arced lettering is really built, so the answer is known by
+# construction: identical bars set on a circle of radius R, each ROTATED to the
+# tangent, one of them deliberately pushed off the baseline.
+import math  # noqa: E402
+from embroidery_tools import svggeom as G  # noqa: E402
+
+ARC_R, ARC_N, BAR_W, BAR_H = 300.0, 7, 12.0, 20.0
+ARC_STEP = math.radians(7.0)          # angular pitch between letters
+OFF_I, OFF_UNITS = 3, 5.0             # letter 3 sits 5 units high of the baseline
+
+
+def _arc_bar(i):
+    """Bar i, centred on the arc, rotated to its tangent. Centre below the text."""
+    th = -math.pi / 2 + (i - (ARC_N - 1) / 2) * ARC_STEP
+    r = ARC_R + (OFF_UNITS if i == OFF_I else 0.0)
+    cxx, cyy = 400.0 + r * math.cos(th), 400.0 + r * math.sin(th)
+    pts = []
+    for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+        px, py = sx * BAR_W / 2, sy * BAR_H / 2
+        # tangent rotation: the bar's own up must point away from the centre
+        a = th + math.pi / 2
+        pts.append((cxx + px * math.cos(a) - py * math.sin(a),
+                    cyy + px * math.sin(a) + py * math.cos(a)))
+    return "M " + " L ".join(f"{x:.4f} {y:.4f}" for x, y in pts) + " Z"
+
+
+ARC = OPS / "arc.svg"
+ARC.write_text(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" '
+    'viewBox="0 0 800 800">'
+    + "".join(f'<path id="l{i}" d="{_arc_bar(i)}" fill="#FFFFFF"/>'
+              for i in range(ARC_N))
+    + "</svg>", encoding="utf-8")
+
+doc = Doc.load(ARC, 100.0)           # 800 units across -> 8 units per mm
+msg = svgops.OPS["flatten-arc"]["fn"](doc, colour="FFFFFF")
+bars = sorted(G.polys(doc.geom_of("FFFFFF")), key=lambda p: p.bounds[0])
+
+check("svgops: flatten-arc keeps every component", len(bars) == ARC_N,
+      f"{len(bars)} of {ARC_N}")
+# A rectangle turned back square fills its own bounding box; a rotated one does
+# not. This is the whole point of the op -- `move` cannot undo a rotation, and a
+# version that only translated would pass a baseline test and fail this one.
+worst = max(abs(1 - p.area / ((p.bounds[2] - p.bounds[0]) * (p.bounds[3] - p.bounds[1])))
+            for p in bars)
+check("svgops: flatten-arc removes each letter's own tangent rotation",
+      worst < 0.01, f"worst bbox fill {1 - worst:.4f}")
+
+tops = [p.bounds[1] for p in bars]
+flat = [t for i, t in enumerate(tops) if i != OFF_I]
+check("svgops: flatten-arc lands the letters on one baseline",
+      max(flat) - min(flat) < 0.5, f"spread {max(flat) - min(flat):.3f} units")
+# Each letter keeps its OWN offset from the baseline. Snapping them all flat
+# would erase the hand-drawn wobble and make the lettering read as a font.
+check("svgops: flatten-arc preserves a letter's offset from the baseline",
+      abs((min(flat) - tops[OFF_I]) - OFF_UNITS) < 0.5,
+      f"kept {min(flat) - tops[OFF_I]:.2f} of {OFF_UNITS} units")
+# Spacing is preserved along the ARC, not along the chord, so the row gets wider.
+gaps = [bars[i + 1].centroid.x - bars[i].centroid.x for i in range(ARC_N - 1)]
+check("svgops: flatten-arc spaces letters by arc length",
+      all(abs(g - ARC_R * ARC_STEP) < 0.5 for g in gaps),
+      f"gaps {[round(g, 2) for g in gaps]} vs {ARC_R * ARC_STEP:.2f}")
+check("svgops: flatten-arc reports the arc it measured",
+      "sweep" in msg and "radius" in msg, msg)
+
+# A nearly-straight row still yields a circle -- an enormous one through the
+# noise -- and unrolling against it is arithmetic on rounding error.
+FLATSRC = OPS / "already_flat.svg"
+FLATSRC.write_text(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" '
+    'viewBox="0 0 800 800">'
+    + "".join(f'<path id="f{i}" d="{sq(100 + i * 40, 400, 120 + i * 40, 420)}" '
+              f'fill="#FFFFFF"/>' for i in range(ARC_N))
+    + "</svg>", encoding="utf-8")
+doc = Doc.load(FLATSRC, 100.0)
+try:
+    svgops.OPS["flatten-arc"]["fn"](doc, colour="FFFFFF")
+    check("svgops: flatten-arc refuses lettering that is already flat", False)
+except SystemExit as e:
+    check("svgops: flatten-arc refuses lettering that is already flat",
+          "already flat" in str(e), str(e))
+
 # bridge-arc closes a ring's gap (Yess_on_black) and must refuse to reach
 # anything but the ring - a bridge that grazes a letter is a different design.
 from shapely.geometry import Point as _Pt, Polygon as _Poly  # noqa: E402
-from embroidery_tools import svggeom as G  # noqa: E402
 _ring = _Pt(400, 400).buffer(310, 64).difference(_Pt(400, 400).buffer(290, 64))
 _wedge = _Poly([(400, 400), (800, 400 - 145), (800, 400 + 145)])   # ~40 deg gap at 0 deg
 _ring = _ring.difference(_wedge)
