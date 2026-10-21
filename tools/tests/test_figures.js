@@ -39,7 +39,7 @@ if (s0 < 0 || s1 < 0){ console.error("FIGURES: no embedded library"); process.ex
 const LIB = JSON.parse(built.slice(s0 + OPEN.length, s1).split("\u003c").join("<"));
 let current = null;
 const run = new Function("LIB", "getCurrent", lib
-  + "\nreturn {buildFigure, FIG_KINDS};")(LIB, () => current);
+  + "\nreturn {buildFigure, FIG_KINDS, figApplies};")(LIB, () => current);
 
 let checked = 0, bad = [];
 for (const p of LIB.patterns){
@@ -71,11 +71,22 @@ for (const p of LIB.patterns){
   }
 }
 /* Glossary figures too. A generated one is drawn for whichever bag is open,
-   so it has to hold for ALL of them -- a term is shared, a bag is not. */
+   so it has to hold for ALL of them -- a term is shared, a bag is not.
+
+   "All of them" now means all the bags that HAVE the part. A flat pouch has
+   no ring and no gusset, so the ring drawing cannot be made for it and the
+   page falls back to the term's prose. That is declared in FIG_NEEDS rather
+   than discovered by catching the exception, because otherwise a figure
+   broken for every bag would look exactly like a part this bag hasn't got --
+   buildFigure returns null for both. Which is why the skip is COUNTED: a term
+   whose picture no pattern can draw is still a failure. */
+const drew = new Map();
 for (const p of LIB.patterns){
   current = p.name;
   for (const t of LIB.glossary || []){
     if (!t.figure) continue;
+    if (!drew.has(t.term)) drew.set(t.term, false);
+    if (!run.figApplies(t.figure, p)) continue;
     checked++;
     let node = null, err = null;
     try { node = run.buildFigure(t.figure, p); } catch (e){ err = e.message; }
@@ -90,8 +101,11 @@ for (const p of LIB.patterns){
     else if (node.count() < 6) bad.push(`${what}: only ${node.count()} nodes`);
     else if (/undefined|NaN/.test(JSON.stringify(node)))
       bad.push(`${what}: renders undefined/NaN`);
+    if (node) drew.set(t.term, true);
   }
 }
+for (const [term, ok] of drew)
+  if (!ok) bad.push(`glossary "${term}": its figure draws for NO pattern`);
 
 /* Two steps showing the SAME picture is worse than one showing none: it
    teaches the reader that the figure is decoration and stops them looking.

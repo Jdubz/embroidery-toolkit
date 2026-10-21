@@ -198,6 +198,33 @@ CORNER_SAVING = F(4292, 10000)
 #: Bias strips cost about 30% more material than straight grain and have to be
 #: pieced. That is the price of a curve, and binding.md says so plainly.
 BIAS_WASTE = F(13, 10)
+#: How far a harness ring stands proud of the edge it is fixed to. Enough for
+#: a snap hook to enter and swing; less and the hook fouls the cloth.
+RING_STAND_IN = F(1, 2)
+#: Sharpest apex a sewn-and-turned triangle will come out of. Below it the
+#: allowances inside the point cannot be trimmed back far enough to lie flat
+#: and the tip bunches instead of turning -- the same failure the construction
+#: warns about at a square corner, arriving at a sharper angle. Practitioner
+#: rule, not measured here.
+MIN_APEX_DEG = 30.0
+#: Shell weight per square metre. 600D PU-coated polyester, nominal. Only used
+#: to find where a LOADED pouch balances, and the load dominates it -- a phone
+#: is about 89% of the mass -- so the figure being nominal costs little.
+SHELL_G_PER_M2 = 300.0
+#: Fittings on a small pouch: zip, slider, rings, tabs.
+FITTINGS_G = 10.0
+#: A flat pouch is two panels seamed directly together, so it has no third
+#: dimension until something is in it. What `finished_in.d` declares there is
+#: the LOFT -- how far it stands off the body when loaded -- and past about an
+#: inch the thing wants a gusset instead: the panels have to bow so far that
+#: the seam pulls into a rope and the pouch reads as a badly-made box rather
+#: than an envelope. A declared limit, so a spec that drifts past it fails
+#: rather than quietly becoming the wrong construction.
+FLAT_LOFT_MAX_IN = F(1)
+#: An envelope loaded to thickness t is a lens, not a box: two bulges, each
+#: about a parabolic cap of height t/2, so the volume is 2/3 of the prism.
+#: Reporting w * h * t would overstate a flat pouch by half.
+LOFT_FILL = F(2, 3)
 #: An adjustable strap loses length to two hook folds and the tri-glide. 4" is
 #: what the StadiumTote's 56" webbing gives against its 52" maximum.
 SLING_TAKEUP_IN = F(4)
@@ -217,7 +244,13 @@ FLAGS = ("has_chassis", "shell_frays", "double_fold", "has_windows",
          "has_stiffener", "has_pockets", "shell_melts", "self_bound",
          "has_webbing", "supplies_carry",
          "has_top_zip", "has_side_zip", "has_placket",
-         "reverse_coil", "standard_coil")
+         "reverse_coil", "standard_coil",
+         # Harness rings on a flat pouch. `has_ring_tab` is separate because
+         # the two fixings are different operations: a seam-mounted tab is
+         # caught as the pouch closes and needs no tack at all, a panel-mounted
+         # one is box-X'd through an anchor and has to be done while the pouch
+         # is still open.
+         "has_rings", "has_ring_tab")
 
 #: Feature kinds the player's renderer knows how to draw. A kind outside this
 #: set is a check failure rather than a silently missing detail.
@@ -263,14 +296,24 @@ def frac(x, denom: int = 16) -> str:
     # from outside, which is exactly where a plausible-looking wrong fraction
     # would do the most damage.
     x = F(round(F(x) * denom), denom)
+    # A negative only ever turns up in a FAILING check -- an interior a loft
+    # has eaten, a clearance that came out the wrong way round -- and that is
+    # exactly when the number has to be readable. `int()` truncates toward
+    # zero, so -2.75 split into a whole of -2 and a remainder of -3/4 and
+    # printed as `-2 -3/4"`, which reads as two measurements. Sign it once,
+    # up front, and render the magnitude the way every other figure is
+    # rendered.
+    sign = "-" if x < 0 else ""
+    x = abs(x)
     whole, rest = int(x), x - int(x)
     if rest == 0:
-        return f'{whole}"'
+        return f'{sign}{whole}"'
     glyph = VULGAR.get(rest)
     if glyph is None:
         sixteenth = f"{rest.numerator}/{rest.denominator}"
-        return f'{whole} {sixteenth}"' if whole else f'{sixteenth}"'
-    return f'{whole}{glyph}"' if whole else f'{glyph}"'
+        return (f'{sign}{whole} {sixteenth}"' if whole
+                else f'{sign}{sixteenth}"')
+    return f'{sign}{whole}{glyph}"' if whole else f'{sign}{glyph}"'
 
 
 def round_to(x, denom: int = 8) -> F:
@@ -1685,7 +1728,12 @@ class BoxBag:
             u0, u1 = float(ft["from"]), float(ft["to"])
             return (min(u0, u1), 0.0, abs(u1 - u0), 0.0)
         if k in NOMINAL_IN:
-            w, h = NOMINAL_IN[k]
+            # The nominal exists so a POINT-like feature can still be checked
+            # against the face it names. A feature that declares its own size
+            # knows better -- a ring on a 1/2 in edge is not 1.25 in wide, and
+            # judging it by the nominal reported it hanging off the pouch.
+            w = float(ft.get("w") or NOMINAL_IN[k][0])
+            h = float(ft.get("h") or NOMINAL_IN[k][1])
             return (float(ft["u"]) - w / 2, float(ft["v"]) - h / 2, w, h)
         if k == "rib":
             return (float(ft["u"]), 0.0, float(ft["w"]), 0.0)
@@ -2113,7 +2161,12 @@ class BoxBag:
         CAUGHT = {"pocket", "rib", "zip", "webbing", "placket"}
         under = []
         for ft in self.model3d()["features"]:
-            if ft.get("kind") in CAUGHT or not ft.get("face"):
+            # ...or anything that says outright it is caught in a seam. A
+            # seam-mounted ring tab has no tack AT ALL -- both tails lie in the
+            # closing seam and the seam is the fixing -- so "it sits under the
+            # seam" is the design rather than the defect this check hunts.
+            if (ft.get("kind") in CAUGHT or ft.get("caught")
+                    or not ft.get("face")):
                 continue
             rect = self._placement_rect(ft)
             if rect is None:
@@ -2462,13 +2515,681 @@ class BoxBag:
         }
 
 
+class FlatBag(BoxBag):
+    """Two panels seamed directly to each other, zip in the top seam.
+
+    No gusset, no zipper panel, no ring -- the three pieces that make a box
+    bag a box. The perimeter is not a band wrapping two faces; it is one seam
+    where the two faces meet, so `ring`, `gusset_*` and `strip_*` are not
+    small numbers here, they are absent, and a spec that names them is asking
+    for a piece nobody cuts.
+
+    `finished_in.d` therefore means something different, and this is the one
+    thing to get right about this class: it is the LOFT. A flat pouch has no
+    depth until it is loaded, and the depth it then takes comes out of its own
+    width and height, because the panels have to wrap it. That is why
+    `usable_w` is `w - d` and not `w`, and why the interior is a lens rather
+    than a box.
+    """
+
+    #: Only one step here has nothing spatial to show. Every other step on a
+    #: two-piece bag is about where a seam goes, and a step about a seam with
+    #: no drawing is a step somebody has to imagine.
+    NO_FIGURE = {"Pre-wash and dry the shell"}
+
+    def __init__(self, spec: dict):
+        if spec.get("chassis"):
+            # Refuse rather than ignore. A chassis is a webbing loop round the
+            # girth, and this bag has no girth to run it round.
+            raise ValueError(f"{spec['name']}: a flat pouch has no gusset, so "
+                             "it cannot carry a chassis — declare \"chassis\": null")
+        for bad in ("panel_pockets", "divider", "windows_material", "pieces"):
+            if spec.get(bad):
+                raise ValueError(f"{spec['name']}: {bad!r} is box-bag geometry "
+                                 "and has no meaning on a flat pouch")
+        super().__init__(spec)
+        self.loft = self.D
+        self.must_hold = [F(str(x)) for x in spec.get("must_hold_in", [])] or None
+        self.holds = spec.get("holds", "")
+
+        # ---- what replaces the ring ----------------------------------
+        # The zip is sewn straight to the two panels' top edges, so the
+        # opening is the full finished width and the tape carries no strips.
+        self.zip_face = self.W
+        self.zip_cut = self.W + 2 * self.sa
+        # Three edges close the bag; the fourth is the zip, sewn twice.
+        self.close_run = 2 * self.H + self.W - self.corner_saved
+        self.zip_run = 2 * self.W
+        self.seam_run = self.close_run + self.zip_run
+        # An envelope wraps its own loft, and it pays for it on every seamed
+        # edge: half the loft at each side and half at the top and bottom.
+        self.usable_w = self.W - self.loft
+        self.usable_h = self.H - self.loft
+        # The thickest point is where the two tapes and the two panels all
+        # meet, which is the top corner -- the same place a box bag puts its
+        # lap join, for the same reason.
+        self.top_corner_mm = 2 * self.shell_mm + 2 * ZIP_TAPE_MM
+
+        # Nothing below exists on this bag. They are set rather than deleted so
+        # that an inherited method touching one fails loudly on a None instead
+        # of quietly reading a stale figure from the box geometry.
+        self.ring = self.gusset_face = self.gusset_cut = None
+        self.strip_front = self.strip_rear = self.web_lo = None
+        self.loop = None
+
+        # ---- harness rings, and where a loaded pouch balances ----------
+        # A pouch on a strap hangs with its CENTRE OF GRAVITY under the
+        # attachment, so the CoG is what decides where a ring may go -- and on
+        # a pouch carrying one heavy object the CoG is nothing like the
+        # geometric centre. The object rests on the bottom seam, so it sits
+        # half its own height up from the bottom, not half the pouch's.
+        self.holds_g = float(spec.get("holds_g", 0) or 0)
+        self.shell_g = (float(self.panel_w * self.panel_h) * 2
+                        * MM_PER_IN ** 2 / 1e6 * SHELL_G_PER_M2 + FITTINGS_G)
+        if self.must_hold and self.holds_g:
+            load_c = self.H - self.must_hold[1] / 2
+            self.cog = ((F(str(self.holds_g)) * load_c
+                         + F(str(self.shell_g)) * self.H / 2)
+                        / F(str(self.holds_g + self.shell_g)))
+        else:
+            self.cog = self.H / 2
+
+        # A WING is a triangle: its base laid into a side seam, its ring at the
+        # apex. It replaced a plain webbing tab, and the reason is load path --
+        # a tab puts the whole strap tension into one inch of seam, a wing
+        # spreads it over its whole base and triangulates the apex so the
+        # strap's line is fixed relative to the pouch instead of being whatever
+        # the tab happens to fold to.
+        self.wings = [dict(w) for w in self.feat.get("wings", [])]
+        for r in self.wings:
+            r["for"] = F(str(r.get("for_in", "1.0")))
+            r["base"] = F(str(r.get("base_in", "3.0")))
+            r["reach"] = F(str(r.get("reach_in", "1.0")))
+            # Where the apex sits ALONG the base, from its top end. Centred
+            # unless told otherwise: off-centre swings the strap's line fore or
+            # aft without moving the base.
+            r["apex_at"] = F(str(r.get("apex_at_in", r["base"] / 2)))
+            # The apex angle falls out of base and reach and nothing else. A
+            # long base on a short reach is both blunter and spreads load
+            # better, so those are the same choice rather than a trade.
+            r["apex_deg"] = (math.degrees(math.atan(float(r["apex_at"] / r["reach"])))
+                             + math.degrees(math.atan(
+                                 float((r["base"] - r["apex_at"]) / r["reach"]))))
+            # Two layers, sewn along the two free edges and turned, then the
+            # base goes into the pouch's own closing seam.
+            r["cut_w"] = r["reach"] + 2 * self.sa
+            r["cut_h"] = r["base"] + 2 * self.sa
+        self.rings = self.wings + [dict(r) for r in self.feat.get("rings", [])]
+        for r in self.rings:
+            r["for"] = F(str(r.get("for_in", "1.0")))
+            # FORE and AFT, not front and back. The two big panels are already
+            # called front and back, and a ring named for one of those reads as
+            # being ON that panel -- which is exactly the mistake this replaced,
+            # and it was invisible until the preview drew both rings sitting on
+            # the back panel instead of on the pouch's edges. `fore` and `aft`
+            # are the wearer's, and they map to the narrow side faces the
+            # renderer calls right and left.
+            r["edge"] = r.get("edge", "aft")
+            if r["edge"] not in ("fore", "aft"):
+                raise ValueError(
+                    f"{self.name}: a harness ring goes on the 'fore' or 'aft' "
+                    f"SIDE seam, not {r['edge']!r} — the top seam is the zip, "
+                    "and 'front'/'back' name the two panels, which face the "
+                    "ribs and the world and carry no hardware")
+            r["face"] = "right" if r["edge"] == "fore" else "left"
+            r["at"] = F(str(r.get("at_in", self.sa + RING_STAND_IN)))
+            # For a wing the ring hangs at the APEX, which is `apex_at` down
+            # from where the base starts -- so the depth that matters for
+            # everything downstream is the apex's, not the base's.
+            r["ring_at"] = (r["at"] + r["apex_at"] if "base" in r else r["at"])
+            r["tail"] = F(str(r.get("tail_in", "1.5")))
+            # One strip, folded over the ring's bar, both tails laid DOWN the
+            # side seam. The pull runs along the tails, into the seam -- webbing
+            # in tension along its own length, which needs no tack at all.
+            r["cut"] = 2 * r["tail"] + r["for"]
+            # DECLARED, not derived. Where a strap goes is a fact about the
+            # harness and the body, not about the pouch, so the pouch cannot
+            # work it out -- an earlier version of this insisted on deriving it
+            # and could only ever produce "straight up". 0 is up the seam; 45
+            # is a corner ring taking a strap up and away; 90 is straight out.
+            r["angle"] = F(str(r.get("angle_deg", 0)))
+
+    # -- what the bag is ---------------------------------------------------
+
+    @property
+    def flags(self) -> dict:
+        return super().flags | {
+            "has_rings": bool(self.rings),
+            "has_ring_tab": False,
+        }
+
+    def interior(self) -> dict:
+        vol = (float(self.usable_w * self.usable_h * self.loft)
+               * float(LOFT_FILL))
+        return {"w": dim(self.usable_w), "h": dim(self.usable_h),
+                "d": dim(self.loft),
+                "in3": round(vol, 2),
+                "litres": round(vol * CM3_PER_IN3 / 1000.0, 2)}
+
+    @property
+    def geometry(self) -> dict:
+        g = {
+            "w": self.W, "h": self.H, "d": self.loft, "loft": self.loft,
+            "sa": self.sa, "clip_depth": self.clip_depth,
+            "seam_margin": SEAM_MARGIN_IN, "turn": TURN_IN,
+            "face_w": self.face_w, "face_h": self.face_h,
+            "visible_w": self.visible_w, "visible_h": self.visible_h,
+            "panel_w": self.panel_w, "panel_h": self.panel_h,
+            "zip_face": self.zip_face, "zip_cut": self.zip_cut,
+            "coil": self.coil,
+            "close_run": self.close_run, "zip_run": self.zip_run,
+            "seam_run": self.seam_run,
+            "usable_w": self.usable_w, "usable_h": self.usable_h,
+        }
+        if self.loops:
+            g.update({"belt": self.loop_for, "keeper_w": self.loop_w,
+                      "keeper_len": self.loop_len})
+        if self.loop_anchor if self.loops else False:
+            g["anchor_len"] = self.panel_w
+        if self.corner_r:
+            g.update({"corner_r": self.corner_r,
+                      "corner_cut_r": self.corner_cut_r})
+        if self.must_hold:
+            g.update({"hold_w": self.must_hold[0], "hold_h": self.must_hold[1]})
+        if self.rings:
+            g.update({"cog": self.cog, "ring_stand": RING_STAND_IN,
+                      "ring_for": self.rings[0]["for"],
+                      "ring_tab": max(r["cut"] for r in self.rings),
+                      "ring_tail": max(r["tail"] for r in self.rings),
+                      "ring_at": self.rings[0]["ring_at"],
+                      "ring_clear": self.cog - self.rings[0]["ring_at"]})
+        if self.wings:
+            w0 = self.wings[0]
+            g.update({"wing_base": w0["base"], "wing_reach": w0["reach"],
+                      "wing_cut_w": w0["cut_w"], "wing_cut_h": w0["cut_h"],
+                      "wing_apex_at": w0["apex_at"], "span": self.span})
+        return g
+
+    @property
+    def span(self) -> F:
+        """Fore-and-aft extent of the pouch INCLUDING its wings.
+
+        The thing that has to fit in an armpit, and not the same number as the
+        finished width -- a wing is cloth standing out past the seam, so a
+        pouch with two of them is wider than the bag the cut list describes.
+        """
+        return self.W + sum(w["reach"] for w in self.wings)
+
+    def hang_deg(self, offset) -> float:
+        """Degrees out of plumb, for a load hanging `offset` off the CoG.
+
+        Slung between two side rings the pouch hangs level whatever is in it,
+        so this is not about ring PLACEMENT -- it is what happens when the two
+        straps are not equally tensioned. The effective attachment slides
+        toward the tight one, and the pouch tilts by exactly this.
+
+        A `plumb_band` property lived here while the pouch was hung from one
+        ring on its back panel, and went with that idea rather than surviving
+        it: nothing places a ring off mid-width any more, so a tolerance on
+        doing so was a check of nothing.
+        """
+        return math.degrees(math.atan(float(abs(offset)) / float(self.cog)))
+
+    def face_size(self, face: str) -> tuple[F, F]:
+        return {"front": (self.W, self.H), "back": (self.W, self.H),
+                "left": (self.loft, self.H), "right": (self.loft, self.H),
+                "top": (self.W, self.loft), "bottom": (self.W, self.loft)}[face]
+
+    # -- pieces ------------------------------------------------------------
+
+    def cut_list(self) -> list[dict]:
+        def row(piece, qty, w, l, material, note="", r=F(0)):
+            d = {"piece": piece, "qty": qty, "w": dim(w), "l": dim(l),
+                 "material": material, "note": note,
+                 "corner_r": dim(r), "corners": "bottom" if r else "square"}
+            if r:
+                d["note"] = ((note + "; " if note else "")
+                             + f"BOTTOM CORNERS ROUND AT {frac(r)} — cut round a template")
+            return d
+
+        out = [row("Front and back panel", 2, self.panel_w, self.panel_h,
+                   self.panel_mat, r=self.corner_cut_r,
+                   note="the whole bag. Both identical, both cut the same way "
+                        "up — there is no third piece")]
+        if self.loops:
+            out.append(row("Belt keeper", self.loop_count, self.loop_w,
+                           self.loop_len, self.shell,
+                           f"fits a {frac(self.loop_for)} strap"))
+            if self.loop_anchor:
+                out.append(row("Strap anchor strip", 1, self.panel_w, self.loop_w,
+                               self.shell,
+                               "interior of the back panel, behind the keepers; "
+                               "both ends caught in the side seams, so the load "
+                               "spreads into a seam instead of into a stitch field"))
+        for r in self.wings:
+            out.append(row(f"Wing, {r.get('role', 'harness')}", 2,
+                           r["cut_w"], r["cut_h"], self.shell,
+                           f"triangle: {frac(r['base'])} base by {frac(r['reach'])} "
+                           f"reach, apex {frac(r['apex_at'])} down the base "
+                           f"({r['apex_deg']:.0f}° at the point). Two "
+                           "layers sewn along the two FREE edges and turned; the "
+                           "base then goes into the pouch's own closing seam"))
+        seen = {}
+        for r in self.rings:
+            if "base" in r:
+                continue
+            seen.setdefault((r["for"], r["cut"], r["tail"]), []).append(r)
+        for (for_in, cut, tail), rs in seen.items():
+            who = ", ".join(r.get("role", "ring") for r in rs)
+            out.append(row("Harness ring tab", len(rs), for_in, cut, self.shell,
+                           f"{who}. Folded over a {frac(for_in)} square ring, both "
+                           f"tails laid {frac(tail)} DOWN the side seam and caught "
+                           "in it. No tack: the seam is the fixing"))
+        return out
+
+    def assembly_load(self) -> list[dict]:
+        rows = [{"item": "Closing seams", "count": 3,
+                 "note": f"two sides and the bottom, {frac(self.close_run)} in all "
+                         f"at {frac(self.sa)} — then the bag turns through the zip"},
+                {"item": "Zip seams", "count": 2,
+                 "note": f"one per panel, {frac(self.W)} each, then topstitched "
+                         "back — this is the whole of the closure"}]
+        if self.curved_corners:
+            rows.append({"item": "Relief clips",
+                         "count": self.relief_clips * self.curved_corners,
+                         "note": f"{self.relief_clips} per curve, each cut to "
+                                 f"{frac(self.clip_depth)} — an eighth SHORT of the "
+                                 "stitch line, or the stitching pulls out"})
+        if self.square_corners:
+            rows.append({"item": "Corners to trim",
+                         "count": self.square_corners,
+                         "note": "allowance cut back across the point so it turns "
+                                 "out flat instead of bunching"})
+        rows.append({"item": "Zippers", "count": 1,
+                     "note": "4 rows on tape and one new bar-tacked stop"})
+        if self.loops:
+            rows.append({"item": "Box-X tacks", "count": 2 * self.loop_count,
+                         "note": "both ends of each keeper, twice round, "
+                                 "hand-wheeled"})
+        if self.wings:
+            rows.append({"item": "Wings, sewn and turned", "count": len(self.wings),
+                         "note": "two layers each, sewn along the two FREE edges, "
+                                 "point trimmed and turned before the base goes "
+                                 "anywhere near the pouch"})
+        if self.rings:
+            rows.append({"item": "Bases and tabs basted into the seam",
+                         "count": len(self.rings),
+                         "note": "no box-X anywhere — each one lies in the "
+                                 "closing seam and the seam is the fixing"})
+        runs = 2 if (self.loops and self.loop_anchor) else 0
+        if runs:
+            rows.append({"item": "Straight topstitch runs", "count": runs,
+                         "note": "the anchor strips' long edges — the easy seams"})
+        return rows
+
+    def zipper_schedule(self) -> list[dict]:
+        return [{"zip": "Main", "opening": dim(self.zip_face),
+                 "coil": dim(self.coil), "sliders": self.main_sliders,
+                 "note": f"the full width of the pouch. Buy longer and shorten "
+                         f"to {frac(self.zip_cut)} of tape with a new bar-tacked "
+                         "stop, so both ends finish inside the side seams"}]
+
+    def thickness(self) -> list[dict]:
+        rows = [("Closing seam", "2 x panel", 2 * self.shell_mm),
+                ("Zip seam", "panel + zip tape", self.shell_mm + ZIP_TAPE_MM),
+                ("Top corner", "2 x panel + 2 x zip tape", self.top_corner_mm)]
+        if self.loops:
+            rows.append(("Keeper box-X",
+                         "doubled keeper + panel"
+                         + (" + anchor" if self.loop_anchor else ""),
+                         2 * self.shell_mm + self.shell_mm
+                         + (self.shell_mm if self.loop_anchor else 0)))
+        return [{"location": a, "stack": b, "mm": round(c, 2)} for a, b, c in rows]
+
+    # -- the drawing -------------------------------------------------------
+
+    def model3d(self) -> dict:
+        feats = [{"kind": "zip", "derived": True, "face": "top",
+                  "u": 0.0, "v": 0.0,
+                  "w": float(self.zip_face), "h": float(min(self.coil, self.loft)),
+                  "label": f"coil, the full {frac(self.zip_face)} of the top seam"}]
+        # Rings are DERIVED from the ring declaration, never re-declared as a
+        # placement: the drawing and the checks then cannot disagree about
+        # where the pouch hangs from.
+        for r in self.rings:
+            role = r.get("role", "ring")
+            if "base" in r:
+                # The wing itself stands OUT past the seam, and no face of a
+                # box preview contains that. What can be drawn honestly is the
+                # run of seam its base occupies; the reach goes in the label.
+                feats.append({
+                    "kind": "patch", "derived": True, "face": r["face"],
+                    "caught": True,
+                    "u": float(self.loft) / 2,
+                    "v": float(r["at"] + r["base"] / 2),
+                    "w": float(self.loft), "h": float(r["base"]),
+                    "label": f"{role} wing base — {frac(r['base'])} of the "
+                             f"{r['edge'].upper()} seam carries the load"})
+            # On the pouch's own EDGE, which is a face of its own in the
+            # preview and is only the loft wide. Sized explicitly rather than
+            # left to the point-feature nominal, which is 1.25 in wide and
+            # would hang off a 1/2 in edge.
+            feats.append({
+                "kind": "dring", "derived": True, "face": r["face"],
+                "caught": True,
+                "u": float(self.loft) / 2, "v": float(r["ring_at"]),
+                "w": float(self.loft), "h": float(r["for"]),
+                "label": f"{role} — {frac(r['for'])} square ring on the "
+                         f"{r['edge'].upper()} side"
+                         + (f", at the apex of a wing standing {frac(r['reach'])} "
+                            f"proud of the seam, {frac(r['ring_at'])} below the top"
+                            if "base" in r else
+                            f", {frac(r['at'])} below the top, tab at "
+                            f"{r['angle']}\N{DEGREE SIGN}, tails "
+                            f"{frac(r['tail'])} down the seam")})
+        for ft in self.spec.get("features", {}).get("placements", []):
+            feats.append(dict(ft))
+        return {
+            "faces": {f: {"w": dim(self.face_size(f)[0]),
+                          "h": dim(self.face_size(f)[1])} for f in FACES},
+            "seam_allowance": dim(self.sa),
+            "corner_radius": dim(self.corner_r if self.corner_r else F(0)),
+            "features": feats,
+        }
+
+    # -- checks ------------------------------------------------------------
+
+    def checks(self) -> list[tuple[bool, str, str]]:
+        out = []
+
+        def ck(ok, name, detail):
+            out.append((bool(ok), name, detail))
+
+        ck(self.W > 0 and self.H > 0 and self.loft > 0, "faces are positive",
+           f"{frac(self.W)} x {frac(self.H)}, lofting to {frac(self.loft)}")
+
+        # The check that decides this is the right construction at all. Past an
+        # inch the panels have to bow so far to make the depth that the seam
+        # ropes and the pouch reads as a botched box; that is what a gusset is
+        # for, and box-turned is the file that has one.
+        ck(self.loft <= FLAT_LOFT_MAX_IN, "the loft still wants a flat pouch",
+           f"{frac(self.loft)} against {frac(FLAT_LOFT_MAX_IN)} — past that the "
+           "panels bow too far and the bag wants a gusset, which means box-turned")
+
+        # An envelope pays for its loft out of its own face. Both figures have
+        # to stay positive before anything downstream means anything.
+        ck(self.usable_w > 0 and self.usable_h > 0,
+           "the loft leaves usable cloth",
+           f"{frac(self.usable_w)} x {frac(self.usable_h)} inside, from a face of "
+           f"{frac(self.W)} x {frac(self.H)}: wrapping {frac(self.loft)} of loft "
+           f"costs the same {frac(self.loft)} off each axis")
+
+        if self.must_hold:
+            mw, mh = self.must_hold
+            ok = self.usable_w >= mw and self.usable_h >= mh
+            ck(ok, "it holds what it must once it lofts",
+               f"{self.holds or 'contents'} at {frac(mw)} x {frac(mh)} into "
+               f"{frac(self.usable_w)} x {frac(self.usable_h)}"
+               + ("" if ok else " — IT DOES NOT FIT; the face has to grow by the "
+                  "shortfall PLUS the loft, not by the shortfall")
+               + (f" ({frac(self.usable_w - mw)} and {frac(self.usable_h - mh)} "
+                  "to spare)" if ok else ""))
+
+        ck(self.sa >= F(1, 4), "the seam allowance can take a relief clip",
+           f"{frac(self.sa)} allowance, clipped to {frac(self.clip_depth)} — "
+           "a snip that stops 1/8\" short of the stitch line")
+
+        creasing = sorted({m for m in {r["material"] for r in self.cut_list()}
+                           if mat(m).get("creases")})
+        ck(not creasing, "every material survives being turned",
+           "nothing here takes a permanent fold" if not creasing else
+           f"{', '.join(creasing)} creases permanently — a panel of it cannot be "
+           f"pulled through a {frac(self.zip_face)} opening and recover")
+
+        ck(self.visible_w > 0 and self.visible_h > 0, "artwork clears the seam",
+           f"{frac(self.visible_w)} x {frac(self.visible_h)} inside a "
+           f"{frac(SEAM_MARGIN_IN)} margin")
+
+        ck(self.top_corner_mm <= STACK_WARN_MM, "the worst seam is drivable",
+           f"{self.top_corner_mm:.2f} mm at the top corner, where both tapes "
+           f"cross both panels (warn above {STACK_WARN_MM:g})")
+
+        # NOT "the tape reaches into both side seams". `zip_cut` is DEFINED
+        # three lines into __init__ as W + 2 * sa, so that check restates its
+        # own definition and can only ever pass -- the worthless shape
+        # SCHEMA.md warns about, written here by the same hand that quoted the
+        # warning. The risk it was aiming at is real but it is a bench error,
+        # not a geometry one, so it belongs in the construction's checklist
+        # where the person cutting the tape will read it.
+
+        if self.loops:
+            ck(self.loop_w >= self.loop_for,
+               "keepers are wide enough for the belt",
+               f"{frac(self.loop_w)} keeper on a {frac(self.loop_for)} belt")
+            ck(self.loop_len >= self.keeper_min,
+               "keepers are long enough to fold, tack and arch",
+               f"{frac(self.loop_len)} cut against {frac(self.keeper_min)} needed")
+            # Vertical strap, so both keepers sit on the panel's own height and
+            # the top one is the one that can end up in the zip seam.
+            ck(self.loop_count >= 2, "the pouch cannot pivot on its strap",
+               f"{self.loop_count} keeper(s) — one is a hinge, two are a fixing")
+
+        if self.rings:
+            # THE checks on this pouch, and they are pure statics. A pouch on
+            # a shoulder rig is SLUNG BETWEEN two straps -- it is a link in the
+            # band that goes round the torso, in line with it -- and is not
+            # dangled off one point. The Galco Miami Classic's "spider harness"
+            # is the reference: four points, every one of them pivoting.
+            #
+            # An earlier version here hung it from a single ring tabbed to the
+            # BACK PANEL and made a whole plumb-tolerance argument out of where
+            # that ring sat. Two things were wrong with it. The ring faced the
+            # ribs, which is the one surface nothing should be fixed to; and
+            # the level hang was made to depend on the load, when slinging it
+            # between the two side seams makes it depend on nothing at all.
+            if not (self.must_hold and self.holds_g):
+                ck(False, "the balance point is known",
+                   "rings are declared but `must_hold_in` and `holds_g` are "
+                   "not, so the centre of gravity is a guess")
+
+            # Both rings are equidistant from mid-width by construction -- one
+            # per side seam -- so the vertical pulls must be equal and the
+            # pouch hangs LEVEL whatever the load is. What can break that is
+            # the two sitting at different heights.
+            edges = {r["edge"] for r in self.rings}
+            ck(edges == {"fore", "aft"},
+               "the pouch is slung between BOTH side seams",
+               f"rings on {', '.join(sorted(edges)) or 'nothing'} — one per "
+               "side, or the pouch dangles from a point instead of hanging "
+               "between two")
+
+            for r in self.wings:
+                # The point has to turn out. Sharper than this and the
+                # allowances inside it cannot be trimmed back far enough to lie
+                # flat, so the tip bunches -- the square-corner problem at a
+                # sharper angle. It is set by base and reach and nothing else.
+                ck(r["apex_deg"] >= MIN_APEX_DEG,
+                   f"the {r.get('role', 'wing')} wing's point will turn out",
+                   f"{r['apex_deg']:.0f}\N{DEGREE SIGN} at the apex, from a "
+                   f"{frac(r['base'])} base on a {frac(r['reach'])} reach "
+                   f"(want {MIN_APEX_DEG:g}\N{DEGREE SIGN} or blunter)")
+                ck(r["at"] >= self.sa
+                   and r["at"] + r["base"] <= self.H - self.sa,
+                   f"the {r.get('role', 'wing')} wing's base fits its seam",
+                   f"{frac(r['at'])} to {frac(r['at'] + r['base'])} of a "
+                   f"{frac(self.H)} seam, which the zip takes the first "
+                   f"{frac(self.sa)} of")
+                # The whole point of a wing over a tab, stated as a figure.
+                ck(True, f"the {r.get('role', 'wing')} wing spreads its load",
+                   f"{frac(r['base'])} of seam carries it, against the "
+                   f"{frac(self.rings[0]['for'])} a plain tab would put it "
+                   "through — a quarter of the load per inch")
+
+            # A wing makes the pouch WIDER than the bag the cut list describes,
+            # and the thing it has to fit into is an armpit. This is the check
+            # that catches a wing sized for the load and not for the body.
+            # Against its OWN limit, not the pouch's. They are two different
+            # questions: `w` asks whether the loaded box prints through a close
+            # waistcoat, `span` asks whether the whole thing fits the armpit
+            # pocket fore-and-aft. A wing is a single layer of cloth lying flat
+            # at armpit level and prints like nothing; the pouch body does not.
+            # Judging the wings by the pouch's figure failed a design for the
+            # wrong reason, which is worse than not checking it.
+            lim = self.spec.get("fits_within_in") or {}
+            if self.wings and lim.get("span"):
+                lim_s = F(str(lim["span"]))
+                ck(self.span <= lim_s,
+                   "the pouch AND its wings fit across the armpit",
+                   f"{frac(self.W)} of pouch plus "
+                   f"{frac(self.span - self.W)} of wing = {frac(self.span)} "
+                   f"against {frac(lim_s)}"
+                   + ("" if self.span <= lim_s else
+                      " — a wing is cloth standing out past the seam, so it "
+                      "costs fore-and-aft room the finished width does not show"))
+            elif self.wings:
+                ck(False, "the pouch AND its wings fit across the armpit",
+                   f"the wings take this to {frac(self.span)} across, and "
+                   "`fits_within_in.span` is not declared — the pouch's own "
+                   "`w` is about printing through the waistcoat and is the "
+                   "wrong question for them")
+
+            # A tab caught in a seam is strong in tension ALONG its tails and
+            # weak across them: pull it sideways and it peels the seam open
+            # from the end. A WING has no tails to peel -- its base is the
+            # whole fixing -- so this only applies to the plain tabs.
+            for r in self.rings:
+                if "base" in r:
+                    continue
+                ck(r["angle"] <= 60,
+                   f"the {r.get('role', 'ring')} tab pulls along its tails",
+                   f"{r['angle']}° off the seam — past 60"
+                   "° the pull is across the tails rather than "
+                   "along them, and it peels the seam from the end")
+
+            # Above the balance point or it is an inverted pendulum and will
+            # not settle. This is what the CoG is actually FOR here.
+            for r in self.rings:
+                ck(r["ring_at"] < self.cog,
+                   f"the {r.get('role', 'ring')} ring sits above the balance point",
+                   f"{frac(r['ring_at'])} below the top against a balance point "
+                   f"at {frac(self.cog)} — {frac(self.cog - r['ring_at'])} "
+                   "of clearance")
+
+            # A side seam is a plain closing seam; the top seam is the zip.
+            # A plain tab runs DOWN its seam from the ring; a wing's base does
+            # the same job over a longer run. Either way the load goes into the
+            # side seam and never into the zipper tape -- but a WING is checked
+            # by its base above, so only the tabs are left here.
+            for r in self.rings:
+                if "base" in r:
+                    continue
+                ck(r["at"] >= self.sa,
+                   f"the {r.get('role', 'ring')} tab clears the zip seam",
+                   f"the ring is {frac(r['at'])} below the top edge, and the "
+                   f"zip seam takes the first {frac(self.sa)}")
+                ck(r["at"] + r["tail"] <= self.H - self.sa,
+                   f"the {r.get('role', 'ring')} tails stay on the seam",
+                   f"{frac(r['at'])} + {frac(r['tail'])} of tail reaches "
+                   f"{frac(r['at'] + r['tail'])} of a {frac(self.H)} seam")
+        lim = self.spec.get("fits_within_in")
+        if lim:
+            ok = (self.W <= F(str(lim["w"])) and self.loft <= F(str(lim["d"]))
+                  and self.H <= F(str(lim["h"])))
+            ck(ok, f"within the declared limit {lim['w']}x{lim['d']}x{lim['h']}",
+               f"{frac(self.W)} x {frac(self.loft)} x {frac(self.H)}")
+        return out
+
+    # -- the report --------------------------------------------------------
+
+    def report(self) -> str:
+        L = []
+        a = L.append
+        shell = self.spec.get("shell", "cordura-1000d")
+        a(f"{self.name}")
+        a("=" * len(self.name))
+        a(f"  finished flat      {frac(self.W)} W x {frac(self.H)} H"
+          f"   <- two pieces, no gusset")
+        a(f"  lofts to           {frac(self.loft)}   loaded; usable inside is then "
+          f"{frac(self.usable_w)} x {frac(self.usable_h)}")
+        a(f"  artwork field      {frac(self.visible_w)} x {frac(self.visible_h)}"
+          f"   <- {frac(SEAM_MARGIN_IN)} clear of every seam")
+        a(f"  seam allowance {frac(self.sa)}   relief clips cut to "
+          f"{frac(self.clip_depth)}   ({self.relief_clips} per curve)")
+        if self.corner_r:
+            a(f"  bottom corners round at {frac(self.corner_r)}"
+              f" ({frac(self.corner_cut_r)} at the cut edge)")
+        a("")
+        a(f"  PANELS ({shell})")
+        a(f"    front, back        2 @  {frac(self.panel_w)} wide x "
+          f"{frac(self.panel_h)} tall")
+        a("")
+        a("  CLOSURE")
+        a(f"    opening            {frac(self.zip_face)}   the full top edge")
+        a(f"    tape               {frac(self.zip_cut)} cut, so {frac(self.sa)} "
+          "finishes inside each side seam")
+        a("")
+        a("  SEAMS")
+        a(f"    to close           {frac(self.close_run)}   two sides and the bottom")
+        a(f"    to the tape        {frac(self.zip_run)}   one run per panel")
+        a(f"    worst stack        {self.top_corner_mm:.2f} mm   at the top corner")
+        a("")
+        a("  CARRY")
+        a("    no gusset          nothing wraps the perimeter; the strap does "
+          "all the carrying")
+        if self.loops:
+            a(f"    keepers ({shell})      {self.loop_count} @  {frac(self.loop_w)}"
+              f" x {frac(self.loop_len)}   (fits a {frac(self.loop_for)} strap)")
+            if self.loop_anchor:
+                a(f"    anchor strip       1 @  {frac(self.panel_w)}"
+                  f" x {frac(self.loop_w)}   (behind the keepers, ends in the "
+                  "side seams)")
+        if self.must_hold:
+            a(f"    must hold          {self.holds or 'contents'} at "
+              f"{frac(self.must_hold[0])} x {frac(self.must_hold[1])}")
+        if self.rings:
+            a(f"    balance point      {frac(self.cog)} below the top edge, at "
+              f"mid-width   ({self.holds_g:.0f} g load + {self.shell_g:.0f} g shell)")
+            a("    slung between      both side seams, so it hangs level "
+              "whatever is in it")
+            if self.wings:
+                a(f"    spans             {frac(self.span)} across, pouch and "
+                  "wings together — what has to fit the armpit")
+            for r in self.rings:
+                if "base" in r:
+                    a(f"    {r.get('role', 'wing')[:16]:<18} {frac(r['for'])} ring "
+                      f"on a wing: {frac(r['base'])} base x {frac(r['reach'])} "
+                      f"reach, {r['apex_deg']:.0f}\N{DEGREE SIGN} apex   "
+                      f"({r['edge']} seam, {frac(r['at'])} down; ring "
+                      f"{frac(r['ring_at'])} down)")
+                else:
+                    a(f"    {r.get('role', 'ring')[:16]:<18} {frac(r['for'])} square "
+                      f"ring, tab {frac(r['cut'])}   ({r['edge']} seam, "
+                      f"{frac(r['at'])} down, tails {frac(r['tail'])} into it)")
+        a("")
+        a("  ASSEMBLY LOAD")
+        for r in self.assembly_load():
+            a(f"    {str(r['count']):>8}  {r['item']}")
+        a("")
+        a("  CHECKS")
+        for ok, name, detail in self.checks():
+            a(f"    {'ok  ' if ok else 'FAIL'}  {name:<44} {detail}")
+        return "\n".join(L)
+
+
+#: Which class a construction names. A construction is not a style of prose --
+#: it decides what pieces exist, so it decides the geometry.
+GEOMETRY = {"box-turned": BoxBag, "flat-turned": FlatBag}
+
+
 def load(path: Path) -> BoxBag:
     spec = json.loads(path.read_text(encoding="utf-8"))
-    if spec.get("construction") != "box-turned":
-        raise ValueError(f"{path.name}: construction must be 'box-turned'")
+    kind = spec.get("construction")
+    if kind not in GEOMETRY:
+        raise ValueError(f"{path.name}: construction must be one of "
+                         f"{', '.join(sorted(GEOMETRY))}")
     if spec.get("name") != path.stem:
         raise ValueError(f"{path.name}: name must match the filename")
-    return BoxBag(spec)
+    return GEOMETRY[kind](spec)
 
 
 #: Licences that may be EMBEDDED. Share-alike is deliberately absent: putting a

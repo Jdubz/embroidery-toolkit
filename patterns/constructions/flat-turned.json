@@ -1,0 +1,413 @@
+{
+  "construction": "flat-turned",
+  "title": "Flat turned pouch — two panels, zip in the top seam",
+  "summary": "Two panels and nothing else. The zip is sewn straight to their top edges, the other three edges are closed right sides together at {sa}, and the pouch turns through its own zip. There is no gusset, no zipper panel and no ring — which is not a simplification of the box bag but a different object: an envelope has no depth until something is in it, and the depth it then takes comes out of its own width and height because the panels have to wrap it. That is why the usable inside is {usable_w} × {usable_h} and not {face_w} × {face_h}.",
+  "sources": [
+    {
+      "title": "Sewing smooth curves and tight corners — Prickly Gorse Gear (MYOG)",
+      "url": "https://www.myogtutorials.com/curves_corners/",
+      "gives": "relief clips: snip to 1/8\" SHORT of the stitch line, spaced about a seam allowance apart"
+    },
+    {
+      "title": "How to sew a lined zipper pouch — Sew Can She",
+      "url": "https://www.sewcanshe.com/blog/how-to-sew-a-zipper-pouch",
+      "gives": "the order that makes a flat zip pouch turn cleanly: tape to both panels first, zip left OPEN, then the three closing seams"
+    },
+    {
+      "title": "Zipper ends and bar tacks — Sailrite",
+      "url": "https://www.sailrite.com/how-to-shorten-a-zipper",
+      "gives": "a shortened coil needs a new stop, and the cut end is caught in a seam rather than left loose"
+    }
+  ],
+  "docs": [
+    {
+      "title": "Zippers in bags",
+      "path": "patterns/techniques/zippers.md",
+      "kind": "technique"
+    },
+    {
+      "title": "Webbing, keepers and box-X tacks",
+      "path": "patterns/techniques/webbing-hardware.md",
+      "kind": "technique"
+    },
+    {
+      "title": "The pattern schema",
+      "path": "patterns/SCHEMA.md",
+      "kind": "reference"
+    },
+    {
+      "title": "Design generation playbook",
+      "path": "docs/12-design-generation-playbook.md",
+      "kind": "embroidery"
+    },
+    {
+      "title": "Designing for dark cloth",
+      "path": "docs/14-designing-for-dark-cloth.md",
+      "kind": "embroidery"
+    },
+    {
+      "title": "Materials & consumables",
+      "path": "docs/05-materials-and-consumables.md",
+      "kind": "embroidery"
+    }
+  ],
+  "assembly": [
+    {
+      "n": 1,
+      "title": "Pre-wash and dry the shell",
+      "when": [
+        "shell_frays"
+      ],
+      "body": "It shrinks, and it will shrink after the pouch is built if it does not shrink now. Wash and dry it the way the finished thing will be washed.",
+      "see": [
+        "docs/05-materials-and-consumables.md"
+      ]
+    },
+    {
+      "n": 2,
+      "title": "Test on scrap before you cut anything",
+      "stitch": "straight, 3.0 mm",
+      "body": "Sew two scraps together with a {sa} allowance, turn them, and look at the seam. Three things: that the machine drives the stack, that {sa} lands where you think it does against your foot or guide, and that the seam turns and sits flat.\n\nOn this pouch there is a fourth. Sew a scrap of zipper tape to a scrap of shell and check that stack too — the top corner is {sa} of two panels AND two tapes at once, and it is the thickest point on the whole bag.",
+      "figures": [
+        {
+          "kind": "seam",
+          "stage": "both",
+          "caption": "The seam you are testing, in section: two pieces face to face, allowance inside, and the finished edge is the stitching itself."
+        }
+      ],
+      "see": [
+        "docs/05-materials-and-consumables.md"
+      ]
+    },
+    {
+      "n": 3,
+      "title": "Cut two panels, and stop",
+      "stitch": "rotary cutter and straightedge",
+      "body": "{panel_w} wide × {panel_h} tall, twice. That is the entire bag: {face_w} × {face_h} finished, plus {sa} on every edge.\n\nCut both the same way up. On a plain cloth it makes no difference and on anything with a nap, a weave direction or a coating it makes all of it — and there is no third piece to correct it against later, which is exactly what this construction gives up in exchange for being two pieces.\n\nThe keepers and the anchor strip, if this pouch has them, come off the same cloth and are in the cut list.",
+      "figures": [
+        {
+          "kind": "face",
+          "face": "front",
+          "caption": "One panel at its cut size. The other is identical."
+        }
+      ],
+      "see": [
+        "patterns/SCHEMA.md"
+      ]
+    },
+    {
+      "n": 4,
+      "title": "Embroider now, flat, before anything is assembled",
+      "stitch": "embroidery machine, stabiliser per the design",
+      "body": "A panel is never flatter or easier to hoop than it is now, and after step 8 it has a zipper on one edge and cannot be hooped at all.\n\nKeep the design {seam_margin} clear of every edge — the usable field is {visible_w} × {visible_h}. That margin is the seam allowance plus enough to be sure, because a design that runs into the closing seam cannot be moved afterwards.",
+      "figures": [
+        {
+          "kind": "logos",
+          "caption": "Every face that carries a design, each a separate hooping, all before assembly."
+        }
+      ],
+      "see": [
+        "docs/12-design-generation-playbook.md",
+        "docs/14-designing-for-dark-cloth.md"
+      ]
+    },
+    {
+      "n": 5,
+      "title": "Lay the chain the right way up",
+      "when": [
+        "standard_coil"
+      ],
+      "body": "Standard coil: the coil is on the FACE you can see and the pull sits proud of the tape. Lay it so that coil faces the panel's right side when you sew the tape down, because after the seam is turned the tape folds back and what was against the cloth ends up outward.\n\nGet this wrong and the pouch closes with its pull on the inside, both seams sewn, and nothing to do but unpick.",
+      "figures": [
+        {
+          "doc": "patterns/techniques/zippers.md",
+          "id": "two-sliders"
+        }
+      ],
+      "see": [
+        "patterns/techniques/zippers.md"
+      ]
+    },
+    {
+      "n": 6,
+      "title": "Lay the chain the right way up",
+      "when": [
+        "reverse_coil"
+      ],
+      "body": "Reverse coil: the coil is on the BACK and the flat, weatherly face of the tape is what shows. That is the whole point of it — the finished pouch shows tape and pull, not chain — so it goes down the other way up from a standard coil.\n\nSame consequence as ever: this instruction has no undo once both laps are sewn.",
+      "figures": [
+        {
+          "doc": "patterns/techniques/zippers.md",
+          "id": "two-sliders"
+        }
+      ],
+      "see": [
+        "patterns/techniques/zippers.md"
+      ]
+    },
+    {
+      "n": 7,
+      "title": "Shorten the zipper and make a new stop",
+      "stitch": "dense zigzag ~3 mm wide, 0.4 mm",
+      "body": "You need {zip_cut} of tape for a {zip_face} opening — {sa} at each end finishes inside a side seam, which is what holds the cut end and why nothing here needs a metal stop.\n\nBar-tack across the coil where the new end goes, THEN trim about an inch beyond the tack. Tack first, always: cut first and the slider runs off the end.",
+      "figures": [
+        {
+          "doc": "patterns/techniques/zippers.md",
+          "id": "shorten",
+          "caption": "Tack first, trim 1\" beyond it, then cap."
+        }
+      ],
+      "see": [
+        "patterns/techniques/zippers.md"
+      ]
+    },
+    {
+      "n": 8,
+      "title": "Tape to the front panel's top edge",
+      "stitch": "straight, 3.0 mm, zipper foot",
+      "body": "Panel right side up, tape face down on it, top edges flush. Sew at {sa} along the {zip_face} edge with a zipper foot.\n\nThen fold the panel back off the tape so the allowance is underneath, press or finger-crease it, and topstitch close to the fold. The topstitch is not decoration: it is what stops the cloth creeping back over the coil and jamming the slider.",
+      "figures": [
+        {
+          "doc": "patterns/techniques/zippers.md",
+          "id": "lapped-panel",
+          "caption": "The lap in section — sewn face down to the tape, folded back off it, topstitched. Here there is no strip: the panel itself is what laps."
+        }
+      ],
+      "see": [
+        "patterns/techniques/zippers.md"
+      ]
+    },
+    {
+      "n": 9,
+      "title": "Tape to the back panel's top edge",
+      "stitch": "straight, 3.0 mm, zipper foot",
+      "body": "The same seam on the other side of the same tape, with the two panels' right sides facing each other and the tape between them.\n\nMatch the two panels' top corners to each other before you sew, not to the tape — the tape is longer than the opening on purpose, and lining the pouch up on the tape ends puts the two panels {sa} out of register with each other for good.\n\nTopstitch this side too. Both runs are now {zip_run} in total.",
+      "figures": [
+        {
+          "kind": "seam",
+          "stage": "sewn",
+          "caption": "Both panels on one tape, right sides together — the pouch is now a flat sleeve, open on three sides."
+        }
+      ],
+      "see": [
+        "patterns/techniques/zippers.md"
+      ]
+    },
+    {
+      "n": 10,
+      "title": "Keepers and the anchor onto the back panel",
+      "when": [
+        "has_belt_anchor"
+      ],
+      "stitch": "straight 3.0 mm for the anchor, box-X hand-wheeled for the keepers",
+      "body": "Do this while the panel is still flat and open — after step 12 there is no way to get at its interior.\n\nAnchor first: a {anchor_len} × {keeper_w} strip across the INTERIOR of the back panel, behind where the keepers will go, topstitched along both long edges. Its two ends run out to the panel's raw edges and get caught in the side seams, so the strap's load spreads into a seam that was carrying the pouch anyway rather than terminating in four tacks through one layer.\n\nThen the keepers on the outside: {keeper_len} cut, each end folded under {turn} and box-X'd. The strap runs DOWN this panel, so the keepers sit one above the other and the box-X goes through keeper, panel and anchor at once.",
+      "figures": [
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "keeper-section"
+        },
+        {
+          "kind": "face",
+          "face": "back",
+          "highlight": "belt-loop",
+          "caption": "Where the keepers land, and the strip that has to be behind them."
+        }
+      ],
+      "see": [
+        "patterns/techniques/webbing-hardware.md"
+      ]
+    },
+    {
+      "n": 11,
+      "title": "Keepers onto the back panel",
+      "when": [
+        "has_belt_loop"
+      ],
+      "unless": [
+        "has_belt_anchor"
+      ],
+      "stitch": "box-X, hand-wheeled",
+      "body": "{keeper_len} cut, each end folded under {turn}, box-X'd to the back panel while it is still flat. The strap runs down the panel, so the keepers stack one above the other.\n\nThere is nothing behind them on this bag, so every tack is into one layer of shell. That is a real load path on a pouch carried by a shoulder strap — see the spec's open questions before deciding it is fine.",
+      "figures": [
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "keeper-section"
+        }
+      ],
+      "see": [
+        "patterns/techniques/webbing-hardware.md"
+      ]
+    },
+    {
+      "n": 11.5,
+      "title": "Wings and ring tabs into the side seams",
+      "when": [
+        "has_rings"
+      ],
+      "stitch": "straight, inside the {sa} allowance",
+      "body": "A harness fixing here has no tack at all. Whatever carries the strap — a wing or a plain tab — is laid into the side seam and caught as the pouch closes, so the seam is the fixing.\n\nWINGS FIRST, because they have to exist before they can be basted. Each is two layers: sew the two FREE edges right sides together at {sa}, trim the point back hard, turn it, and work the apex out with something blunt. {wing_base} of base by {wing_reach} of reach makes a blunt triangle that turns easily — that is not a coincidence, it is the same choice as spreading the load, because both want a long base on a short reach.\n\nThen lay each base into its seam, {ring_at} of the run, reaching past the stitch line, and tack it inside the allowance where the stitching will not show. Check the ring is OUTSIDE and the wing is not twisted before you close anything: after step 12 it is in for good.\n\nThe wing is why the strap's line is fixed rather than whatever a tab happens to fold to, and why the load goes into {wing_base} of seam instead of an inch of it.",
+      "figures": [
+        {
+          "kind": "seam",
+          "stage": "tails",
+          "caption": "The tab in section: tails between the panels and reaching past the stitch line, ring outside, no tack anywhere."
+        }
+      ],
+      "see": [
+        "patterns/techniques/webbing-hardware.md"
+      ]
+    },
+    {
+      "n": 12,
+      "title": "Open the zipper FIRST, then close the other three edges",
+      "stitch": "straight, 3.0 mm, walking foot",
+      "body": "OPEN THE ZIP. It is the only way back into the pouch and the hole you turn it through, and a closed zip here means unpicking a finished seam.\n\nNow fold the two panels right sides together on the tape and sew the two sides and the bottom in one run of {close_run} at {sa}, starting and finishing on the zipper tape itself so both cut ends are caught.\n\nBackstitch at both ends. Those two points carry the whole opening.",
+      "figures": [
+        {
+          "kind": "face",
+          "face": "back",
+          "caption": "Three edges closed, the fourth is the zip. The seam runs onto the tape at both ends."
+        }
+      ],
+      "see": [
+        "patterns/techniques/zippers.md"
+      ]
+    },
+    {
+      "n": 13,
+      "title": "Trim, turn, and work the corners out",
+      "stitch": "hand work",
+      "body": "Trim each corner's allowance back across the point — about {clip_depth} — or it bunches inside the corner and the corner comes out round. Where the seam crosses the zipper tape, trim the tape back too: it is the thickest thing in there.\n\nTurn the pouch through the zip. Work the corners out with something BLUNT — a point turner or a chopstick. A seam ripper or scissor point goes straight through the seam you just sewed, from the inside, where you cannot see it happening.",
+      "figures": [
+        {
+          "kind": "seam",
+          "stage": "turned",
+          "caption": "What turning produces: the allowance finishes inside and the stitching itself is the finished edge."
+        }
+      ],
+      "see": [
+        "patterns/techniques/zippers.md"
+      ]
+    },
+    {
+      "n": 14,
+      "title": "Thread your strap",
+      "body": "Thread a {belt} strap down through both keepers. Nothing else is left to do — the pouch finishes its own edges, so there is no lining, no binding and no hem anywhere on it.\n\nLoaded, it lofts to about {loft} and the usable inside is {usable_w} × {usable_h}. If that is smaller than you expected, that is the envelope paying for its own thickness, and it is why the figure is derived rather than guessed.",
+      "figures": [
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "tri-glide"
+        }
+      ],
+      "see": [
+        "patterns/techniques/webbing-hardware.md"
+      ],
+      "when": [
+        "has_belt_loop"
+      ]
+    },
+    {
+      "n": 14.5,
+      "title": "Clip on the harness",
+      "when": [
+        "has_rings"
+      ],
+      "body": "Both rings are {ring_for} square, so the harness ends in {ring_for} snap hooks and the pouch comes off without unthreading anything.\n\nThe pouch is a LINK IN THE BAND, not something dangling off it: one strap leaves the fore ring and crosses the chest, the other leaves the aft ring and crosses the back. That is why both are on the side seams and neither is on a panel — nothing is fixed to the face that lies against your ribs.\n\nWith wings, the strap's line is set by where the apex sits and not by how a tab folds. Tension both anyway: the pouch is slung between them, so a slack strap is not a loose end, it is a tilt.\n\nThe shoulder strap also pulls MEDIALLY, toward your neck, 10 to 25 degrees out of the pouch's plane, so the bottom of the pouch stands off your ribs. The cure is a tie-down to a belt, which this rig does not have.",
+      "figures": [
+        {
+          "doc": "patterns/techniques/webbing-hardware.md",
+          "id": "tri-glide"
+        }
+      ],
+      "see": [
+        "patterns/techniques/webbing-hardware.md"
+      ]
+    }
+  ],
+  "stitch_schedule": [
+    {
+      "operation": "Closing seams",
+      "stitch": "straight, {sa} allowance",
+      "length_mm": 3.0,
+      "foot": "walking",
+      "needle": "{needle}"
+    },
+    {
+      "operation": "Zip seams and topstitching",
+      "stitch": "straight, two rows",
+      "length_mm": 3.0,
+      "foot": "zipper",
+      "needle": "{needle}"
+    },
+    {
+      "operation": "Zipper stop",
+      "stitch": "dense zigzag ~3 mm wide",
+      "length_mm": 0.4,
+      "foot": "standard",
+      "needle": "{needle}"
+    },
+    {
+      "operation": "Box-X tacks",
+      "stitch": "box-X, hand-wheeled",
+      "length_mm": 2.5,
+      "foot": "walking",
+      "needle": "{needle}"
+    }
+  ],
+  "tools": [
+    {
+      "item": "Zipper foot",
+      "note": "for both tape seams and both rows of topstitching — that is four of the six seams on this bag"
+    },
+    {
+      "item": "Walking foot",
+      "note": "for the closing run, which crosses the tape at both ends"
+    },
+    {
+      "item": "Rotary cutter and straightedge",
+      "note": "two rectangles, and they have to match each other"
+    },
+    {
+      "item": "Sewing clips",
+      "note": "pins mark a coated shell permanently, and a clip holds the tape stack flat"
+    },
+    {
+      "item": "Double-sided basting tape",
+      "note": "holds the zip exactly while you sew it; on a flat pouch the tape seam is the one that shows"
+    },
+    {
+      "item": "Point turner or chopstick",
+      "note": "for the corners after turning — blunt, never sharp"
+    }
+  ],
+  "checklist": [
+    {
+      "item": "Zip OPEN before the closing seam",
+      "note": "it is the only way back in, and what you turn the pouch through"
+    },
+    {
+      "item": "Both panels cut the same way up",
+      "note": "there is no third piece to correct a nap or a coating against"
+    },
+    {
+      "item": "Tape shortened to {zip_cut}, not to {zip_face}",
+      "note": "the opening is {zip_face}; the extra {sa} at each end is what gets caught in the side seam. Cut it to the opening and the last of the run is un-zipped for good"
+    },
+    {
+      "item": "Top corners matched panel to panel, not to the tape",
+      "note": "the tape is deliberately longer than the opening"
+    },
+    {
+      "item": "Anything tacked to a panel done BEFORE closing",
+      "note": "after the closing seam there is no way to reach the interior"
+    },
+    {
+      "item": "Corner allowances trimmed, tape trimmed too",
+      "note": "about {clip_depth}, or the corners will not turn out"
+    },
+    {
+      "item": "Corners worked out with something blunt",
+      "note": "a sharp point goes through the seam from the inside"
+    }
+  ]
+}

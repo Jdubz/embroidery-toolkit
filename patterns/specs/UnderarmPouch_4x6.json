@@ -1,0 +1,145 @@
+{
+  "name": "UnderarmPouch_4x6",
+  "title": "Underarm Pouch 4¼ × 6, flat",
+  "construction": "flat-turned",
+  "description": "The small module of a two-pouch underarm rig worn under a suit waistcoat. Two panels sewn straight to each other with the zip in the top seam — no gusset, no zipper panel, nothing wrapping the perimeter — so the pouch is genuinely flat when it is empty and lofts to about ½\" when it is not. A wallet upright, cards, keys; not a phone. It threads onto a 1\" harness strap through two keepers on its back panel, so a pouch can be moved from side to side or swapped for the 4 × 7 without unthreading anything but the buckle at the back. Built as a mirrored pair: two identical pouches, one under each arm, hung at matched height.",
+  "finished_in": {
+    "w": 4.25,
+    "h": 6,
+    "d": 0.5
+  },
+  "holds": "a bifold wallet, standing up",
+  "must_hold_in": [
+    3.5,
+    4.3
+  ],
+  "shell": "canvas-600d-pu",
+  "windows": false,
+  "chassis": null,
+  "closure": {
+    "coil_in": 0.25,
+    "sliders": 1,
+    "coil": "reverse"
+  },
+  "fits_within_in": {
+    "w": 5,
+    "d": 1,
+    "h": 9
+  },
+  "features": {
+    "belt_loops": {
+      "for_in": 1.0,
+      "count": 2,
+      "width_in": 1.5,
+      "anchor": true
+    },
+    "placements": [
+      {
+        "kind": "belt-loop",
+        "face": "back",
+        "u": 1.375,
+        "v": 0.5,
+        "w": 1.5,
+        "h": 1.5,
+        "label": "keeper 1 — upper. The strap runs DOWN the pouch, not across it, so the keepers stack vertically and the pair is centred with 1⅜\" of cloth each side"
+      },
+      {
+        "kind": "belt-loop",
+        "face": "back",
+        "u": 1.375,
+        "v": 4.0,
+        "w": 1.5,
+        "h": 1.5,
+        "label": "keeper 2 — lower. 3½\" between centres: one keeper is a hinge, two are a fixing"
+      },
+      {
+        "kind": "logo",
+        "face": "front",
+        "u": 0.875,
+        "v": 1.48,
+        "w": 2.5,
+        "h": 3.04,
+        "label": "63.4 x 77.2 mm — LemonCat_beefjuice_on_black, centred. BEEF above and JUICE below the cat, white on black cloth. The same design serves both modules, which is why both declare the same field",
+        "design": "LemonCat_beefjuice_on_black"
+      }
+    ]
+  },
+  "hardware": [
+    {
+      "item": "#5 nylon coil zipper, reverse coil",
+      "qty": "1 × 6\"",
+      "note": "opening is 4¼\"; shorten to 5\" of tape with a new bar-tacked stop, so ⅜\" finishes inside each side seam"
+    },
+    {
+      "item": "Heavy polyester topstitch thread",
+      "qty": "1 spool",
+      "note": "top and bobbin"
+    }
+  ],
+  "notes": [
+    {
+      "kind": "note",
+      "title": "Flat is a construction, not a small depth",
+      "body": "This was first drawn as a box bag at ¾\" of depth, which is the shallowest a #5 coil can sit in a gusset and still clear the panel seam. That is not the same object. A box bag at ¾\" still has three pieces, still has a band standing round its whole perimeter, and is ¾\" thick whether or not anything is in it. Two panels seamed directly together are flat when empty and take their thickness from their contents — which is what a pouch under a waistcoat has to do, because the waistcoat's ease is only there when the pouch is not using it."
+    },
+    {
+      "kind": "warning",
+      "title": "An envelope pays for its loft out of its own face",
+      "body": "The panels have to wrap whatever is inside, and they take that cloth off the width and the height. At ½\" of loft a 4¼ × 6\" pouch has 3¾ × 5½\" of usable inside — the loft comes off BOTH axes, once each. The check `it holds what it must once it lofts` is the one that catches this, and it is the only place in this pattern where making the pouch fatter makes it hold less. If something does not fit, the face has to grow by the shortfall PLUS the loft, not by the shortfall."
+    },
+    {
+      "kind": "note",
+      "title": "Two keepers, and they go on the BACK panel",
+      "body": "One keeper is a hinge: the pouch rotates around it and hangs crooked. Two, 3½\" apart, fix it to the strap. They go on the back panel — where the construction's own keeper step puts them — and not on the front. Front keepers were considered, on the theory that they keep the strap out from between the pouch and the ribs; they do not. The total stack from skin to waistcoat lining is the same either way, because the strap is inside the sandwich in both cases. Back keepers buy a shorter lever arm, so the pouch tips out less, and a smooth outer face against the lining rather than two keeper ends and their box-Xes."
+    },
+    {
+      "kind": "warning",
+      "title": "The anchor strip is not optional here",
+      "body": "`anchor: true` derives a 5 × 1½\" strip across the interior of the back panel, behind both keepers, with its ends caught in the side seams. Without it the entire rig — both pouches, the strap, and whatever is in them — terminates in four box-X tacks through one layer of 600D. The HipPack's keepers get away with no anchor because a trouser belt is already gripping the wearer; a shoulder strap is carrying. It also has to go on before step 12, because after the closing seam there is no way to reach the panel's interior at all."
+    },
+    {
+      "kind": "warning",
+      "title": "Everything that gets tacked happens while the pouch is still open",
+      "body": "This is the practical cost of a two-piece bag. A box bag can be got at through its gusset until quite late; here the closing seam is one run and it seals the pouch. Keepers, anchor and embroidery are all steps 4 and 10, before step 12, and none of them can be added afterwards without unpicking the seam that holds the zip ends."
+    },
+    {
+      "kind": "note",
+      "title": "Mirrored pair, at matched height",
+      "body": "Cut four panels. The pouches are symmetric, so there is no left piece and no right — but they must ride at the SAME height on the strap, which is the one thing the shoulder-holster literature is unanimous about: an underarm rig loaded unevenly walks toward the heavier side and lifts the light side off the shoulder. Balance the load, not the geometry. This spec cannot check that, because it describes one pouch."
+    }
+  ],
+  "open_questions": [
+    {
+      "title": "The harness is declared nowhere",
+      "body": "Two shoulder straps, one back strap, one buckle at the small of the back so pouches can be threaded on and off, and adjusters kept low and rearward because a waistcoat has no room for hardware at the shoulder. None of it is in this repo. It needs a `strap` feature kind so it can be drawn and checked, and a `wearer` that can hold chest girth, armpit-to-waist drop and shoulder-to-shoulder across the back. Until then the strap is 1\" webbing the wearer supplies, exactly as a trouser belt is."
+    },
+    {
+      "title": "The loft is declared, not derived",
+      "body": "½\" is a judgement: enough for a wallet and keys, and half the 1\" at which `the loft still wants a flat pouch` says the thing should have been a box instead. Nothing measures it. It is the figure every usable dimension here comes off, so if the finished pouch turns out to stand further off the body than this, the usable inside is smaller than the pattern says by the same amount, twice."
+    },
+    {
+      "title": "There is no `wearer` block, on purpose",
+      "body": "The schema's `wearer` describes a WAIST — `waist_in` sizes the belt, and the comfort rows compute belt tension at blood occlusion against that girth and the circumference a flat strap gets wrong on a tapering waist. Nothing here is worn on a waist. Putting a chest measurement in `waist_in` would produce three comfort figures that are arithmetically correct and about a garment nobody is wearing, which is worse than producing none."
+    },
+    {
+      "title": "The envelope is derived from a size, not measured on the garment",
+      "body": "`fits_within_in` is 5 × 1 × 9\", from a 44R jacket and a medium-to-large waistcoat: about 10\" of armhole depth, a side-seam length from armpit to hem of roughly 9–10\", and an inch or so of total ease over the ribs. All three are read off published sizing charts. MEASURE THE ACTUAL WAISTCOAT before cutting — armpit to hem down the side seam, and the ease with a shirt on — and correct this block. It is the only dimension in the pattern that depends on something outside it."
+    },
+    {
+      "title": "Nothing has been decided about what touches skin",
+      "body": "600D PU-coated canvas is a plastic film on its reverse. Against the ribs under a waistcoat for a working day that is a sweat trap, and every bag in the travel-holster lineage backs the body side with a brushed or wicking cloth. A backing panel is one more piece and one more layer in every seam; it is not declared here because adding a material to `MATERIALS` for a guess would be inventing a parameter."
+    },
+    {
+      "title": "Not yet built"
+    }
+  ],
+  "docs": [],
+  "embroidery": {
+    "panel": "front",
+    "design": "LemonCat_beefjuice_on_black",
+    "field_mm": [
+      63,
+      78
+    ]
+  }
+}

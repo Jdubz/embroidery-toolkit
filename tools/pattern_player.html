@@ -585,9 +585,19 @@ function build(pkg){
     }
     if (ft.kind === "zip"){ place(ft.face, ft.u, ft.v, ft.w, ft.h, "ft-zip", ft.label); continue; }
     if (ft.kind === "dring"){
-      place(ft.face, ft.u - 0.625, ft.v - 0.30, 1.25, 0.60, "ft-dring", ft.label); continue;
+      /* 1.25 x 0.60 is the NOMINAL, for a ring drawn as a point on a wide
+         face. A harness ring sits on the pouch's own edge, which is only the
+         loft wide, so it declares its size and that has to win — drawn at the
+         nominal it hung off the edge by an inch. */
+      const w = ft.w || 1.25, h = ft.h || 0.60;
+      place(ft.face, ft.u - w/2, ft.v - h/2, w, h, "ft-dring", ft.label); continue;
     }
-    if (ft.kind === "patch"){ place(ft.face, ft.u - .5, ft.v - .5, 1, 1, "ft-patch", ft.label); continue; }
+    if (ft.kind === "patch"){
+      /* 1 x 1 is the nominal for a point-like patch; a wing base declares its
+         own run along the seam and that has to win. Same rule as the ring. */
+      const w = ft.w || 1, h = ft.h || 1;
+      place(ft.face, ft.u - w/2, ft.v - h/2, w, h, "ft-patch", ft.label); continue;
+    }
     if (ft.kind === "rib"){
       place(ft.face, ft.u, 0, ft.w, m.faces[ft.face].h.in, "ft-rib", ft.label); continue;
     }
@@ -1100,11 +1110,13 @@ function figSeam(p, spec){
      produces, so the two are not the same picture. */
   const stage = (spec || {}).stage || "both";
   const only = stage === "turned";
-  const sewnOnly = stage === "sewn";
+  const tails = stage === "tails";
+  const sewnOnly = stage === "sewn" || tails;
   const W = 620, s = fig(`0 0 ${W} 312`,
     `Section through a turned seam: two pieces face to face, stitched one seam `
     + `allowance in, then folded apart so the allowance finishes inside.`);
   caption(s, 30, 22, only ? "WHAT TURNING PRODUCES"
+                   : tails ? "A RING TAB LAID INTO THE SEAM"
                    : sewnOnly ? "RIGHT SIDES TOGETHER, ALLOWANCE OUT"
                              : "TURNED SEAM — BEFORE AND AFTER");
 
@@ -1117,9 +1129,12 @@ function figSeam(p, spec){
   s.add("text", {x:X-8, y:y-4, "text-anchor":"end",
                  "font-family":"var(--f-data)", "font-size":11,
                  fill:"var(--ink)"}, "panel");
+  /* On a box bag the second piece in this seam is the gusset. On a flat pouch
+     there is no gusset and the seam is panel to panel, so naming it "gusset"
+     would label a piece that bag does not have. */
   s.add("text", {x:X-8, y:y+t+8, "text-anchor":"end",
                  "font-family":"var(--f-data)", "font-size":11,
-                 fill:"var(--ink)"}, "gusset");
+                 fill:"var(--ink)"}, g.ring ? "gusset" : "panel");
   s.add("circle", {cx:X+L, cy:y+t/2-t/2, r:5, fill:"var(--stitch)"});
   s.add("path", {d:`M${X+L},${y-t-16} v${2*t+18}`, stroke:"var(--stitch)",
                  "stroke-width":1.5, "stroke-dasharray":"5 4"});
@@ -1130,6 +1145,25 @@ function figSeam(p, spec){
   /* Only when BOTH halves are shown. Alone, the figure's own caption
      already says which half this is, and the two landed on each other. */
   if (!sewnOnly) caption(s, X, y-t-26, "RIGHT SIDES TOGETHER");
+  /* The tab tails lie BETWEEN the two panels, reaching past the stitch line,
+     with the ring outside. There is no tack: the closing seam is the fixing,
+     which is the whole reason this mount is the strongest on the pouch. */
+  if (tails){
+    s.add("rect", {x:X+L-SA*0.55, y:y-2, width:SA*0.55+SA, height:4,
+                   fill:"var(--web)"});
+    s.add("path", {d:`M${X+L+SA},${y} a26,26 0 1 0 0.1,0`, fill:"none",
+                   stroke:"var(--metal)", "stroke-width":7});
+    s.add("text", {x:X+L+SA, y:y-36, "text-anchor":"middle",
+                   "font-family":"var(--f-data)", "font-size":11,
+                   fill:"var(--metal)"}, "square ring, outside");
+    s.add("text", {x:X+L-SA*0.55-6, y:y+4, "text-anchor":"end",
+                   "font-family":"var(--f-data)", "font-size":10.5,
+                   fill:"var(--web)"}, "tab tails, inside the seam");
+    s.add("text", {x:30, y:270, "font-family":"var(--f-data)", "font-size":11,
+                   fill:"var(--muted)"},
+          "no tack anywhere — the seam IS the fixing, and it is the "
+          + "strongest attachment on the pouch");
+  }
   }
 
   /* --- turned: the allowance folds inside --- */
@@ -1241,7 +1275,24 @@ const FIG_KINDS = {ring:figRing, "zip-panel":figZipPanel, face:figFace,
                    "pocket-pieces":figPocketPieces, seam:figSeam,
                    anchors:figAnchors, logos:figLogos,
                    "reverse-coil":figReverseCoil};
+/* What each generated drawing needs from the pattern's OWN geometry. A
+   glossary figure is drawn for whichever bag is open, and a flat pouch has no
+   ring, no gusset and no coil offset -- so "gusset" still wants its
+   definition there but cannot have its picture, and drawing one anyway would
+   be drawing a piece that bag does not have.
+
+   Declared rather than discovered by catching the exception, because those
+   are different failures: a part this bag hasn't got is not a broken figure,
+   and buildFigure returns null for both. */
+const FIG_NEEDS = {ring:["ring"], "zip-panel":["gusset_w", "coil_c"],
+                   anchors:["gusset_w"], "reverse-coil":["coil_c"],
+                   face:[], seam:[], logos:[], "pocket-pieces":[]};
+function figApplies(spec, p){
+  if (spec.doc) return true;
+  return (FIG_NEEDS[spec.kind] || []).every(k => p.geometry[k] !== undefined);
+}
 function buildFigure(spec, p){
+  if (!figApplies(spec, p)) return null;
   try {
     if (spec.doc){
       /* Pull the drawing out of the technique note that owns it. One copy,
@@ -1421,8 +1472,11 @@ function panelFor(name, p){
       [" …artwork field", {t:`${p.geometry.visible_w.text} × ${p.geometry.visible_h.text}, kept clear of the seam`, cls:"d"}],
       ["Interior", {t:`${p.interior.w.text} × ${p.interior.h.text} × ${p.interior.d.text} — ${p.interior.litres} L`, cls:"d"}],
       ["Panel cut", {t:`${p.geometry.panel_w.text} × ${p.geometry.panel_h.text} — the finished size PLUS an allowance on every edge`, cls:"d"}],
-      ["Gusset cut width", {t:p.geometry.gusset_w.text, cls:"d"}],
-      ["Ring at the stitch line", {t:p.geometry.ring.text, cls:"d"}],
+      ...(p.geometry.ring
+        ? [["Gusset cut width", {t:p.geometry.gusset_w.text, cls:"d"}],
+           ["Ring at the stitch line", {t:p.geometry.ring.text, cls:"d"}]]
+        : [["Opening", {t:`${p.geometry.zip_face.text} — the full top edge. No gusset and no ring: two pieces meet each other`, cls:"d"}],
+           ["Usable once it lofts", {t:`${p.geometry.usable_w.text} × ${p.geometry.usable_h.text} — the panels wrap the ${p.geometry.loft.text} loft and take it off BOTH axes`, cls:"d"}]]),
       ["Seam allowance", {t:`${p.geometry.sa.text}, clipped to ${p.geometry.clip_depth.text} at a curve`, cls:"d"}],
       ["Seam to sew", {t:`${p.geometry.seam_run.text}, then turned through the zip`, cls:"d"}]
     ]));
@@ -1833,7 +1887,8 @@ function render(){
   [["Finished", `${p.finished.w.text} W × ${p.finished.d.text} D × ${p.finished.h.text} H`],
    ["Metric", `${p.finished.w_mm} × ${p.finished.d_mm} × ${p.finished.h_mm} mm`],
    ["Capacity", p.interior.litres + " L"],
-   ["Ring", p.geometry.ring.text],
+   p.geometry.ring ? ["Ring", p.geometry.ring.text]
+                   : ["Opening", p.geometry.zip_face.text],
    ["Shell", p.materials[0].material],
    ["Peak stack", p.peak_mm.toFixed(2) + " mm"],
    ["Checks", bad ? bad + " failed" : "all pass"]
@@ -1859,7 +1914,9 @@ function render(){
 
   const lg = $("#legend"); lg.innerHTML = "";
   const items = [["var(--stitch)", "seam, " + p.geometry.sa.text + " allowance, folded inside"],
-                 ["var(--coil)", "zip coil, " + p.geometry.coil_c.text + " from the cut edge"]];
+                 ["var(--coil)", p.geometry.coil_c
+                    ? "zip coil, " + p.geometry.coil_c.text + " from the cut edge"
+                    : "zip coil, in the top seam itself — " + p.geometry.zip_face.text + " of opening"]];
   if (p.flags.has_chassis) items.push(["var(--web)", p.geometry.loop.text + " chassis, inside the gusset"]);
   if (p.flags.has_drings) items.push(["var(--metal)", "D-rings on external tabs"]);
   items.push(["var(--stitch)", "embroidery field"]);

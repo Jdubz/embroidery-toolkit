@@ -1,0 +1,162 @@
+{
+  "name": "UnderarmPouch_4x7",
+  "title": "Underarm Pouch 4 × 7¼, flat",
+  "construction": "flat-turned",
+  "description": "The phone module of the two-pouch underarm rig. Two panels seamed directly together with the zip in the top seam — no gusset — so it is flat empty and lofts to about ½\" loaded. It carries two 1\" square rings, both on its SIDE seams: a chest-strap ring at the fore top corner, tab angled 45°, and a back-strap ring 1\" down the aft seam. The pouch is a link in the band that runs round the torso, not something dangling off its own back panel. Same 63 × 77 mm embroidery field as UnderarmPouch_4x6.",
+  "finished_in": {
+    "w": 4,
+    "h": 7.25,
+    "d": 0.5
+  },
+  "holds": "a large phone, upright",
+  "must_hold_in": [
+    3.06,
+    6.42
+  ],
+  "shell": "canvas-600d-pu",
+  "windows": false,
+  "chassis": null,
+  "closure": {
+    "coil_in": 0.25,
+    "sliders": 1,
+    "coil": "reverse"
+  },
+  "fits_within_in": {
+    "w": 5,
+    "d": 1,
+    "h": 9,
+    "span": 6.5
+  },
+  "features": {
+    "placements": [
+      {
+        "kind": "logo",
+        "face": "front",
+        "u": 0.75,
+        "v": 2.105,
+        "w": 2.5,
+        "h": 3.04,
+        "label": "63.4 x 77.2 mm — LemonCat_beefjuice_on_black, centred. BEEF above and JUICE below the cat, white on black cloth. The same design serves both modules, which is why both declare the same field",
+        "design": "LemonCat_beefjuice_on_black"
+      }
+    ],
+    "wings": [
+      {
+        "role": "chest strap",
+        "edge": "fore",
+        "for_in": 1.0,
+        "at_in": 0.5,
+        "base_in": 3.0,
+        "reach_in": 1.0,
+        "apex_at_in": 1.0
+      },
+      {
+        "role": "back strap",
+        "edge": "aft",
+        "for_in": 1.0,
+        "at_in": 0.5,
+        "base_in": 3.0,
+        "reach_in": 1.0,
+        "apex_at_in": 1.5
+      }
+    ]
+  },
+  "hardware": [
+    {
+      "item": "#5 nylon coil zipper, reverse coil",
+      "qty": "1 × 6\"",
+      "note": "opening is 4\"; shorten to 4¾\" of tape with a new bar-tacked stop, so ⅜\" finishes inside each side seam"
+    },
+    {
+      "item": "Heavy polyester topstitch thread",
+      "qty": "1 spool",
+      "note": "top and bobbin"
+    }
+  ],
+  "notes": [
+    {
+      "kind": "warning",
+      "title": "The phone is sized against the USABLE inside, not the face",
+      "body": "6.42 × 3.06\" is already this repo's figure — it is the HipPack's `must_hold_in`. The trap on a flat pouch is that the face is not the inside: at ½\" of loft this 4 × 7¼\" pouch has 3½ × 6¾\" of usable cloth, because the panels wrap the phone's thickness and take that off both axes. So the face has to be a full ½\" bigger than the phone in each direction before it fits at all. The check `it holds what it must once it lofts` is what enforces it, and the spare it reports — 7/16\" across and 5/16\" up — is the whole margin this module has."
+    },
+    {
+      "kind": "note",
+      "title": "Both rings are on the SIDE seams — fore and aft, not on a panel",
+      "body": "An underarm pouch is a link in the band that goes round the torso: the chest strap leaves the fore ring and crosses the chest, the back strap leaves the aft ring and crosses the back. The Galco Miami Classic's 'spider harness' is the reference — four points, each pivoting independently — and nothing in that lineage fixes hardware to the face that lies against the ribs.\n\nThis took two goes to get right, and the second failure is worth recording because it was invisible in every check. The rings were declared on edges called `front` and `back` — the wearer's fore and aft — but `front` and `back` are also the names of the two PANELS, so the preview drew both rings sitting on the back panel and every check passed. The vocabulary is now `fore` and `aft`, the panel names are refused outright, and a test asserts the preview draws them on the edge faces."
+    },
+    {
+      "kind": "note",
+      "title": "The fore ring is at the corner and angled; the aft one is not",
+      "body": "The fore ring sits ½\" below the top on the fore seam — effectively the top corner — with its tab at 45°, because that ring is a junction: the shoulder strap comes down to it and the chest strap leaves it, so the pull bisects the two. The aft ring sits 1\" down with its tab at 0°, straight up the seam, because the back strap only has to run aft.\n\nThe angle is DECLARED rather than derived. Where a strap goes is a fact about the harness and the body, not about the pouch, so the pouch cannot work it out — an earlier version insisted on deriving it and could only ever produce 'straight up'. What is checked is that no tab is pulled more than 60° off its own tails, because a seam-caught tab is strong along its length and peels from the end when pulled across it."
+    },
+    {
+      "kind": "note",
+      "title": "No tack anywhere — the side seam is the fixing",
+      "body": "Each tab is one strip folded over the ring's bar with both tails laid 1½\" DOWN the side seam and caught in it as the pouch closes. The pull runs along the tails rather than across them, which is webbing in tension along its own length and the strongest anchor available on a bag with no other structure. No box-X, no anchor strip, and two fewer pieces than the tabbed version this replaced.\n\nIt also settles where the rings can go: ⅞\" below the top edge puts them clear of the zip seam, which takes the first ⅜\", so no load ever reaches the zipper tape."
+    },
+    {
+      "kind": "warning",
+      "title": "The tab is soft webbing on purpose — do not stiffen or angle it",
+      "body": "In the pouch's own plane the shoulder strap leaves straight up, along the tails. Its real lean is OUT of that plane: up and medially toward the neck, 10° to 25° depending on where the strap crosses the shoulder, pulling the top of the pouch inboard with 0.16 to 0.47 times the load. A folded webbing tab articulates to that; a stiff tab or one built at a fixed angle fights it and twists the pouch. It also means the BOTTOM of the pouch stands off the ribs by roughly that lean — the classic shoulder-holster complaint — and a tie-down to a trouser belt is the only cure. This rig has none: see the open questions."
+    },
+    {
+      "kind": "note",
+      "title": "The rings replaced the keepers",
+      "body": "This pouch used to carry two keepers — cloth tunnels the harness strap threaded through, like trouser belt loops. Threading and rings would fight each other for control of the hang, so the rings won: the pouch clips on with snap hooks and comes off without unthreading anything. UnderarmPouch_4x6 still has keepers, so THE TWO MODULES NO LONGER SHARE AN ATTACHMENT — a harness built for one will not take the other until the small pouch is converted too, and its rings will not be at these depths because a wallet is lighter and shorter than a phone."
+    },
+    {
+      "kind": "warning",
+      "title": "7¼\" of pouch is most of the room there is",
+      "body": "The declared envelope allows 9\", from a side-seam length of roughly 9–10\" between armpit and waistcoat hem on a 44R. This module spends 7¼ of it and clears the hem by around 2\", against about 3\" for the small pouch. It is the module that will show first if the envelope figures turn out optimistic, so measure the waistcoat before cutting this one rather than before cutting the other."
+    },
+    {
+      "kind": "note",
+      "title": "A rigid object is the case a flat pouch is worst at",
+      "body": "A wallet squashes and a phone does not, so this module reaches its ½\" of loft the moment anything is in it and stays there. That is fine against the ribs and it is the reason the loft is declared at ½\" rather than found by experiment — but it does mean the pouch is at its full thickness all day, where the small one is only as thick as what is in it. If the waistcoat turns out tight, this is the module to leave off."
+    },
+    {
+      "kind": "note",
+      "title": "Mirrored pair, at matched height",
+      "body": "As with the small module: symmetric, so there is no left piece and no right, but both sides of the rig must ride at the same height or the harness walks toward the loaded side. Mixing a 4 × 7¼ under one arm with a 4 × 6 under the other is exactly the asymmetry that does that — hang them from the same point on the strap and expect to notice the difference."
+    }
+  ],
+  "open_questions": [
+    {
+      "title": "There is no tie-down, and the geometry says it wants one",
+      "body": "The shoulder strap's medial lean pulls the top of the pouch in, so the bottom stands off the ribs by roughly the same angle. A tie-down at the bottom edge, to a trouser belt, needs 0.22 to 0.57 times the load to hold the pouch flat — a third ring and one strap. It is not declared because nothing here has been worn, and the cure may be unnecessary if the strap ends up crossing the shoulder well outboard, where the lean falls to about 9°. Wear it before adding hardware."
+    },
+    {
+      "title": "The harness is declared nowhere",
+      "body": "Two shoulder straps, one back strap, a buckle at the small of the back, and four 1\" snap hooks. None of it is in this repo. It needs a `strap` feature kind so it can be drawn and checked, and a `wearer` that can hold chest girth, armpit-to-shoulder rise and shoulder-to-shoulder across the back — the three measurements the lean above was estimated from rather than measured."
+    },
+    {
+      "title": "The lean was estimated from a size chart, not from a body",
+      "body": "10-25° comes from bounding a 44R torso: ribcage half-width 175-206 mm at the armpit, a strap crossing 133-171 mm from the midline, and a 119 mm rise from armpit to shoulder crest. The range is wide because the strap's position on the shoulder dominates it, and that is a fitting choice rather than a dimension. Measure the rise and where the strap actually wants to sit before deciding about a tie-down."
+    },
+    {
+      "title": "A phone in this is heavier than a wallet in the other",
+      "body": "About 200 g against about 80. Run this module on one side and the small one on the other and the rig is loaded 2–3× harder on the phone side, which is the imbalance the matched-height rule exists to fight. The plain answer is a pair of these with a light load in one; the untested one is a tie-down from the bottom of the heavy pouch to a trouser belt, which is what shoulder holsters do and which nothing here has tried."
+    },
+    {
+      "title": "The loft is declared, not derived",
+      "body": "½\" against a phone that is 0.34\" thick, leaving about 5/32\" for the case and for the panels not lying perfectly on it. That is a judgement, and it is the figure both usable dimensions come off — a pouch that really stands ⅝\" off the body has ⅛\" less usable cloth in each direction than this pattern says."
+    },
+    {
+      "title": "The envelope is derived from a size, not measured on the garment",
+      "body": "5 × 1 × 9\" from a 44R jacket and an M/L waistcoat, read off published sizing charts rather than off the actual garment. This module has the least margin against it. Measure armpit to hem down the side seam, and the ease over the ribs with a shirt on, and correct both specs together."
+    },
+    {
+      "title": "Not yet built"
+    }
+  ],
+  "docs": [],
+  "embroidery": {
+    "panel": "front",
+    "design": "LemonCat_beefjuice_on_black",
+    "field_mm": [
+      63,
+      78
+    ]
+  },
+  "holds_g": 200
+}

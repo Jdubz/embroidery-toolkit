@@ -44,8 +44,15 @@ REQUIRED = ("schema_version", "name", "title", "description", "summary",
             "stitch_schedule", "tools", "checklist", "thickness", "peak_mm",
             "comfort", "assembly_load", "sources", "model3d", "checks", "notes",
             "open_questions", "docs", "embroidery", "provenance")
-REQUIRED_GEOMETRY = ("ring", "panel_w", "panel_h", "gusset_w", "sa",
-                     "clip_depth", "seam_run", "coil_c")
+REQUIRED_GEOMETRY = ("panel_w", "panel_h", "sa", "clip_depth", "seam_run")
+#: ...and the keys only ONE construction has. A flat pouch has no ring, no
+#: gusset and no coil offset, because it has no gusset to offset the coil in;
+#: demanding them of every package would be demanding a piece nobody cuts.
+#: The page is guarded on the same distinction, so the two stay in step.
+GEOMETRY_BY_CONSTRUCTION = {
+    "box-turned": ("ring", "gusset_w", "coil_c"),
+    "flat-turned": ("zip_face", "usable_w", "usable_h"),
+}
 
 #: The order patterns appear in the dropdown: smallest first, so the list reads
 #: as a size ladder rather than as an alphabet.
@@ -74,7 +81,11 @@ def validate(pkgs: list[dict]) -> list[str]:
         for k in REQUIRED:
             if k not in p:
                 bad.append(f"{n}: missing {k!r}")
-        for k in REQUIRED_GEOMETRY:
+        kind = p.get("construction")
+        if kind not in GEOMETRY_BY_CONSTRUCTION:
+            bad.append(f"{n}: construction {kind!r}, which this player has no "
+                       "geometry contract for")
+        for k in REQUIRED_GEOMETRY + GEOMETRY_BY_CONSTRUCTION.get(kind, ()):
             if k not in p.get("geometry", {}):
                 bad.append(f"{n}: geometry has no {k!r}")
         for d in p.get("docs", []):

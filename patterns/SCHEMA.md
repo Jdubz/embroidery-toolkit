@@ -125,6 +125,60 @@ condition these flags cannot express, the flag set is what is missing.
 
 ---
 
+## The construction picks the GEOMETRY, not just the prose
+
+`construction` names a file — and it also names a class. `bag_pattern.GEOMETRY`
+maps `box-turned` to `BoxBag` and `flat-turned` to `FlatBag`, and `load()`
+dispatches on it. That is not an implementation detail: a construction decides
+**which pieces exist**, so it has to decide the arithmetic.
+
+| | `box-turned` | `flat-turned` |
+|---|---|---|
+| Pieces | 2 panels + gusset + 2 zip strips | **2 panels** |
+| The perimeter | a **ring** the panels are sewn into | one seam where the two panels meet |
+| The zip | a piece of the ring, in its own panel | sewn to the panels' own top edges |
+| `finished_in.d` | the depth, always there | the **loft** — what it stands off when loaded |
+| Interior | `w × h × d` | `(w − d) × (h − d)`, and a **lens**, not a box |
+
+**`finished_in.d` means something different in each, and that is the thing to
+get right.** A box bag is its depth whether or not anything is in it. A flat
+pouch has no depth until it is loaded, and the depth it then takes **comes out
+of its own width and height**, because the panels have to wrap it. So a 4¼ × 6
+pouch lofting ½″ holds 3¾ × 5½ — the loft is charged once on *each* axis. Size
+a flat pouch by eye off its face and it comes out too small by that much, in
+both directions, and no other figure in the package would have shown it.
+
+Two fields exist for exactly that:
+
+```json
+"holds": "a large phone, upright",
+"must_hold_in": [3.06, 6.42]
+```
+
+`must_hold_in` is `[width, height]` of the thing that has to go in, checked
+against the **usable** rectangle rather than the face. It is the only check in
+this repo where making a bag fatter makes it hold less.
+
+`FlatBag` **refuses** a `chassis`, `panel_pockets`, `divider` or `pieces`
+rather than ignoring them — they are box geometry, and a spec that names one is
+asking for a piece nobody cuts. It also refuses a loft past
+`FLAT_LOFT_MAX_IN` (1″): past that the panels have to bow so far that the seam
+ropes and the thing reads as a badly-made box, which is what a gusset is for.
+
+*What this cost, and it is the general lesson.* Adding a second construction
+broke twenty assertions that were **true of every bag only because every bag
+was a box** — `the ring is the finished perimeter`, `the gusset is cut long`,
+`interior is the face box`, and the whole test file resolving every bag's steps
+against `box-turned`. None of them was wrong; all of them were **under-scoped**,
+and the fix was to split them by the construction that implies them rather than
+to relax them until both passed. The player had the same shape of bug in three
+places where it read `geometry.ring` unguarded — `REQUIRED_GEOMETRY` is now
+split into the keys every package has and the keys one construction has, and
+`FIG_NEEDS` does the same job for the drawings, so a glossary figure of a
+gusset simply does not render on a bag that has none.
+
+---
+
 ## Layer 2 — spec
 
 `patterns/specs/<Name>.json`. `name` must equal the filename stem.
