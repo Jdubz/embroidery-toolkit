@@ -116,6 +116,9 @@ ap.add_argument("--skip", action="append", default=[],
 ap.add_argument("--bleed", type=float, default=0.3,
                 help="mm each layer extends under the ones above it")
 ap.add_argument("--spacing", type=float, default=0.4, help="fill row spacing mm")
+ap.add_argument("--expand", type=float, default=0.2,
+                help="fill pull compensation, mm per side; it also narrows every "
+                     "knockout by twice this")
 ap.add_argument("--angle", type=float, default=45.0, help="fill angle degrees")
 ap.add_argument("--stitch-len", type=float, default=3.0)
 ap.add_argument("--min-blob-mm2", type=float, default=1.0,
@@ -157,7 +160,7 @@ FILL_PARAMS = {
     "row_spacing_mm": f"{a.spacing:g}",
     "max_stitch_length_mm": f"{a.stitch_len:g}",
     "staggers": "4",
-    "expand_mm": "0.2",
+    "expand_mm": f"{a.expand:g}",
     # Route travel under the fill rather than jumping over bare fabric.
     "underpath": "True",
     "underlay_underpath": "True",

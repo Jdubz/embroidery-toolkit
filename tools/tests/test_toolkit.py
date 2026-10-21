@@ -765,6 +765,21 @@ _order = [s["name"] for s in BLD._in_dependency_order([_consumer, _producer])]
 check("a spec reading another's prepare output builds after it, whatever it is called",
       _order == ["Zebra", "Alpha"], " -> ".join(_order))
 
+# A multi-step prepare (raster_trace then svg_edit) produces an intermediate a
+# sibling may read; ordering must see EVERY step's output, not only the last.
+_chain = {"name": "Zebra", "prepare": [
+    {"tool": "t", "input": "art/originals/z.png", "output": "art/prepared/traced.svg"},
+    {"tool": "t", "input": "art/prepared/traced.svg", "output": "art/prepared/zebra.svg"}],
+    "build": {"tool": "svg_to_pes", "input": "art/prepared/zebra.svg", "artwork_mm": 90}}
+_reader = {"name": "Alpha", "build": {"tool": "svg_to_pes", "input": "art/prepared/traced.svg",
+                                      "artwork_mm": 90}}
+_order = [s["name"] for s in BLD._in_dependency_order([_reader, _chain])]
+check("a spec reading an intermediate prepare step's output builds after it",
+      _order == ["Zebra", "Alpha"], " -> ".join(_order))
+check("prepare_steps takes one object or a list",
+      len(BLD.prepare_steps(_chain)) == 2 and len(BLD.prepare_steps(_producer)) == 1
+      and BLD.prepare_steps({"name": "x"}) == [])
+
 _indep = [{"name": n, "build": {"tool": "svg_to_pes", "input": f"{n}.svg", "artwork_mm": 90}}
           for n in ("Cherry", "Apple", "Banana")]
 check("independent specs stay in filename order",
@@ -796,6 +811,11 @@ for bad, want in [
       "prepare": {"tool": "svg_subpath_filter", "input": "a.svg"}}, "missing 'output'"),
     ({"name": "T", "build": {"tool": "svg_to_pes", "input": "a.svg", "artwork_mm": 1},
       "prepare": {"tool": "no_such_tool", "input": "a", "output": "b"}}, "no such prepare tool"),
+    ({"name": "T", "build": {"tool": "svg_to_pes", "input": "a.svg", "artwork_mm": 1},
+      "prepare": []}, "non-empty list"),
+    ({"name": "T", "build": {"tool": "svg_to_pes", "input": "c.svg", "artwork_mm": 1},
+      "prepare": [{"tool": "raster_trace", "input": "a.png", "output": "b.svg"},
+                  {"tool": "svg_edit", "input": "a.png", "output": "c.svg"}]}, "not step 1's output"),
 ]:
     try:
         BLD.validate_spec(bad, "T.json")
@@ -1974,6 +1994,58 @@ check("svgops: move translates by exactly what it was asked",
       f"moved {(at1.x - at0.x) / doc.upm:+.3f},{(at1.y - at0.y) / doc.upm:+.3f}")
 # A positional op must report what it did, or a silent miss stays silent.
 check("svgops: move reports where it landed", "now at" in msg, msg)
+
+# bridge-arc closes a ring's gap (Yess_on_black) and must refuse to reach
+# anything but the ring - a bridge that grazes a letter is a different design.
+from shapely.geometry import Point as _Pt, Polygon as _Poly  # noqa: E402
+from embroidery_tools import svggeom as G  # noqa: E402
+_ring = _Pt(400, 400).buffer(310, 64).difference(_Pt(400, 400).buffer(290, 64))
+_wedge = _Poly([(400, 400), (800, 400 - 145), (800, 400 + 145)])   # ~40 deg gap at 0 deg
+_ring = _ring.difference(_wedge)
+_letter = _Pt(400, 400).buffer(60)
+
+
+def _ring_doc(extra=None):
+    shapes = [_ring, _letter] + ([extra] if extra is not None else [])
+    src = OPS / "ring.svg"
+    src.write_text('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" '
+                   'viewBox="0 0 800 800">'
+                   + "".join(f'<path id="r{i}" d="{G.to_d(s)}" fill="#FFFFFF" fill-rule="evenodd"/>'
+                             for i, s in enumerate(shapes))
+                   + "</svg>", encoding="utf-8")
+    return Doc.load(src, 100.0)
+
+
+doc = _ring_doc()
+_holes = lambda d: sum(len(p.interiors) for p in G.polys(unary_union([r.geom for r in d.select(kind="fill")])))
+_h0 = _holes(doc)
+msg = svgops.OPS["bridge-arc"]["fn"](doc, colour="FFFFFF", start=330.0, end=30.0,
+                                      centre="50,50")
+check("svgops: bridge-arc closes a ring (one new hole) and says it AUTHORED geometry",
+      _holes(doc) == _h0 + 1 and "AUTHORED" in msg, f"{_h0} -> {_holes(doc)}: {msg}")
+try:
+    svgops.OPS["bridge-arc"]["fn"](_ring_doc(_Pt(700, 400).buffer(15)), colour="FFFFFF",
+                                   start=330.0, end=30.0, centre="50,50")
+    check("svgops: bridge-arc refuses to touch anything but the ring", False, "no error")
+except SystemExit as e:
+    check("svgops: bridge-arc refuses to touch anything but the ring",
+          "other than the ring" in str(e), str(e))
+
+# --------------------------------------------------------------------------- #
+# raster_trace bakes vtracer's per-path translate() into the coordinates,
+# because svgdoc refuses a transform. Dropping it instead is the registration
+# bug color_separate.check_registration exists for: a valid path, in the wrong
+# place. A command it cannot shift correctly must raise, not pass through.
+import runpy  # noqa: E402
+_rt = runpy.run_path(str(Path(__file__).resolve().parents[1] / "raster_trace.py"))
+check("raster_trace: bake shifts every absolute coordinate",
+      _rt["bake"]("M0 0 C1 2 3 4 5 6 L7 8 Z", 10, 20)
+      == "M 10.000 20.000 C 11.000 22.000 13.000 24.000 15.000 26.000 L 17.000 28.000 Z")
+try:
+    _rt["bake"]("M0 0 l5 5 Z", 10, 20)
+    check("raster_trace: bake refuses a relative command", False, "no error")
+except SystemExit as e:
+    check("raster_trace: bake refuses a relative command", "'l'" in str(e), str(e))
 
 # --------------------------------------------------------------------------- #
 print(f"\n{'=' * 60}")

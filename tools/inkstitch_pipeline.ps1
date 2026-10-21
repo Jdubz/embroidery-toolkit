@@ -36,6 +36,9 @@ param(
     [string[]]$Layer = @(),
     [string[]]$Skip = @(),
     [double]$SpacingMm = 0.4,
+    # Fill pull compensation, mm per side. Takes twice this off every
+    # knockout, so lower it for linework that is bare cloth (dark-cloth work).
+    [double]$ExpandMm = 0.2,
     # Line layers are stitched as a single running stitch, which is one 40 wt
     # thread â€” about 0.4 mm, against a documented minimum linework width of
     # 1.0 mm. Bean stitch re-runs each stitch to build weight: 2 repeats is
@@ -175,7 +178,7 @@ else {
     # colon, never a comma, so this cannot split one in half.
     $LayerList = @($Layer | ForEach-Object { $_ -split '[,;]' } | Where-Object { $_.Trim() })
     $SkipList  = @($Skip  | ForEach-Object { $_ -split '[,;]' } | Where-Object { $_.Trim() })
-    $sepArgs = @($Image, $layerDir, $WidthMm, '--spacing', $SpacingMm, '--split-mm', $SplitMm) +
+    $sepArgs = @($Image, $layerDir, $WidthMm, '--spacing', $SpacingMm, '--expand', $ExpandMm, '--split-mm', $SplitMm) +
                ($LayerList | ForEach-Object { @('--layer', $_.Trim()) }) +
                ($SkipList  | ForEach-Object { @('--skip',  $_.Trim()) })
     & $py (Join-Path $PSScriptRoot 'color_separate.py') @sepArgs

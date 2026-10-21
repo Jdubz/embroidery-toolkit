@@ -100,6 +100,17 @@ Each run writes `build/ops/<Name>.ops.jsonl` recording what actually executed;
 `svg_edit --replay <log>` reproduces it byte-for-byte. The spec is the
 declaration, the log is the receipt.
 
+**`prepare` may be a list of steps**, each reading the previous one's output.
+It exists for raster art that needs geometry work: `raster_trace` turns a
+flat-colour PNG into a plain SVG (one evenodd path per colour, transforms baked
+in), and `svg_edit` then works on it like any vector source. `--background`
+splits a ground colour that doubles as linework (art drawn on black) into
+canvas, which is not emitted, and the lines inside the drawing, which are, so
+they can be grown before being cut out and dropped. `Goose_on_black` is the
+worked example: trace, `offset` the linework 0.3 mm, `subtract` it from both
+fills, `drop` it. Prefer this to `inkstitch_pipeline` whenever the artwork
+needs anything `svg_edit` does, because a raster cannot be widened.
+
 The older single-purpose tools — `svg_recolor`, `svg_knockout`, `svg_dark_invert`,
 `svg_subpath_filter`, `svg_offset`, `svg_stroke` — are still there and still
 valid. Each is a fixed sequence of the same operations, kept because some carry

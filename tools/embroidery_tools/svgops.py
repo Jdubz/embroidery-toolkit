@@ -810,6 +810,119 @@ def space_out(doc, colour: str, gap: float, band=None, line_gap: float | None = 
             + "\n".join(lines))
 
 
+def _radial_band(geom, cx: float, cy: float, theta_deg: float, reach: float):
+    """(inner, outer) radius of the OUTERMOST stretch of `geom` along a ray."""
+    t = np.radians(theta_deg)
+    ray = shapely.LineString([(cx, cy), (cx + reach * np.cos(t), cy + reach * np.sin(t))])
+    hit = ray.intersection(geom)
+    segs = [s for s in getattr(hit, "geoms", [hit]) if not s.is_empty and s.length > 0]
+    if not segs:
+        return None
+    centre = shapely.Point(cx, cy)
+    return max((min(centre.distance(shapely.Point(s.coords[0])),
+                    centre.distance(shapely.Point(s.coords[-1]))),
+                max(centre.distance(shapely.Point(s.coords[0])),
+                    centre.distance(shapely.Point(s.coords[-1])))) for s in segs)
+
+
+@op("bridge-arc",
+    "bridge-arc --colour X --start A --end B [--centre X,Y]   close a gap in an outer ring, A to B degrees")
+def bridge_arc(doc, colour: str, start: float, end: float, centre: str | None = None,
+               step: float = 3.0, **_):
+    """Close a gap in the outermost ring of a colour, continuing the ring itself.
+
+    Written for Yess_on_black. Gabriola's ss07 frame on a Y leaves an opening
+    on the right for the word to run into, and "Yess" is too short to reach
+    it, so the ring stops in mid-air beside the last s and touches nothing.
+
+    The ring is not a circle — on Yess its radius runs 36-50 mm — so the bridge
+    is not an arc of one. Rays are cast from `--centre` (mm from the drawing's
+    top-left; default the middle of its bounds) and the OUTERMOST thing each ray
+    crosses is taken as the ring. At `--start` and `--end` the ring's centre
+    radius, width and their rates of change are read, and both are carried
+    across the gap by cubic Hermite interpolation, so the bridge leaves each end
+    at the ring's own curvature and weight. Angles are SVG convention: degrees
+    clockwise from +x, and the bridge runs clockwise from start to end.
+
+    **Anchor where the ring is full width, not at its tips.** Calligraphic
+    strokes taper to a point, and a bridge sized from a tip comes out as a
+    hairline in the middle. The bridge overlaps the tapered ends it replaces,
+    and the union absorbs them.
+
+    It authors geometry that is not in the source, so it says so, and it
+    REFUSES to touch anything but the ring: the point of closing a frame is a
+    frame, and a bridge that grazes a letter is a different design.
+    """
+    a = G.norm(colour)
+    regions = doc.select(colour=a, kind="fill")
+    if not regions:
+        raise SystemExit(f"bridge-arc: nothing is FILLED #{a}")
+    g = unary_union([r.geom for r in regions])
+    x0, y0, x1, y1 = doc.bounds
+    if centre:
+        cxm, _, cym = centre.partition(",")
+        cx, cy = x0 + float(cxm) * doc.upm, y0 + float(cym) * doc.upm
+    else:
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    reach = 2 * max(x1 - x0, y1 - y0)
+
+    span = (end - start) % 360
+    if not 0 < span < 180:
+        raise SystemExit(f"bridge-arc: {start:g} -> {end:g} spans {span:g} deg clockwise; "
+                         "a gap is under 180 deg - check the order of --start and --end")
+
+    def band(th):
+        b = _radial_band(g, cx, cy, th, reach)
+        if b is None:
+            raise SystemExit(f"bridge-arc: nothing at {th % 360:g} deg - anchor on the ring")
+        return b
+
+    # Centre radius and width at each anchor, and their slope per degree read
+    # one step further out along the ring.
+    (i0, o0), (i0b, o0b) = band(start), band(start - step)
+    (i1, o1), (i1b, o1b) = band(end), band(end + step)
+    r0, w0, r1, w1 = (i0 + o0) / 2, o0 - i0, (i1 + o1) / 2, o1 - i1
+    dr0, dw0 = (r0 - (i0b + o0b) / 2) / step, (w0 - (o0b - i0b)) / step
+    dr1, dw1 = (((i1b + o1b) / 2) - r1) / step, ((o1b - i1b) - w1) / step
+
+    s = np.linspace(0.0, 1.0, max(8, int(span * 4)))
+    h00, h10 = 2 * s ** 3 - 3 * s ** 2 + 1, s ** 3 - 2 * s ** 2 + s
+    h01, h11 = -2 * s ** 3 + 3 * s ** 2, s ** 3 - s ** 2
+    rc = h00 * r0 + h10 * span * dr0 + h01 * r1 + h11 * span * dr1
+    # Width is carried linearly: a Hermite on a quantity read off a tapering
+    # stroke overshoots, and a bulge in the middle of a hairline frame shows.
+    w = (1 - s) * w0 + s * w1
+    th = np.radians(start + s * span)
+    outer = [(cx + (r + ww / 2) * np.cos(t), cy + (r + ww / 2) * np.sin(t)) for r, ww, t in zip(rc, w, th)]
+    inner = [(cx + (r - ww / 2) * np.cos(t), cy + (r - ww / 2) * np.sin(t)) for r, ww, t in zip(rc, w, th)]
+    bridge = Polygon(outer + inner[::-1]).buffer(0)
+
+    # The ring is whatever the bridge's two ends land in. Anything else it
+    # reaches is a letter, and touching one is refused.
+    ring = [p for p in G.polys(g) if p.intersects(bridge)]
+    ends = [p for p in ring if p.intersects(shapely.Point(outer[0]).buffer(w0))
+            or p.intersects(shapely.Point(outer[-1]).buffer(w1))]
+    stray = [p for p in ring if p not in ends]
+    if stray:
+        raise SystemExit(f"bridge-arc: the bridge would touch {len(stray)} shape(s) other "
+                         "than the ring it closes. Move the anchors or the centre.")
+    others = [p for p in G.polys(g) if p not in ends]
+    clear = min((bridge.distance(p) for p in others), default=float("inf"))
+
+    holes_before = sum(len(p.interiors) for p in G.polys(g))
+    for r in regions:
+        if r.geom.intersects(bridge):
+            doc.set_fill_geom(r, r.geom.union(bridge))
+            break
+    doc.rescan()
+    g2 = unary_union([r.geom for r in doc.select(colour=a, kind="fill")])
+    holes_after = sum(len(p.interiors) for p in G.polys(g2))
+    return (f"bridged #{a} {start % 360:g} -> {end % 360:g} deg ({span:g} deg) "
+            f"(AUTHORED, not in the source): radius {doc.mm(r0):.1f} -> {doc.mm(r1):.1f} mm, "
+            f"width {doc.mm(w0):.2f} -> {doc.mm(w1):.2f} mm, +{doc.mm2(bridge.difference(g)):.1f} mm2; "
+            f"{doc.mm(clear):.1f} mm clear of everything else; holes {holes_before} -> {holes_after}")
+
+
 @op("pockets", "pockets --adjacent X --emit C [--min-width N]   stitch enclosed bare cloth beside X in C")
 def pockets(doc, adjacent: str, emit: str, lid_above: float | None = None,
             min_width: float = MIN_W, **_):

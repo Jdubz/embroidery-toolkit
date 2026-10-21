@@ -72,6 +72,7 @@ TOOL_SCRIPTS = [
     # these, but the hash list is per-repo rather than per-design, so they mark
     # everything stale — same as svg_subpath_filter, which only Scream uses.
     "tools/inkstitch_pipeline.ps1", "tools/color_separate.py", "tools/svg_merge.py",
+    "tools/raster_trace.py",
     "tools/embroidery_tools/svgpath.py",
     "tools/embroidery_tools/measure.py", "tools/embroidery_tools/convert.py",
     "reference/machine-profile.json",
@@ -139,6 +140,20 @@ def toolchain() -> dict:
     }
 
 
+def prepare_steps(spec: dict) -> list[dict]:
+    """A spec's prepare steps, in order. `prepare` is one object or a list.
+
+    A list exists for artwork that needs two tools in sequence: a raster has to
+    be traced (`raster_trace`) before any `svg_edit` operation can touch it, and
+    folding the trace into `svg_edit` would hide the intermediate the edits are
+    measured against. Each step reads the previous step's output.
+    """
+    p = spec.get("prepare")
+    if not p:
+        return []
+    return p if isinstance(p, list) else [p]
+
+
 def validate_spec(spec: dict, where: str) -> None:
     """Fail on a malformed spec here, with the field named.
 
@@ -170,13 +185,24 @@ def validate_spec(spec: dict, where: str) -> None:
         raise ValueError(f"{where}: build.skip must be a list of hex colours")
     p = spec.get("prepare")
     if p is not None:
-        if not isinstance(p, dict):
-            raise ValueError(f"{where}: 'prepare' must be an object")
-        for key in ("tool", "input", "output"):
-            if key not in p:
-                raise ValueError(f"{where}: prepare is missing '{key}'")
-        if not (REPO / "tools" / f"{p['tool']}.py").exists():
-            raise ValueError(f"{where}: no such prepare tool: tools/{p['tool']}.py")
+        if not isinstance(p, (dict, list)) or (isinstance(p, list) and not p):
+            raise ValueError(f"{where}: 'prepare' must be an object or a non-empty list of them")
+        steps = prepare_steps(spec)
+        for i, step in enumerate(steps):
+            if not isinstance(step, dict):
+                raise ValueError(f"{where}: prepare step {i + 1} must be an object")
+            for key in ("tool", "input", "output"):
+                if key not in step:
+                    raise ValueError(f"{where}: prepare is missing '{key}'")
+            if not (REPO / "tools" / f"{step['tool']}.py").exists():
+                raise ValueError(f"{where}: no such prepare tool: tools/{step['tool']}.py")
+            # Each step reads the one before it. A step that reads something
+            # else leaves its predecessor's output as an orphan that the build
+            # writes and nothing uses — almost certainly a typo'd path.
+            if i and step["input"] != steps[i - 1]["output"]:
+                raise ValueError(
+                    f"{where}: prepare step {i + 1} reads {step['input']}, not step "
+                    f"{i}'s output {steps[i - 1]['output']}")
 
     # Last, so a structurally broken spec reports the structural fault first.
     #
@@ -218,13 +244,12 @@ def _in_dependency_order(specs: list[dict]) -> list[dict]:
     output from a stale input, which is the exact failure the manifest exists to
     prevent. Ordering is derived from the declarations instead.
     """
-    produced = {s["prepare"]["output"]: s["name"] for s in specs if s.get("prepare")}
+    produced = {st["output"]: s["name"] for s in specs for st in prepare_steps(s)}
     deps = {}
     for s in specs:
         need = set()
-        for key in ("prepare", "build"):
-            step = s.get(key)
-            owner = produced.get(step["input"]) if step else None
+        for step in [*prepare_steps(s), s["build"]]:
+            owner = produced.get(step["input"])
             if owner and owner != s["name"]:
                 need.add(owner)
         deps[s["name"]] = need
@@ -292,17 +317,16 @@ def _run(cmd: list[str], label: str, quiet: bool) -> str:
 
 
 def _prepare(spec: dict, quiet: bool) -> Path | None:
-    step = spec.get("prepare")
-    if not step:
-        return None
-    src, dst = REPO / step["input"], REPO / step["output"]
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    if not quiet:
-        print(f"  prepare  {step['tool']}  -> {rel(dst)}")
-    _run([sys.executable, str(REPO / "tools" / f"{step['tool']}.py"), str(src), str(dst),
-          *[str(a) for a in step.get("args", [])]], step["tool"], quiet)
-    if not dst.exists():
-        raise RuntimeError(f"{step['tool']} reported success but wrote nothing to {rel(dst)}")
+    dst = None
+    for step in prepare_steps(spec):
+        src, dst = REPO / step["input"], REPO / step["output"]
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if not quiet:
+            print(f"  prepare  {step['tool']}  -> {rel(dst)}")
+        _run([sys.executable, str(REPO / "tools" / f"{step['tool']}.py"), str(src), str(dst),
+              *[str(a) for a in step.get("args", [])]], step["tool"], quiet)
+        if not dst.exists():
+            raise RuntimeError(f"{step['tool']} reported success but wrote nothing to {rel(dst)}")
     return dst
 
 
@@ -457,10 +481,14 @@ def build_one(spec: dict, quiet: bool = False) -> dict:
     pes = _stitch_out(spec, quiet)
     _preview(spec, pes, quiet)
     inputs = [REPO / spec["build"]["input"]]
-    if spec.get("prepare"):
-        inputs.insert(0, REPO / spec["prepare"]["input"])
-    if prepared and prepared not in inputs:
-        inputs.append(prepared)
+    steps = prepare_steps(spec)
+    if steps:
+        inputs.insert(0, REPO / steps[0]["input"])
+    # Every intermediate, not only the last: a hand edit to the traced SVG
+    # between a trace and its edits must mark the design stale too.
+    for p in [REPO / st["output"] for st in steps] + ([prepared] if prepared else []):
+        if p not in inputs:
+            inputs.append(p)
     return {
         "name": spec["name"],
         "built_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
@@ -554,16 +582,16 @@ def audit() -> list[tuple[str, str]]:
             issues.append(("warn", f"{name}: {why}"))
         # A build input the spec's own prepare step generates is not missing —
         # it just has not been made yet, which the staleness check already says.
-        made_here = {spec["prepare"]["output"]} if spec.get("prepare") else set()
-        for key in ("prepare", "build"):
-            step = spec.get(key)
-            if not step or step["input"] in made_here:
+        steps = prepare_steps(spec)
+        made_here = {st["output"] for st in steps}
+        for key, step in [("prepare", st) for st in steps] + [("build", spec["build"])]:
+            if step["input"] in made_here:
                 continue
             if not (REPO / step["input"]).exists():
                 issues.append(("error", f"{name}: {key} input missing: {step['input']}"))
 
     # art/prepared is generated. Anything there that no spec produces is sprawl.
-    declared = {s["prepare"]["output"] for s in specs if s.get("prepare")}
+    declared = {st["output"] for s in specs for st in prepare_steps(s)}
     for f in sorted(PREPARED.glob("*")) if PREPARED.exists() else []:
         if f.is_file() and rel(f) not in declared:
             issues.append(("warn", f"{rel(f)}: in art/prepared but no spec generates it"))

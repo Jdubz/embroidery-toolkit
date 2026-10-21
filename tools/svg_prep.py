@@ -28,6 +28,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -146,6 +147,20 @@ if not vb:
     raise SystemExit("SVG has no viewBox; cannot establish scale")
 
 bw, bh = drawing_bbox(src)
+# Inkscape's --query-* answers in CSS px of the DOCUMENT, not in viewBox units.
+# The two agree only when `width` is unitless and equal to the viewBox width,
+# which every SVG here happened to be until raster_trace wrote width="100mm"
+# over a 1254-unit viewBox: the drawing then read 3.3x too small and the goose
+# built at 312 mm. Convert rather than assume.
+_PX = {"": 1.0, "px": 1.0, "mm": 96 / 25.4, "cm": 960 / 25.4, "in": 96.0,
+       "pt": 96 / 72, "pc": 16.0}
+_w = re.fullmatch(r"\s*([\d.eE+-]+)\s*([a-z]*)\s*", root.get("width") or "")
+if _w and _w.group(2) in _PX:
+    _px_per_unit = float(_w.group(1)) * _PX[_w.group(2)] / vb[2]
+    bw, bh = bw / _px_per_unit, bh / _px_per_unit
+elif root.get("width") and not root.get("width").strip().endswith("%"):
+    raise SystemExit(f"cannot interpret width={root.get('width')!r} to convert "
+                     "Inkscape's measured bounds into viewBox units")
 doc_mm = a.artwork_mm * vb[2] / bw
 units_per_mm = vb[2] / doc_mm
 root.set("width", f"{doc_mm:.3f}mm")
