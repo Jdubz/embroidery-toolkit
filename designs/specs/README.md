@@ -111,6 +111,16 @@ worked example: trace, `offset` the linework 0.3 mm, `subtract` it from both
 fills, `drop` it. Prefer this to `inkstitch_pipeline` whenever the artwork
 needs anything `svg_edit` does, because a raster cannot be widened.
 
+**`place` puts a second original into the drawing**, for a design that pairs
+two artworks: `place --file art/originals/x.svg --width-mm 42 --above 3` (or
+`--top MM`, and `--cx MM` to move it off centre), all in millimetres from the
+current drawing's top-left. The placed file keeps its colours and is tracked as
+a build input, so editing it marks the design stale. Placing usually changes
+the drawing's width, and the op prints the new width: `build.artwork_mm` has to
+be that figure, not `--artwork-mm`. `Lu_halo_on_black` and `Lu_horns_on_black`
+are the worked examples. If both artworks share a colour, run any `offset` on
+the first one *before* placing the second, because `offset` grows a whole colour.
+
 The older single-purpose tools — `svg_recolor`, `svg_knockout`, `svg_dark_invert`,
 `svg_subpath_filter`, `svg_offset`, `svg_stroke` — are still there and still
 valid. Each is a fixed sequence of the same operations, kept because some carry

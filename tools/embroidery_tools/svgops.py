@@ -1200,6 +1200,81 @@ def set_stroke(doc, colour: str, mm: float, to: str | None = None, **_):
     return f"stroked {len(targets)} element(s) of #{a} at {mm:g} mm in #{stroke_c}"
 
 
+@op("place", "place --file F --width-mm N [--cx MM] (--top MM | --above MM)   add another drawing's fills")
+def place(doc, file: str, width_mm: float, cx: float | None = None,
+          top: float | None = None, above: float | None = None, **_):
+    """Bring a second piece of artwork into this one, at a size and position in mm.
+
+    Every other op here reshapes what one original already contains, so a design
+    that pairs two originals — a halo over a name, horns over a name — had no
+    declared way to exist: the only route was a hand-made composite in
+    `art/originals/`, which is a copy of two files that no longer tracks either.
+    This keeps both originals as they are and makes the layout part of the spec.
+
+    Positions are millimetres from the CURRENT drawing's top-left, like `--band`:
+    `--cx` is the placed drawing's horizontal centre (default: centred on the
+    current drawing), `--top` its top edge, or `--above` the clear gap between
+    its bottom and the current drawing's top. Bounding boxes, because placement
+    is a layout decision; the report then gives the true clearance to every
+    colour, which is the number that has to clear the thread limits.
+
+    The placed fills keep their own colours. Strokes are refused rather than
+    dropped: a stroke's width would have to be rescaled with the drawing, and
+    silently losing one is the partial-application failure this repo keeps
+    finding.
+
+    **Placing usually changes the drawing's extent, and `svg_prep` scales the
+    WHOLE drawing to `build.artwork_mm`.** The scale here stays frozen (see
+    `Doc.rescan`), so the op prints the new width: that is the figure
+    `build.artwork_mm` must carry, or the finished design comes out at a
+    different size from the one every millimetre here was measured in.
+    """
+    from pathlib import Path
+    from .svgdoc import Doc
+
+    if (top is None) == (above is None):
+        raise SystemExit("place: give exactly one of --top or --above")
+    p = Path(file)
+    if not p.is_absolute():
+        # Specs name files from the repo root, and a build may run from anywhere.
+        p = Path(__file__).resolve().parents[2] / p
+    if not p.exists():
+        raise SystemExit(f"place: no such file {file}")
+    other = Doc.load(p, 1.0, doc.samples)
+    strokes = other.select(kind="stroke")
+    if strokes:
+        raise SystemExit(f"place: {file} has {len(strokes)} stroked element(s); "
+                         "outline them first (inkscape object-stroke-to-path)")
+    ox0, oy0, ox1, oy1 = other.bounds
+    k = width_mm * doc.upm / (ox1 - ox0)
+    x0, y0, x1, y1 = doc.bounds
+    h_units = (oy1 - oy0) * k
+    left = (x0 + cx * doc.upm if cx is not None else (x0 + x1) / 2) - (ox1 - ox0) * k / 2
+    new_top = y0 + top * doc.upm if top is not None else y0 - above * doc.upm - h_units
+
+    before = {c: doc.geom_of(c) for c in doc.colours()}
+    placed = []
+    for i, r in enumerate(other.regions, 1):
+        g = shapely.affinity.translate(
+            shapely.affinity.scale(r.geom, k, k, origin=(ox0, oy0)),
+            left - ox0, new_top - oy0)
+        doc.add_fill(g, r.colour, ident=f"placed_{p.stem}_{i}")
+        placed.append(g)
+    doc.rescan()
+
+    blk = unary_union(placed)
+    clears = [f"#{c} {blk.distance(g) / doc.upm:.2f} mm"
+              for c, g in sorted(before.items()) if g is not None and not g.is_empty]
+    bx0, by0, bx1, by1 = blk.bounds
+    nx0, ny0, nx1, ny1 = doc.bounds
+    return (f"placed {p.name}: {(bx1 - bx0) / doc.upm:.1f} x {(by1 - by0) / doc.upm:.1f} mm, "
+            f"{', '.join('#' + c for c in sorted(other.colours()))}"
+            + (f"; clears {', '.join(clears)}" if clears else "")
+            + f"\ndrawing is now {(nx1 - nx0) / doc.upm:.1f} x {(ny1 - ny0) / doc.upm:.1f} mm"
+            + (f" -- set build.artwork_mm to {(nx1 - nx0) / doc.upm:.1f}"
+               if abs((nx1 - nx0) - (x1 - x0)) > 1e-6 * (x1 - x0) else ""))
+
+
 @op("report", "report                      list colours, areas and region counts")
 def report(doc, **_):
     lines = ["  %-9s %10s %8s %8s" % ("colour", "area mm2", "fills", "strokes")]

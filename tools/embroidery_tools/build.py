@@ -39,6 +39,7 @@ import hashlib
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -154,6 +155,25 @@ def prepare_steps(spec: dict) -> list[dict]:
     return p if isinstance(p, list) else [p]
 
 
+def step_reads(step: dict) -> list[str]:
+    """Every file a build step reads: its `input`, plus any `place --file`.
+
+    `svg_edit place` pulls a second original into the drawing, so a step can
+    read more than its declared input. Taken from the op itself rather than
+    from a separate list in the spec, because a list that has to be kept in
+    step with the ops is one that drifts — and an untracked input is a design
+    that silently stops rebuilding when its artwork changes.
+    """
+    reads = [step["input"]]
+    args = [str(a) for a in step.get("args", [])]
+    for i, a in enumerate(args[:-1]):
+        if a != "--op":
+            continue
+        toks = shlex.split(args[i + 1])
+        reads += [toks[j + 1] for j, t in enumerate(toks[:-1]) if t == "--file"]
+    return reads
+
+
 def validate_spec(spec: dict, where: str) -> None:
     """Fail on a malformed spec here, with the field named.
 
@@ -249,9 +269,10 @@ def _in_dependency_order(specs: list[dict]) -> list[dict]:
     for s in specs:
         need = set()
         for step in [*prepare_steps(s), s["build"]]:
-            owner = produced.get(step["input"])
-            if owner and owner != s["name"]:
-                need.add(owner)
+            for path in step_reads(step):
+                owner = produced.get(path)
+                if owner and owner != s["name"]:
+                    need.add(owner)
         deps[s["name"]] = need
 
     ordered: list[dict] = []
@@ -489,6 +510,11 @@ def build_one(spec: dict, quiet: bool = False) -> dict:
     for p in [REPO / st["output"] for st in steps] + ([prepared] if prepared else []):
         if p not in inputs:
             inputs.append(p)
+    # A placed original is as much an input as the one the chain starts from.
+    for st in steps:
+        for path in step_reads(st)[1:]:
+            if REPO / path not in inputs:
+                inputs.append(REPO / path)
     return {
         "name": spec["name"],
         "built_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
@@ -585,10 +611,11 @@ def audit() -> list[tuple[str, str]]:
         steps = prepare_steps(spec)
         made_here = {st["output"] for st in steps}
         for key, step in [("prepare", st) for st in steps] + [("build", spec["build"])]:
-            if step["input"] in made_here:
-                continue
-            if not (REPO / step["input"]).exists():
-                issues.append(("error", f"{name}: {key} input missing: {step['input']}"))
+            for path in step_reads(step):
+                if path in made_here:
+                    continue
+                if not (REPO / path).exists():
+                    issues.append(("error", f"{name}: {key} input missing: {path}"))
 
     # art/prepared is generated. Anything there that no spec produces is sprawl.
     declared = {st["output"] for s in specs for st in prepare_steps(s)}

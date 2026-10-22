@@ -98,7 +98,7 @@ def parse_op(text: str) -> tuple[str, dict]:
     # is how a 0.3 mm offset becomes the string "0.3" and does nothing useful.
     for k in ("mm", "lid_above", "to_min", "tolerate", "ppm",
               "factor", "gap", "line_gap", "dx", "dy", "min_width", "min_keep",
-              "start", "end", "step"):
+              "start", "end", "step", "width_mm", "cx", "top", "above"):
         if k in kw:
             kw[k] = float(kw[k])
     for b in ("band", "band_x"):

@@ -1705,6 +1705,48 @@ check("svgops: drop removes an element whose only paint is gone", "mark" not in 
 check("svgops: drop keeps an element that still has another paint", "body" in ids)
 check("svgops: drop leaves no black behind", "000000" not in doc.colours())
 
+# place: a second original brought in at a size and position in mm. BANDED is
+# 20 units wide at 20 mm, so one unit is one millimetre and every figure below
+# can be checked by hand.
+PLACED = OPS / "placed.svg"
+PLACED.write_text(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="100" '
+    'viewBox="0 0 400 100">'
+    f'<path fill="#FF0000" d="{sq(0, 0, 400, 100)}"/></svg>', encoding="utf-8")
+doc = Doc.load(BANDED, 20.0)
+msg = svgops.OPS["place"]["fn"](doc, file=str(PLACED), width_mm=10.0, above=5.0)
+red = doc.geom_of("FF0000")
+check("svgops: place scales by --width-mm and keeps the placed file's colour",
+      red is not None and abs(doc.mm2(red) - 25.0) < 0.5, msg)
+check("svgops: place --above leaves that gap and centres on the drawing",
+      red is not None and [round(v, 3) for v in red.bounds] == [5.0, -7.5, 15.0, -5.0],
+      str(red.bounds if red is not None else None))
+check("svgops: place says when the drawing's extent changed",
+      "drawing is now 20.0 x 97.5 mm" in msg, msg)
+try:
+    svgops.OPS["place"]["fn"](Doc.load(BANDED, 20.0), file=str(GROUPED), width_mm=10.0, top=0.0)
+    check("svgops: place refuses a stroked file rather than dropping the stroke", False)
+except SystemExit as exc:
+    check("svgops: place refuses a stroked file rather than dropping the stroke",
+          "stroke" in str(exc))
+
+# A placed file is an input: editing it must mark the design stale, and a
+# sibling's prepared output placed here must build first.
+_step = {"tool": "svg_edit", "input": "art/originals/a.svg", "output": "art/prepared/b.svg",
+         "args": ["--artwork-mm", "50", "--op", "offset --colour FFFFFF --mm 0.3",
+                  "--op", "place --file art/prepared/shared.svg --width-mm 40 --above 3"]}
+check("build: a step reads its input AND every place --file",
+      BLD.step_reads(_step) == ["art/originals/a.svg", "art/prepared/shared.svg"],
+      str(BLD.step_reads(_step)))
+_placer = {"name": "Alpha", "prepare": _step,
+           "build": {"tool": "svg_to_pes", "input": "art/prepared/b.svg", "artwork_mm": 50}}
+_maker = {"name": "Zebra", "prepare": {"tool": "t", "input": "art/originals/z.svg",
+                                       "output": "art/prepared/shared.svg"},
+          "build": {"tool": "svg_to_pes", "input": "art/prepared/shared.svg", "artwork_mm": 50}}
+_order = [s["name"] for s in BLD._in_dependency_order([_placer, _maker])]
+check("a spec placing another's prepare output builds after it",
+      _order == ["Zebra", "Alpha"], " -> ".join(_order))
+
 # --- end to end through the driver ----------------------------------------- #
 dst = OPS / "out.svg"
 # --log-dir keeps the test out of the repo's build/. Without it the log defaults
